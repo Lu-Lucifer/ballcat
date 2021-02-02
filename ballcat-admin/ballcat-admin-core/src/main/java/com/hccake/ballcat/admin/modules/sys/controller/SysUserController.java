@@ -1,11 +1,9 @@
 package com.hccake.ballcat.admin.modules.sys.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hccake.ballcat.admin.constants.SysUserConst;
 import com.hccake.ballcat.admin.modules.sys.model.dto.SysUserDTO;
+import com.hccake.ballcat.admin.modules.sys.model.dto.SysUserPassDTO;
 import com.hccake.ballcat.admin.modules.sys.model.dto.SysUserScope;
 import com.hccake.ballcat.admin.modules.sys.model.entity.SysRole;
 import com.hccake.ballcat.admin.modules.sys.model.entity.SysUser;
@@ -16,15 +14,18 @@ import com.hccake.ballcat.admin.modules.sys.service.SysUserService;
 import com.hccake.ballcat.commom.log.operation.annotation.CreateOperationLogging;
 import com.hccake.ballcat.commom.log.operation.annotation.DeleteOperationLogging;
 import com.hccake.ballcat.commom.log.operation.annotation.UpdateOperationLogging;
+import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.core.domain.PageResult;
+import com.hccake.ballcat.common.core.domain.SelectData;
 import com.hccake.ballcat.common.core.result.BaseResultCode;
 import com.hccake.ballcat.common.core.result.R;
 import com.hccake.ballcat.common.core.result.SystemResultCode;
-import com.hccake.ballcat.common.core.vo.SelectData;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +43,7 @@ import java.util.List;
  * @author hccake 2020-09-24 20:16:15
  */
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/sysuser")
 @Api(value = "sysuser", tags = "用户管理模块")
@@ -54,13 +56,13 @@ public class SysUserController {
 
 	/**
 	 * 分页查询用户
-	 * @param page 参数集
+	 * @param pageParam 参数集
 	 * @return 用户集合
 	 */
 	@GetMapping("/page")
 	@PreAuthorize("@per.hasPermission('sys:sysuser:read')")
-	public R<IPage<SysUserVO>> getUserPage(Page<?> page, SysUserQO qo) {
-		return R.ok(sysUserService.selectPageVo(page, qo));
+	public R<PageResult<SysUserVO>> getUserPage(PageParam pageParam, SysUserQO qo) {
+		return R.ok(sysUserService.queryPage(pageParam, qo));
 	}
 
 	/**
@@ -69,9 +71,9 @@ public class SysUserController {
 	 */
 	@GetMapping("/select")
 	@PreAuthorize("@per.hasPermission('sys:sysuser:read')")
-	public R<List<SelectData<?>>> getSelectData(
+	public R<List<SelectData<?>>> listSelectData(
 			@RequestParam(value = "userTypes", required = false) List<Integer> userTypes) {
-		return R.ok(sysUserService.getSelectData(userTypes));
+		return R.ok(sysUserService.listSelectData(userTypes));
 	}
 
 	/**
@@ -127,7 +129,7 @@ public class SysUserController {
 	@PreAuthorize("@per.hasPermission('sys:sysuser:grant')")
 	public R<SysUserScope> getUserRoleIds(@PathVariable Integer userId) {
 
-		List<SysRole> roleList = sysUserRoleService.getRoles(userId);
+		List<SysRole> roleList = sysUserRoleService.listRoles(userId);
 
 		List<String> roleCodes = new ArrayList<>();
 		if (CollectionUtil.isNotEmpty(roleList)) {
@@ -161,12 +163,11 @@ public class SysUserController {
 	@ApiOperation(value = "修改系统用户密码", notes = "修改系统用户密码")
 	@UpdateOperationLogging(msg = "修改系统用户密码")
 	@PreAuthorize("@per.hasPermission('sys:sysuser:pass')")
-	public R<?> updateUserPass(@PathVariable Integer userId, String pass, String confirm) {
-		if (StrUtil.isBlank(pass) || StrUtil.isBlank(confirm) || !pass.equals(confirm)) {
+	public R<?> updateUserPass(@PathVariable Integer userId, @RequestBody SysUserPassDTO sysUserPassDTO) {
+		if (!sysUserPassDTO.getPass().equals(sysUserPassDTO.getConfirmPass())) {
 			return R.failed(SystemResultCode.BAD_REQUEST, "错误的密码!");
 		}
-
-		return sysUserService.updateUserPass(userId, pass) ? R.ok()
+		return sysUserService.updateUserPass(userId, sysUserPassDTO.getPass()) ? R.ok()
 				: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "修改用户密码失败！");
 	}
 
@@ -184,7 +185,7 @@ public class SysUserController {
 				&& !SysUserConst.Status.LOCKED.getValue().equals(status)) {
 			throw new ValidationException("不支持的用户状态！");
 		}
-		return sysUserService.updateUserStatus(userIds, status) ? R.ok()
+		return sysUserService.updateUserStatusBatch(userIds, status) ? R.ok()
 				: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "批量修改用户状态！");
 	}
 

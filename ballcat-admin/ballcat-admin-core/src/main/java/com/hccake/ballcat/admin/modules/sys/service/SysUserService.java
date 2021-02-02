@@ -1,14 +1,15 @@
 package com.hccake.ballcat.admin.modules.sys.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.hccake.ballcat.admin.modules.sys.model.dto.SysUserDTO;
 import com.hccake.ballcat.admin.modules.sys.model.dto.SysUserScope;
+import com.hccake.ballcat.admin.modules.sys.model.dto.UserInfoDTO;
 import com.hccake.ballcat.admin.modules.sys.model.entity.SysUser;
 import com.hccake.ballcat.admin.modules.sys.model.qo.SysUserQO;
-import com.hccake.ballcat.admin.modules.sys.model.dto.UserInfoDTO;
 import com.hccake.ballcat.admin.modules.sys.model.vo.SysUserVO;
-import com.hccake.ballcat.common.core.vo.SelectData;
+import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.core.domain.PageResult;
+import com.hccake.ballcat.common.core.domain.SelectData;
+import com.hccake.extend.mybatis.plus.service.ExtendService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,15 +21,15 @@ import java.util.List;
  * @author ballcat code generator
  * @date 2019-09-12 20:39:31
  */
-public interface SysUserService extends IService<SysUser> {
+public interface SysUserService extends ExtendService<SysUser> {
 
 	/**
 	 * 根据QueryObject查询系统用户列表
-	 * @param page 分页参数
+	 * @param pageParam 分页参数
 	 * @param qo 查询参数对象
-	 * @return IPage<SysUserVO> 分页数据
+	 * @return PageResult<SysUserVO> 分页数据
 	 */
-	IPage<SysUserVO> selectPageVo(IPage<?> page, SysUserQO qo);
+	PageResult<SysUserVO> queryPage(PageParam pageParam, SysUserQO qo);
 
 	/**
 	 * 根据用户名查询用户
@@ -87,7 +88,7 @@ public interface SysUserService extends IService<SysUser> {
 	 * @param status 状态
 	 * @return boolean
 	 */
-	boolean updateUserStatus(List<Integer> userIds, Integer status);
+	boolean updateUserStatusBatch(List<Integer> userIds, Integer status);
 
 	/**
 	 * 修改系统用户头像
@@ -103,13 +104,48 @@ public interface SysUserService extends IService<SysUser> {
 	 * @param roleCode 角色标识
 	 * @return List<SysUser>
 	 */
-	List<SysUser> selectUsersByRoleCode(String roleCode);
+	List<SysUser> listByRoleCode(String roleCode);
+
+	/**
+	 * 根据角色查询用户
+	 * @param roleCodes 角色标识集合
+	 * @return List<SysUser> 用户集合
+	 */
+	List<SysUser> listByRoleCodes(List<String> roleCodes);
+
+	/**
+	 * 根据组织机构ID查询用户
+	 * @param organizationIds 组织机构id集合
+	 * @return 用户集合
+	 */
+	List<SysUser> listByOrganizationIds(List<Integer> organizationIds);
+
+	/**
+	 * 根据用户类型查询用户
+	 * @param userTypes 用户类型集合
+	 * @return 用户集合
+	 */
+	List<SysUser> listByUserTypes(List<Integer> userTypes);
+
+	/**
+	 * 根据用户Id集合查询用户
+	 * @param userIds 用户Id集合
+	 * @return 用户集合
+	 */
+	List<SysUser> listByUserIds(List<Integer> userIds);
 
 	/**
 	 * 返回用户的select数据
 	 * @param type 为空时返回所有客户为1返回系统客户 name=> username value => userId
 	 * @return List<SelectData>
 	 */
-	List<SelectData<?>> getSelectData(List<Integer> type);
+	List<SelectData<?>> listSelectData(List<Integer> type);
+
+	/**
+	 * 获取用户的角色Code集合
+	 * @param userId 用户id
+	 * @return List<String>
+	 */
+	List<String> listRoleCodes(Integer userId);
 
 }

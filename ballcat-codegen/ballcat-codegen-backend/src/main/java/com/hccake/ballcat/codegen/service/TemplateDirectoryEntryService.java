@@ -1,10 +1,9 @@
 package com.hccake.ballcat.codegen.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.hccake.ballcat.codegen.model.bo.TemplateFile;
 import com.hccake.ballcat.codegen.model.dto.TemplateDirectoryCreateDTO;
 import com.hccake.ballcat.codegen.model.entity.TemplateDirectoryEntry;
-import com.hccake.ballcat.codegen.model.vo.TemplateDirectoryEntryVO;
+import com.hccake.extend.mybatis.plus.service.ExtendService;
 
 import java.util.List;
 import java.util.Set;
@@ -15,14 +14,14 @@ import java.util.Set;
  * @author hccake
  * @date 2020-06-19 19:11:41
  */
-public interface TemplateDirectoryEntryService extends IService<TemplateDirectoryEntry> {
+public interface TemplateDirectoryEntryService extends ExtendService<TemplateDirectoryEntry> {
 
 	/**
 	 * 查询指定模板组下所有的目录项
 	 * @param templateGroupId 模板组ID
 	 * @return 所有的目录项
 	 */
-	List<TemplateDirectoryEntryVO> queryDirectoryEntry(Integer templateGroupId);
+	List<TemplateDirectoryEntry> listByTemplateGroupId(Integer templateGroupId);
 
 	/**
 	 * 移动目录项
@@ -73,16 +72,16 @@ public interface TemplateDirectoryEntryService extends IService<TemplateDirector
 	/**
 	 * 获取模板文件
 	 * @param groupId 模板组Id
-	 * @param templateFileIds
+	 * @param templateFileIds 模板文件ID集合
 	 * @return List 模板文件
 	 */
-	List<TemplateFile> findTemplateFiles(Integer groupId, Set<Integer> templateFileIds);
+	List<TemplateFile> listTemplateFiles(Integer groupId, Set<Integer> templateFileIds);
 
 	/**
 	 * 复制模板目录项文件
-	 * @param resourceId 原模板组
-	 * @param groupId 模板模板组
+	 * @param resourceGroupId 原模板组
+	 * @param targetGroupId 模板模板组
 	 */
-	void copy(Integer resourceId, Integer groupId);
+	void copy(Integer resourceGroupId, Integer targetGroupId);
 
 }

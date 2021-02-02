@@ -2,9 +2,6 @@ package com.hccake.ballcat.codegen.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Assert;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.hccake.ballcat.codegen.constant.DirectoryEntryRemoveModeEnum;
 import com.hccake.ballcat.codegen.constant.DirectoryEntryTypeEnum;
@@ -16,20 +13,19 @@ import com.hccake.ballcat.codegen.model.dto.TemplateInfoDTO;
 import com.hccake.ballcat.codegen.model.entity.TemplateDirectoryEntry;
 import com.hccake.ballcat.codegen.model.entity.TemplateInfo;
 import com.hccake.ballcat.codegen.model.vo.TemplateDirectory;
-import com.hccake.ballcat.codegen.model.vo.TemplateDirectoryEntryVO;
 import com.hccake.ballcat.codegen.service.TemplateDirectoryEntryService;
 import com.hccake.ballcat.codegen.service.TemplateInfoService;
 import com.hccake.ballcat.common.core.constant.GlobalConstants;
 import com.hccake.ballcat.common.core.exception.BusinessException;
 import com.hccake.ballcat.common.core.result.BaseResultCode;
 import com.hccake.ballcat.common.core.util.TreeUtil;
+import com.hccake.extend.mybatis.plus.service.impl.ExtendServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 模板文件目录项
@@ -39,10 +35,9 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirectoryEntryMapper, TemplateDirectoryEntry>
+public class TemplateDirectoryEntryServiceImpl
+		extends ExtendServiceImpl<TemplateDirectoryEntryMapper, TemplateDirectoryEntry>
 		implements TemplateDirectoryEntryService {
-
-	private final static String TABLE_ALIAS_PREFIX = "tde.";
 
 	private final TemplateInfoService templateInfoService;
 
@@ -52,12 +47,8 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 	 * @return 所有的目录项
 	 */
 	@Override
-	public List<TemplateDirectoryEntryVO> queryDirectoryEntry(Integer templateGroupId) {
-		LambdaQueryWrapper<TemplateDirectoryEntry> wrapper = Wrappers.<TemplateDirectoryEntry>lambdaQuery()
-				.eq(TemplateDirectoryEntry::getGroupId, templateGroupId);
-		List<TemplateDirectoryEntry> templateDirectoryEntries = baseMapper.selectList(wrapper);
-		return templateDirectoryEntries.stream().map(TemplateModelConverter.INSTANCE::entryPoToVo)
-				.collect(Collectors.toList());
+	public List<TemplateDirectoryEntry> listByTemplateGroupId(Integer templateGroupId) {
+		return baseMapper.listByTemplateGroupId(templateGroupId);
 	}
 
 	/**
@@ -76,8 +67,8 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 		TemplateDirectoryEntry targetEntry = baseMapper.selectById(targetEntryId);
 		// 目标必须存
 		Assert.notNull(entry, "Target directory entry does not exist!");
-		// 目标必须是文件夹
-		Assert.isTrue(DirectoryEntryTypeEnum.FOLDER.getType().equals(targetEntry.getType()),
+		// 非平级移动时，目标必须是文件夹
+		Assert.isTrue(horizontalMove || DirectoryEntryTypeEnum.FOLDER.getType().equals(targetEntry.getType()),
 				"The target is not a folder");
 
 		// 平级移动则目标父节点就是其父节点
@@ -102,10 +93,8 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 	 */
 	@Override
 	public void duplicateNameCheck(Integer entryId, String name) {
-		Integer count = baseMapper.selectCount(Wrappers.<TemplateDirectoryEntry>lambdaQuery()
-				.eq(TemplateDirectoryEntry::getParentId, entryId).eq(TemplateDirectoryEntry::getFileName, name));
-		boolean notExist = count == null || count == 0;
-		Assert.isTrue(notExist, "The entry with the same name already exists");
+		boolean existed = baseMapper.existSameName(entryId, name);
+		Assert.isFalse(existed, "The entry with the same name already exists");
 	}
 
 	/**
@@ -115,9 +104,7 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 	 */
 	@Override
 	public boolean exists(Integer entryId) {
-		Integer count = baseMapper
-				.selectCount(Wrappers.<TemplateDirectoryEntry>lambdaQuery().eq(TemplateDirectoryEntry::getId, entryId));
-		return count != null && count != 0;
+		return baseMapper.existEntryId(entryId);
 	}
 
 	/**
@@ -156,15 +143,12 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 		if (DirectoryEntryTypeEnum.FOLDER.getType().equals(entry.getType())) {
 			if (DirectoryEntryRemoveModeEnum.RESERVED_CHILD_NODE.getType().equals(mode)) {
 				// 子节点上移
-				baseMapper.update(null,
-						Wrappers.<TemplateDirectoryEntry>lambdaUpdate()
-								.set(TemplateDirectoryEntry::getParentId, entry.getParentId())
-								.eq(TemplateDirectoryEntry::getParentId, entryId));
+				baseMapper.updateParentId(entryId, entry.getParentId());
 			}
 			else if (DirectoryEntryRemoveModeEnum.REMOVE_CHILD_NODE.getType().equals(mode)) {
 				// ==========删除所有子节点=============
 				// 1. 获取所有目录项（目录项不会太多，一次查询比较方便）
-				List<TemplateDirectoryEntry> entryList = baseMapper.selectList(Wrappers.emptyWrapper());
+				List<TemplateDirectoryEntry> entryList = baseMapper.selectList(null);
 				// 2. 获取当前删除目录项的孩子节点列表
 				List<TemplateDirectory> treeList = TreeUtil.buildTree(entryList, entryId,
 						TemplateModelConverter.INSTANCE::entryPoToTree);
@@ -191,15 +175,14 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 
 	/**
 	 * 复制模板目录项文件
-	 * @param resourceId 原模板组
-	 * @param groupId 模板模板组
+	 * @param resourceGroupId 原模板组
+	 * @param targetGroupId 模板模板组
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void copy(Integer resourceId, Integer groupId) {
+	public void copy(Integer resourceGroupId, Integer targetGroupId) {
 		// 1. ===============获取模板目录项==================
-		List<TemplateDirectoryEntry> list = baseMapper.selectList(
-				Wrappers.<TemplateDirectoryEntry>lambdaQuery().eq(TemplateDirectoryEntry::getGroupId, resourceId));
+		List<TemplateDirectoryEntry> list = baseMapper.listByTemplateGroupId(resourceGroupId);
 
 		// 2. ============== 复制模板文件 ===================
 		Set<Integer> oldParentIdSet = new HashSet<>();
@@ -208,12 +191,12 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 			originEntryIds.add(entry.getId());
 			oldParentIdSet.add(entry.getParentId());
 
-			entry.setGroupId(groupId);
+			entry.setGroupId(targetGroupId);
 			entry.setId(null);
 			entry.setCreateTime(null);
 			entry.setUpdateTime(null);
 		}
-		this.saveBatch(list);
+		this.saveBatchSomeColumn(list);
 
 		// 3. =============== 获取新老ID的映射表，key: oldId, value: newId ==========
 		Map<Integer, Integer> idMap = new HashMap<>();
@@ -225,26 +208,21 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 		// 父节点为根节点的不需要修改
 		oldParentIdSet.remove(GlobalConstants.TREE_ROOT_ID);
 		for (Integer oldParentId : oldParentIdSet) {
-			baseMapper.update(null,
-					Wrappers.<TemplateDirectoryEntry>lambdaUpdate()
-							.set(TemplateDirectoryEntry::getParentId, idMap.get(oldParentId))
-							.eq(TemplateDirectoryEntry::getParentId, oldParentId)
-							.eq(TemplateDirectoryEntry::getGroupId, groupId));
+			baseMapper.updateParentId(oldParentId, idMap.get(oldParentId));
 		}
 
 		// 5. ================保存模板文件详情信息===================
-		List<TemplateInfo> templateInfoList = templateInfoService
-				.list(Wrappers.<TemplateInfo>lambdaQuery().eq(TemplateInfo::getGroupId, resourceId));
+		List<TemplateInfo> templateInfoList = templateInfoService.listByTemplateGroupId(resourceGroupId);
 		for (TemplateInfo templateInfo : templateInfoList) {
 			Integer oldId = templateInfo.getDirectoryEntryId();
 			Integer newId = idMap.get(oldId);
 			templateInfo.setDirectoryEntryId(newId);
 
-			templateInfo.setGroupId(groupId);
+			templateInfo.setGroupId(targetGroupId);
 			templateInfo.setCreateTime(null);
 			templateInfo.setUpdateTime(null);
 		}
-		templateInfoService.saveBatch(templateInfoList);
+		templateInfoService.saveBatchSomeColumn(templateInfoList);
 
 	}
 
@@ -255,10 +233,9 @@ public class TemplateDirectoryEntryServiceImpl extends ServiceImpl<TemplateDirec
 	 * @return List 模板文件
 	 */
 	@Override
-	public List<TemplateFile> findTemplateFiles(Integer groupId, Set<Integer> templateFileIds) {
+	public List<TemplateFile> listTemplateFiles(Integer groupId, Set<Integer> templateFileIds) {
 		// 获取模板目录项
-		List<TemplateDirectoryEntry> list = baseMapper.selectList(
-				Wrappers.<TemplateDirectoryEntry>lambdaQuery().eq(TemplateDirectoryEntry::getGroupId, groupId));
+		List<TemplateDirectoryEntry> list = baseMapper.listByTemplateGroupId(groupId);
 		// 当没有指定时，不生成该文件
 		if (CollectionUtil.isNotEmpty(templateFileIds)) {
 			list.removeIf(entry -> DirectoryEntryTypeEnum.FILE.getType().equals(entry.getType())

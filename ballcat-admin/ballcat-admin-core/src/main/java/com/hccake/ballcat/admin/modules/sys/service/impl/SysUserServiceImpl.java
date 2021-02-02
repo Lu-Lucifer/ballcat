@@ -1,19 +1,13 @@
 package com.hccake.ballcat.admin.modules.sys.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.hccake.ballcat.admin.constants.SysUserConst;
 import com.hccake.ballcat.admin.modules.sys.checker.AdminUserChecker;
+import com.hccake.ballcat.admin.modules.sys.event.UserChangeEvent;
 import com.hccake.ballcat.admin.modules.sys.mapper.SysUserMapper;
 import com.hccake.ballcat.admin.modules.sys.model.converter.SysUserConverter;
 import com.hccake.ballcat.admin.modules.sys.model.dto.SysUserDTO;
@@ -25,11 +19,14 @@ import com.hccake.ballcat.admin.modules.sys.model.qo.SysUserQO;
 import com.hccake.ballcat.admin.modules.sys.model.vo.PermissionVO;
 import com.hccake.ballcat.admin.modules.sys.model.vo.SysUserVO;
 import com.hccake.ballcat.admin.modules.sys.service.*;
-import com.hccake.ballcat.admin.oauth.util.SecurityUtils;
+import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.core.domain.PageResult;
+import com.hccake.ballcat.common.core.domain.SelectData;
 import com.hccake.ballcat.common.core.util.PasswordUtil;
-import com.hccake.ballcat.common.core.vo.SelectData;
+import com.hccake.extend.mybatis.plus.service.impl.ExtendServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
+public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
 	private final FileService fileService;
 
@@ -61,34 +58,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	private final SysRoleService sysRoleService;
 
+	private final ApplicationEventPublisher publisher;
+
 	@Value("${password.secret-key}")
 	private String secretKey;
 
-	private final static String TABLE_ALIAS_PREFIX = "su.";
-
 	/**
 	 * 根据QueryObject查询分页数据
-	 * @param page 分页参数
+	 * @param pageParam 分页参数
 	 * @param qo 查询参数对象
-	 * @return IPage<SysUserVO> 分页数据
+	 * @return PageResult<SysUserVO> 分页数据
 	 */
 	@Override
-	public IPage<SysUserVO> selectPageVo(IPage<?> page, SysUserQO qo) {
-
-		QueryWrapper<SysUser> wrapper = Wrappers.<SysUser>query().eq(TABLE_ALIAS_PREFIX + "deleted", 0)
-				.like(ObjectUtil.isNotNull(qo.getUsername()), TABLE_ALIAS_PREFIX + "username", qo.getUsername())
-				.like(ObjectUtil.isNotNull(qo.getEmail()), TABLE_ALIAS_PREFIX + "email", qo.getEmail())
-				.like(ObjectUtil.isNotNull(qo.getPhone()), TABLE_ALIAS_PREFIX + "phone", qo.getPhone())
-				.like(ObjectUtil.isNotNull(qo.getNickname()), TABLE_ALIAS_PREFIX + "nickname", qo.getNickname())
-				.eq(ObjectUtil.isNotNull(qo.getStatus()), TABLE_ALIAS_PREFIX + "status", qo.getStatus())
-				.eq(ObjectUtil.isNotNull(qo.getSex()), TABLE_ALIAS_PREFIX + "sex", qo.getSex())
-				.eq(ObjectUtil.isNotNull(qo.getType()), TABLE_ALIAS_PREFIX + "type", qo.getType())
-				.in(CollectionUtil.isNotEmpty(qo.getOrganizationId()), TABLE_ALIAS_PREFIX + "organization_id",
-						qo.getOrganizationId());
-		if (StringUtils.isNotBlank(qo.getStartTime()) && StringUtils.isNotBlank(qo.getEndTime())) {
-			wrapper.between(TABLE_ALIAS_PREFIX + "create_time", qo.getStartTime(), qo.getEndTime());
-		}
-		return baseMapper.selectPageVo(page, wrapper);
+	public PageResult<SysUserVO> queryPage(PageParam pageParam, SysUserQO qo) {
+		return baseMapper.queryPage(pageParam, qo);
 	}
 
 	/**
@@ -98,7 +81,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 */
 	@Override
 	public SysUser getByUsername(String username) {
-		return baseMapper.selectOne(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, username));
+		return baseMapper.selectByUsername(username);
 	}
 
 	/**
@@ -118,7 +101,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			roleList = sysRoleService.list();
 		}
 		else {
-			roleList = sysUserRoleService.getRoles(sysUser.getUserId());
+			roleList = sysUserRoleService.listRoles(sysUser.getUserId());
 		}
 
 		List<Integer> roleIds = new ArrayList<>();
@@ -134,9 +117,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		// 设置权限列表（permission）
 		Set<String> permissions = new HashSet<>();
 		roles.forEach(code -> {
-			List<String> permissionList = sysPermissionService.findPermissionVOsByRoleCode(code).stream()
-					.filter(sysPermission -> StrUtil.isNotEmpty(sysPermission.getCode())).map(PermissionVO::getCode)
-					.collect(Collectors.toList());
+			List<String> permissionList = sysPermissionService.listVOByRoleCode(code).stream()
+					.map(PermissionVO::getCode).filter(StrUtil::isNotEmpty).collect(Collectors.toList());
 			permissions.addAll(permissionList);
 		});
 		userInfoDTO.setPermissions(new ArrayList<>(permissions));
@@ -156,8 +138,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 		String password = PasswordUtil.decodeAesAndEncodeBCrypt(sysUserDto.getPass(), secretKey);
 		sysUser.setPassword(password);
-
-		return SqlHelper.retBool(baseMapper.insert(sysUser));
+		boolean result = SqlHelper.retBool(baseMapper.insert(sysUser));
+		if (result) {
+			publisher.publishEvent(new UserChangeEvent(sysUser));
+		}
+		return result;
 	}
 
 	/**
@@ -168,7 +153,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Override
 	public boolean updateSysUser(SysUserDTO sysUserDTO) {
 		SysUser entity = SysUserConverter.INSTANCE.dtoToPo(sysUserDTO);
-		Assert.isTrue(hasModifyPermission(entity), "当前用户不允许修改!");
+		Assert.isTrue(adminUserChecker.hasModifyPermission(entity), "当前用户不允许修改!");
 		return SqlHelper.retBool(baseMapper.updateById(entity));
 	}
 
@@ -207,26 +192,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 */
 	@Override
 	public boolean updateUserPass(Integer userId, String pass) {
-		Assert.isTrue(hasModifyPermission(getById(userId)), "当前用户不允许修改!");
+		Assert.isTrue(adminUserChecker.hasModifyPermission(getById(userId)), "当前用户不允许修改!");
 		String password = PasswordUtil.decodeAesAndEncodeBCrypt(pass, secretKey);
-
-		int res = baseMapper.update(null,
-				Wrappers.<SysUser>lambdaUpdate().eq(SysUser::getUserId, userId).set(SysUser::getPassword, password));
-
-		return SqlHelper.retBool(res);
-	}
-
-	/**
-	 * 修改权限校验
-	 * @param targetUser 目标用户
-	 * @return 是否有权限修改目标用户
-	 */
-	private boolean hasModifyPermission(SysUser targetUser) {
-		// 如果需要修改的用户是超级管理员，则只能本人修改
-		if (adminUserChecker.isAdminUser(targetUser)) {
-			return SecurityUtils.getSysUserDetails().getUsername().equals(targetUser.getUsername());
-		}
-		return true;
+		return baseMapper.updateUserPassword(userId, password);
 	}
 
 	/**
@@ -235,25 +203,24 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 * @return 更新成功：true
 	 */
 	@Override
-	public boolean updateUserStatus(List<Integer> userIds, Integer status) {
+	public boolean updateUserStatusBatch(List<Integer> userIds, Integer status) {
 
-		List<SysUser> userList = baseMapper.selectList(Wrappers.<SysUser>lambdaQuery().in(SysUser::getUserId, userIds));
+		List<SysUser> userList = baseMapper.listByUserIds(userIds);
 		Assert.notEmpty(userList, "更新用户状态失败，待更新用户列表为空");
 
 		// 移除无权限更改的用户id
 		Map<Integer, SysUser> userMap = userList.stream()
 				.collect(Collectors.toMap(SysUser::getUserId, Function.identity()));
-		userIds.removeIf(id -> !hasModifyPermission(userMap.get(id)));
+		userIds.removeIf(id -> !adminUserChecker.hasModifyPermission(userMap.get(id)));
 		Assert.notEmpty(userIds, "更新用户状态失败，无权限更新用户");
 
-		return this.update(
-				Wrappers.<SysUser>lambdaUpdate().set(SysUser::getStatus, status).in(SysUser::getUserId, userIds));
+		return baseMapper.updateUserStatusBatch(userIds, status);
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public String updateAvatar(MultipartFile file, Integer userId) throws IOException {
-		Assert.isTrue(hasModifyPermission(getById(userId)), "当前用户不允许修改!");
+		Assert.isTrue(adminUserChecker.hasModifyPermission(getById(userId)), "当前用户不允许修改!");
 		// 获取系统用户头像的文件名
 		String objectName = "sysuser/" + userId + "/avatar/" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
 				+ StrUtil.SLASH + IdUtil.fastSimpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
@@ -273,8 +240,49 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 * @return 系统用户集合
 	 */
 	@Override
-	public List<SysUser> selectUsersByRoleCode(String roleCode) {
-		return baseMapper.selectUsersByRoleCode(roleCode);
+	public List<SysUser> listByRoleCode(String roleCode) {
+		return listByRoleCodes(Collections.singletonList(roleCode));
+	}
+
+	/**
+	 * 根据角色查询用户
+	 * @param roleCodes 角色标识集合
+	 * @return List<SysUser>
+	 */
+	@Override
+	public List<SysUser> listByRoleCodes(List<String> roleCodes) {
+		return baseMapper.listByRoleCodes(roleCodes);
+	}
+
+	/**
+	 * 根据组织机构ID查询用户
+	 * @param organizationIds 组织机构id集合
+	 * @return 用户集合
+	 */
+	@Override
+	public List<SysUser> listByOrganizationIds(List<Integer> organizationIds) {
+		return baseMapper.listByOrganizationIds(organizationIds);
+	}
+
+	/**
+	 * 根据用户类型查询用户
+	 * @param userTypes 用户类型集合
+	 * @return 用户集合
+	 */
+	@Override
+	public List<SysUser> listByUserTypes(List<Integer> userTypes) {
+		return baseMapper.listByUserTypes(userTypes);
+	}
+
+	/**
+	 * 根据用户Id集合查询用户
+	 * @param userIds 用户Id集合
+	 * @return 用户集合
+	 */
+	@Override
+	public List<SysUser> listByUserIds(List<Integer> userIds) {
+		return baseMapper.listByUserIds(userIds);
+
 	}
 
 	/**
@@ -283,8 +291,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 * @param userTypes 用户类型
 	 */
 	@Override
-	public List<SelectData<?>> getSelectData(List<Integer> userTypes) {
-		return baseMapper.getSelectData(userTypes);
+	public List<SelectData<?>> listSelectData(List<Integer> userTypes) {
+		return baseMapper.listSelectData(userTypes);
+	}
+
+	/**
+	 * 获取用户的角色Code集合
+	 * @param userId 用户id
+	 * @return List<String>
+	 */
+	@Override
+	public List<String> listRoleCodes(Integer userId) {
+		return sysUserRoleService.listRoles(userId).stream().map(SysRole::getCode).collect(Collectors.toList());
 	}
 
 }

@@ -2,21 +2,24 @@ package com.hccake.ballcat.admin.modules.sys.manager;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.IdUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hccake.ballcat.admin.modules.sys.event.DictChangeEvent;
 import com.hccake.ballcat.admin.modules.sys.model.converter.SysDictConverter;
 import com.hccake.ballcat.admin.modules.sys.model.entity.SysDict;
 import com.hccake.ballcat.admin.modules.sys.model.entity.SysDictItem;
 import com.hccake.ballcat.admin.modules.sys.model.qo.SysDictQO;
 import com.hccake.ballcat.admin.modules.sys.model.vo.DictDataVO;
 import com.hccake.ballcat.admin.modules.sys.model.vo.DictItemVO;
+import com.hccake.ballcat.admin.modules.sys.model.vo.SysDictItemVO;
+import com.hccake.ballcat.admin.modules.sys.model.vo.SysDictVO;
 import com.hccake.ballcat.admin.modules.sys.service.SysDictItemService;
 import com.hccake.ballcat.admin.modules.sys.service.SysDictService;
 import com.hccake.ballcat.common.core.constant.enums.BooleanEnum;
+import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.core.domain.PageResult;
 import com.hccake.ballcat.common.core.exception.BusinessException;
 import com.hccake.ballcat.common.core.result.BaseResultCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,14 +42,16 @@ public class SysDictManager {
 
 	private final SysDictItemService sysDictItemService;
 
+	private final ApplicationEventPublisher eventPublisher;
+
 	/**
 	 * 字典表分页
-	 * @param page 分页参数
+	 * @param pageParam 分页参数
 	 * @param sysDictQO 查询参数
 	 * @return 字典表分页数据
 	 */
-	public IPage<SysDict> dictPage(Page<SysDict> page, SysDictQO sysDictQO) {
-		return sysDictService.page(page, sysDictQO);
+	public PageResult<SysDictVO> dictPage(PageParam pageParam, SysDictQO sysDictQO) {
+		return sysDictService.queryPage(pageParam, sysDictQO);
 	}
 
 	/**
@@ -71,7 +76,11 @@ public class SysDictManager {
 			throw new BusinessException(BaseResultCode.LOGIC_CHECK_ERROR.getCode(), "该字典项目不能修改");
 		}
 		sysDict.setHashCode(IdUtil.fastSimpleUUID());
-		return sysDictService.updateById(sysDict);
+		boolean result = sysDictService.updateById(sysDict);
+		if (result) {
+			eventPublisher.publishEvent(new DictChangeEvent(dict.getCode()));
+		}
+		return result;
 	}
 
 	/**
@@ -87,22 +96,22 @@ public class SysDictManager {
 			throw new BusinessException(BaseResultCode.LOGIC_CHECK_ERROR.getCode(), "该字典项目不能删除");
 		}
 		// 需级联删除对应的字典项
-		if (sysDictService.removeById(id)) {
-			sysDictItemService
-					.remove(Wrappers.<SysDictItem>lambdaUpdate().eq(SysDictItem::getDictCode, dict.getCode()));
+		if (sysDictService.removeById(id) && sysDictItemService.removeByDictCode(dict.getCode())) {
 			return true;
 		}
-		return false;
+		else {
+			throw new BusinessException(BaseResultCode.UPDATE_DATABASE_ERROR.getCode(), "字典项删除异常");
+		}
 	}
 
 	/**
 	 * 字典项分页
-	 * @param page 分页属性
+	 * @param pageParam 分页属性
 	 * @param dictCode 字典标识
 	 * @return 字典项分页数据
 	 */
-	public IPage<SysDictItem> dictItemPage(Page<SysDictItem> page, String dictCode) {
-		return sysDictItemService.page(page, dictCode);
+	public PageResult<SysDictItemVO> dictItemPage(PageParam pageParam, String dictCode) {
+		return sysDictItemService.queryPage(pageParam, dictCode);
 	}
 
 	/**
@@ -113,10 +122,16 @@ public class SysDictManager {
 	@Transactional(rollbackFor = Exception.class)
 	public boolean saveDictItem(SysDictItem sysDictItem) {
 		// 更新字典项Hash值
-		if (sysDictService.updateHashCode(sysDictItem.getDictCode())) {
-			return sysDictItemService.save(sysDictItem);
+		String dictCode = sysDictItem.getDictCode();
+		if (!sysDictService.updateHashCode(dictCode)) {
+			return false;
 		}
-		return false;
+
+		boolean result = sysDictItemService.save(sysDictItem);
+		if (result) {
+			eventPublisher.publishEvent(new DictChangeEvent(dictCode));
+		}
+		return result;
 	}
 
 	/**
@@ -124,19 +139,24 @@ public class SysDictManager {
 	 * @param sysDictItem 字典项
 	 * @return 执行是否成功
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public boolean updateDictItemById(SysDictItem sysDictItem) {
 		// 根据ID查询字典
-		SysDict dict = sysDictService.getByCode(sysDictItem.getDictCode());
+		String dictCode = sysDictItem.getDictCode();
+		SysDict dict = sysDictService.getByCode(dictCode);
 		// 校验是否可编辑
 		if (BooleanEnum.TRUE.getValue() != dict.getEditable()) {
 			throw new BusinessException(BaseResultCode.LOGIC_CHECK_ERROR.getCode(), "该字典项目不能修改");
 		}
 		// 更新字典项Hash值
-		if (!sysDictService.updateHashCode(sysDictItem.getDictCode())) {
+		if (!sysDictService.updateHashCode(dictCode)) {
 			return false;
 		}
-		return sysDictItemService.updateById(sysDictItem);
-
+		boolean result = sysDictItemService.updateById(sysDictItem);
+		if (result) {
+			eventPublisher.publishEvent(new DictChangeEvent(dictCode));
+		}
+		return result;
 	}
 
 	/**
@@ -144,15 +164,23 @@ public class SysDictManager {
 	 * @param id 字典项
 	 * @return 执行是否成功
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public boolean removeDictItemById(Integer id) {
 		// 根据ID查询字典
 		SysDictItem dictItem = sysDictItemService.getById(id);
-		SysDict dict = sysDictService.getByCode(dictItem.getDictCode());
+		String dictCode = dictItem.getDictCode();
+		SysDict dict = sysDictService.getByCode(dictCode);
 		// 校验是否系统内置
 		if (BooleanEnum.TRUE.getValue() != dict.getEditable()) {
 			throw new BusinessException(BaseResultCode.LOGIC_CHECK_ERROR.getCode(), "该字典项目不能删除");
 		}
-		return sysDictItemService.removeById(id);
+		// 更新字典项Hash值
+		if (sysDictService.updateHashCode(dictCode)) {
+			return sysDictItemService.removeById(id);
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**
@@ -163,10 +191,10 @@ public class SysDictManager {
 	public List<DictDataVO> queryDictDataAndHashVO(String[] dictCodes) {
 		List<DictDataVO> list = new ArrayList<>();
 		// 查询对应hash值，以及字典项数据
-		List<SysDict> sysDictList = sysDictService.getByCode(dictCodes);
+		List<SysDict> sysDictList = sysDictService.listByCodes(dictCodes);
 		if (CollectionUtil.isNotEmpty(sysDictList)) {
 			for (SysDict sysDict : sysDictList) {
-				List<SysDictItem> dictItems = sysDictItemService.getByDictCode(sysDict.getCode());
+				List<SysDictItem> dictItems = sysDictItemService.listByDictCode(sysDict.getCode());
 				// 排序并转换为VO
 				List<DictItemVO> setDictItems = dictItems.stream().sorted(Comparator.comparingInt(SysDictItem::getSort))
 						.map(SysDictConverter.INSTANCE::itemPoToVo).collect(Collectors.toList());
@@ -189,7 +217,7 @@ public class SysDictManager {
 	 * @return List<String> 失效的字典标识集合
 	 */
 	public List<String> invalidDictHash(Map<String, String> dictHashCode) {
-		List<SysDict> byCode = sysDictService.getByCode(dictHashCode.keySet().toArray(new String[] {}));
+		List<SysDict> byCode = sysDictService.listByCodes(dictHashCode.keySet().toArray(new String[] {}));
 		// 过滤相等Hash值的字典项，并返回需要修改的字典项的Code
 		return byCode.stream().filter(x -> !dictHashCode.get(x.getCode()).equals(x.getHashCode())).map(SysDict::getCode)
 				.collect(Collectors.toList());

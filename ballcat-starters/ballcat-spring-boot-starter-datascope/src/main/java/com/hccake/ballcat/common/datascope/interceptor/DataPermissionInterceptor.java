@@ -38,13 +38,14 @@ public class DataPermissionInterceptor implements Interceptor {
 		MappedStatement ms = mpSh.mappedStatement();
 		SqlCommandType sct = ms.getSqlCommandType();
 		PluginUtils.MPBoundSql mpBs = mpSh.mPBoundSql();
+		String mappedStatementId = ms.getId();
 
-		// TODO 根据注解进行一些此次 sql 执行中需要忽略的点
 		// 根据用户权限判断是否需要拦截，例如管理员可以查看所有，则直接放行
-		if (dataPermissionHandler.ignorePermissionControl()) {
+		if (dataPermissionHandler.ignorePermissionControl(mappedStatementId)) {
 			return invocation.proceed();
 		}
-		List<DataScope> dataScopes = dataPermissionHandler.dataScopes();
+
+		List<DataScope> dataScopes = dataPermissionHandler.filterDataScopes(mappedStatementId);
 		if (dataScopes == null || dataScopes.size() == 0) {
 			return invocation.proceed();
 		}

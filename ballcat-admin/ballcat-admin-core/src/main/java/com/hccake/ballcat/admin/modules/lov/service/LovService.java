@@ -1,26 +1,28 @@
 package com.hccake.ballcat.admin.modules.lov.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.hccake.ballcat.admin.modules.lov.model.Vo.LovVo;
 import com.hccake.ballcat.admin.modules.lov.model.entity.Lov;
 import com.hccake.ballcat.admin.modules.lov.model.entity.LovBody;
 import com.hccake.ballcat.admin.modules.lov.model.entity.LovSearch;
+import com.hccake.ballcat.admin.modules.lov.model.qo.LovQO;
+import com.hccake.ballcat.admin.modules.lov.model.vo.LovVO;
+import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.core.domain.PageResult;
+import com.hccake.extend.mybatis.plus.service.ExtendService;
 
 import java.util.List;
 
 /**
  * @author lingting 2020-08-10 17:20
  */
-public interface LovService extends IService<Lov> {
+public interface LovService extends ExtendService<Lov> {
 
 	/**
-	 * 查询分页数据
-	 * @param page 分页参数
-	 * @param entity 查询参数对象
-	 * @return IPage<Lov> 分页数据
+	 * 根据QueryObject查询分页数据
+	 * @param pageParam 分页参数
+	 * @param qo 查询参数对象
+	 * @return PageResult<LoginLogVO> 分页数据
 	 */
-	IPage<Lov> selectPage(IPage<Lov> page, Lov entity);
+	PageResult<LovVO> queryPage(PageParam pageParam, LovQO qo);
 
 	/**
 	 * 更新实体类
@@ -53,9 +55,8 @@ public interface LovService extends IService<Lov> {
 	/**
 	 * 根据keyword获取lov数据
 	 * @param keyword keyword
-	 * @return com.hccake.ballcat.admin.modules.lov.model.Vo.LovVo
-	 * @author lingting 2020-08-12 21:38
+	 * @return Lov
 	 */
-	LovVo getDataByKeyword(String keyword);
+	Lov getByKeyword(String keyword);
 
 }

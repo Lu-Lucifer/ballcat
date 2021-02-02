@@ -17,34 +17,37 @@
 		su.update_time
 	</sql>
 
-	<select id="selectPageVo" resultType="com.hccake.ballcat.admin.modules.sys.model.vo.SysUserVO">
+	<select id="selectByPage" resultType="com.hccake.ballcat.admin.modules.sys.model.vo.SysUserVO">
 		SELECT
-		<include refid="Base_Alias_Column_List"/>
-		, so.name as organization_name
+		${ew.allAliasSqlSelect}, so.name as organization_name
 		FROM sys_user su
 		LEFT JOIN
-			sys_organization so
+		sys_organization so
 		ON su.organization_id = so.id
 		${ew.customSqlSegment}
 	</select>
 
 	<!-- 通过用户ID查询其关联的角色ID-->
-	<select id="selectUsersByRoleCode" resultType="com.hccake.ballcat.admin.modules.sys.model.entity.SysUser">
-        SELECT
+	<select id="listByRoleCodes" resultType="com.hccake.ballcat.admin.modules.sys.model.entity.SysUser">
+		SELECT
 		<include refid="Base_Alias_Column_List"/>
-        FROM
-       		sys_user su
-		left join
-			sys_user_role ur
-			on su.user_id = ur.user_id
-        left join
-            sys_role r
-		     on r.code = ur.role_code
-        WHERE r.`code` = #{0}
-        and su.deleted = 0
-    </select>
+		FROM
+		sys_user su
+		WHERE
+		EXISTS (
+		    SELECT 1 from sys_user_role ur
+		    where
+			ur.`role_code`
+			in
+			<foreach collection="roleCodes" item="roleCode" separator="," open="(" close=")">
+				#{roleCode}
+			</foreach>
+			 and ur.user_id = su.user_id
+		)
+		AND su.deleted = 0
+	</select>
 
-	<select id="getSelectData" resultType="com.hccake.ballcat.common.core.vo.SelectData">
+	<select id="listSelectData" resultType="com.hccake.ballcat.common.core.domain.SelectData">
 		select
 		username as name , user_id as value
 		from
@@ -58,6 +61,4 @@
 			</foreach>
 		</if>
 	</select>
-
-
 </mapper>

@@ -1,14 +1,14 @@
 package com.hccake.ballcat.codegen.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hccake.ballcat.codegen.model.entity.TemplateGroup;
 import com.hccake.ballcat.codegen.model.qo.TemplateGroupQO;
 import com.hccake.ballcat.codegen.model.vo.TemplateGroupVO;
 import com.hccake.ballcat.codegen.service.TemplateGroupService;
+import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.core.domain.PageResult;
 import com.hccake.ballcat.common.core.result.BaseResultCode;
 import com.hccake.ballcat.common.core.result.R;
-import com.hccake.ballcat.common.core.vo.SelectData;
+import com.hccake.ballcat.common.core.domain.SelectData;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -32,15 +32,15 @@ public class TemplateGroupController {
 
 	/**
 	 * 分页查询
-	 * @param page 分页对象
-	 * @param templateGroupQO 模板组
+	 * @param pageParam 分页参数
+	 * @param templateGroupQO 模板组查询对象
 	 * @return R
 	 */
 	@ApiOperation(value = "分页查询", notes = "分页查询")
 	@GetMapping("/page")
 	// @PreAuthorize("@per.hasPermission('codegen:templategroup:read')" )
-	public R<IPage<TemplateGroupVO>> getTemplateGroupPage(Page<?> page, TemplateGroupQO templateGroupQO) {
-		return R.ok(templateGroupService.selectPageVo(page, templateGroupQO));
+	public R<PageResult<TemplateGroupVO>> getTemplateGroupPage(PageParam pageParam, TemplateGroupQO templateGroupQO) {
+		return R.ok(templateGroupService.queryPage(pageParam, templateGroupQO));
 	}
 
 	/**
@@ -118,8 +118,8 @@ public class TemplateGroupController {
 	// @DeleteOperationLogging(msg = "通过id删除模板组" )
 	@GetMapping("/select")
 	// @PreAuthorize("@per.hasPermission('codegen:templategroup:del')" )
-	public R<List<SelectData<?>>> getSelectData() {
-		return R.ok(templateGroupService.getSelectData());
+	public R<List<SelectData<?>>> listSelectData() {
+		return R.ok(templateGroupService.listSelectData());
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.hccake.ballcat.codegen.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.hccake.ballcat.codegen.model.entity.TemplateInfo;
+import com.hccake.extend.mybatis.plus.service.ExtendService;
 
 import java.util.List;
 
@@ -11,13 +11,13 @@ import java.util.List;
  * @author hccake
  * @date 2020 -06-18 18:32:51
  */
-public interface TemplateInfoService extends IService<TemplateInfo> {
+public interface TemplateInfoService extends ExtendService<TemplateInfo> {
 
 	/**
 	 * List template info list.
 	 * @param templateGroupId the template group id
 	 * @return the list
 	 */
-	List<TemplateInfo> listTemplateInfo(Integer templateGroupId);
+	List<TemplateInfo> listByTemplateGroupId(Integer templateGroupId);
 
 }
