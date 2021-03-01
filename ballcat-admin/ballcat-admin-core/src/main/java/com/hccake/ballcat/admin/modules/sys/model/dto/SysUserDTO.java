@@ -1,7 +1,8 @@
 package com.hccake.ballcat.admin.modules.sys.model.dto;
 
-import com.hccake.ballcat.common.core.desensite.annotation.JsonRegexDesensitize;
-import com.hccake.ballcat.common.core.desensite.enums.RegexDesensitizationTypeEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hccake.ballcat.common.desensitize.json.annotation.JsonRegexDesensitize;
+import com.hccake.ballcat.common.desensitize.enums.RegexDesensitizationTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -26,6 +27,12 @@ public class SysUserDTO {
 	@JsonRegexDesensitize(type = RegexDesensitizationTypeEnum.ENCRYPTED_PASSWORD)
 	@ApiModelProperty(value = "前端传入密码")
 	private String pass;
+
+	/**
+	 * 用户明文密码, 不参与前后端交互
+	 */
+	@JsonIgnore
+	private String password;
 
 	/**
 	 * 登录账号

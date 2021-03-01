@@ -10,9 +10,9 @@ import com.hccake.ballcat.admin.oauth.util.SecurityUtils;
 import com.hccake.ballcat.commom.log.access.handler.AccessLogHandler;
 import com.hccake.ballcat.commom.log.constant.LogConstant;
 import com.hccake.ballcat.commom.log.util.LogUtils;
-import com.hccake.ballcat.common.core.desensite.enums.RegexDesensitizationTypeEnum;
-import com.hccake.ballcat.common.core.desensite.handler.RegexDesensitizationHandler;
-import com.hccake.ballcat.common.core.util.IPUtil;
+import com.hccake.ballcat.common.desensitize.DesensitizationHandlerHolder;
+import com.hccake.ballcat.common.desensitize.enums.RegexDesensitizationTypeEnum;
+import com.hccake.ballcat.common.util.IpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -50,11 +50,6 @@ public class AdminAccessLogHandler implements AccessLogHandler<AdminAccessLog> {
 	private final List<String> needDesensitizeParams = Arrays.asList("password", "pass", "passConfirm");
 
 	/**
-	 * 脱敏处理器
-	 */
-	private final RegexDesensitizationHandler regexDesensitizationHandler = new RegexDesensitizationHandler();
-
-	/**
 	 * 生产一个日志
 	 * @return accessLog
 	 * @param request 请求信息
@@ -73,7 +68,7 @@ public class AdminAccessLogHandler implements AccessLogHandler<AdminAccessLog> {
 				.setTraceId(MDC.get(LogConstant.TRACE_ID))
 				.setCreateTime(LocalDateTime.now())
 				.setTime(time)
-				.setIp(IPUtil.getIpAddr(request))
+				.setIp(IpUtils.getIpAddr(request))
 				.setMethod(request.getMethod())
 				.setUserAgent(request.getHeader("user-agent"))
 				.setUri(uri)
@@ -120,7 +115,7 @@ public class AdminAccessLogHandler implements AccessLogHandler<AdminAccessLog> {
 			for (String paramKey : needDesensitizeParams) {
 				String[] values = parameterMap.get(paramKey);
 				if (values != null && values.length != 0) {
-					String value = regexDesensitizationHandler.handle(values[0],
+					String value = DesensitizationHandlerHolder.getRegexDesensitizationHandler().handle(values[0],
 							RegexDesensitizationTypeEnum.ENCRYPTED_PASSWORD);
 					parameterMap.put(paramKey, new String[] { value });
 				}

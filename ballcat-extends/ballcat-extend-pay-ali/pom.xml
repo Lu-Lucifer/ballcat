@@ -18,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>com.hccake</groupId>
-            <artifactId>ballcat-common-core</artifactId>
+            <artifactId>ballcat-common-util</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alipay.sdk</groupId>
