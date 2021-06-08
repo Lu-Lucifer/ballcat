@@ -34,7 +34,7 @@
 	</licenses>
 
 	<properties>
-		<revision>0.0.8-SNAPSHOT</revision>
+		<revision>0.1.0-SNAPSHOT</revision>
 
 		<nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
 		<maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
@@ -42,8 +42,6 @@
 		<flatten-maven-plugin.version>1.2.5</flatten-maven-plugin.version>
 		<spring-javaformat-checkstyle.version>0.0.27</spring-javaformat-checkstyle.version>
 
-		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
-		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<spring-boot.version>2.4.3</spring-boot.version>
 		<spring-security-oauth2.version>2.3.8.RELEASE</spring-security-oauth2.version>
 		<springfox.version>3.0.0</springfox.version>
@@ -55,14 +53,14 @@
 		<mybatis-plus.version>3.4.2</mybatis-plus.version>
 		<dynamic-datasource.version>3.3.1</dynamic-datasource.version>
 		<xxl-job.version>2.3.0</xxl-job.version>
-		<spring-boot-admin.version>2.4.0</spring-boot-admin.version>
-		<oss.aliyun.version>3.11.3</oss.aliyun.version>
+		<spring-boot-admin.version>2.4.1</spring-boot-admin.version>
 		<easyexcel.version>2.2.6</easyexcel.version>
 		<jasypt.version>3.0.3</jasypt.version>
 		<jsoup.version>1.13.1</jsoup.version>
 		<anji-captcha.version>1.2.8</anji-captcha.version>
-		<virtual-currency.version>0.3.2</virtual-currency.version>
+		<virtual-currency.version>0.4.2</virtual-currency.version>
 		<alipay-sdk.version>4.11.28.ALL</alipay-sdk.version>
+		<software.amazon.awssdk.version>2.16.61</software.amazon.awssdk.version>
 	</properties>
 
 	<dependencyManagement>
@@ -71,6 +69,14 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<!-- 亚马逊云 Java sdk -->
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${software.amazon.awssdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -94,26 +100,7 @@
 			</dependency>
 
 
-			<dependency>
-				<groupId>org.mapstruct</groupId>
-				<artifactId>mapstruct</artifactId>
-				<version>${org.mapstruct.version}</version>
-				<optional>true</optional>
-			</dependency>
-			<dependency>
-				<groupId>org.mapstruct</groupId>
-				<artifactId>mapstruct-processor</artifactId>
-				<version>${org.mapstruct.version}</version>
-				<optional>true</optional>
-			</dependency>
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok-mapstruct-binding</artifactId>
-				<version>${lombok-mapstruct-binding.version}</version>
-				<optional>true</optional>
-			</dependency>
-
-
+			<!-- ballcat 自身模块版本 -->
 			<dependency>
 				<groupId>com.hccake</groupId>
 				<artifactId>ballcat-admin-core</artifactId>
@@ -136,16 +123,19 @@
 			</dependency>
 			<dependency>
 				<groupId>com.hccake</groupId>
-				<artifactId>ballcat-common-util</artifactId>
+				<artifactId>ballcat-common-desensitize</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.hccake</groupId>
-				<artifactId>ballcat-common-desensitize</artifactId>
+				<artifactId>ballcat-common-model</artifactId>
 				<version>${revision}</version>
 			</dependency>
-
-
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-common-util</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- ballcat-stater -->
 			<dependency>
 				<groupId>com.hccake</groupId>
@@ -194,7 +184,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.hccake</groupId>
-				<artifactId>ballcat-spring-boot-starter-storage</artifactId>
+				<artifactId>ballcat-spring-boot-starter-oss</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
@@ -212,8 +202,31 @@
 				<artifactId>ballcat-spring-boot-starter-pay</artifactId>
 				<version>${revision}</version>
 			</dependency>
-
-
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-spring-boot-starter-xss</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-extend-i18n-annotation</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-extend-i18n-core</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-spring-boot-starter-i18n</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-admin-i18n</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- extends -->
 			<dependency>
 				<groupId>com.hccake</groupId>
@@ -248,6 +261,70 @@
 			<dependency>
 				<groupId>com.hccake</groupId>
 				<artifactId>ballcat-extend-pay-wx</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<!-- system 系统模块 -->
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-system-controller</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-system-biz</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-system-model</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<!-- oauth 授权模块 -->
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-oauth-controller</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-oauth-biz</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-oauth-model</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<!-- notify 通知模块 -->
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-notify-controller</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-notify-biz</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-notify-model</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<!-- log 日志模块 -->
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-log-controller</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-log-biz</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hccake</groupId>
+				<artifactId>ballcat-log-model</artifactId>
 				<version>${revision}</version>
 			</dependency>
 
@@ -303,7 +380,11 @@
 				<artifactId>mybatis-plus-core</artifactId>
 				<version>${mybatis-plus.version}</version>
 			</dependency>
-			<!--mybatis-->
+			<dependency>
+				<groupId>com.baomidou</groupId>
+				<artifactId>mybatis-plus-annotation</artifactId>
+				<version>${mybatis-plus.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.baomidou</groupId>
 				<artifactId>mybatis-plus-boot-starter</artifactId>
@@ -314,12 +395,6 @@
 				<groupId>com.baomidou</groupId>
 				<artifactId>dynamic-datasource-spring-boot-starter</artifactId>
 				<version>${dynamic-datasource.version}</version>
-			</dependency>
-			<!--aliyun oss sdk-->
-			<dependency>
-				<groupId>com.aliyun.oss</groupId>
-				<artifactId>aliyun-sdk-oss</artifactId>
-				<version>${oss.aliyun.version}</version>
 			</dependency>
 			<!--easyExcel 处理-->
 			<dependency>
@@ -404,10 +479,15 @@
 			<!-- 虚拟货币处理 -->
 			<dependency>
 				<groupId>live.lingting</groupId>
-				<artifactId>virtual-currency</artifactId>
+				<artifactId>virtual-currency-all</artifactId>
 				<version>${virtual-currency.version}</version>
 			</dependency>
 			<!-- 图形验证码 -->
+			<dependency>
+				<groupId>com.anji-plus</groupId>
+				<artifactId>captcha</artifactId>
+				<version>${anji-captcha.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.anji-plus</groupId>
 				<artifactId>spring-boot-starter-captcha</artifactId>

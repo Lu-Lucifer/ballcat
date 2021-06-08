@@ -2,10 +2,12 @@ package com.hccake.ballcat.common.util.json;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
-import lombok.Getter;
-import lombok.SneakyThrows;
 
 /**
  * @author lingting 2021/2/25 21:04
@@ -13,6 +15,7 @@ import lombok.SneakyThrows;
 public class JacksonJsonToolAdapter implements JsonTool {
 
 	@Getter
+	@Setter
 	static ObjectMapper mapper = new ObjectMapper();
 
 	static {

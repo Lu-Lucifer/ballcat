@@ -1,17 +1,19 @@
 package com.hccake.ballcat.admin.websocket.distribute;
 
-import com.hccake.ballcat.admin.modules.notify.event.AnnouncementCloseEvent;
-import com.hccake.ballcat.admin.modules.notify.event.StationNotifyPushEvent;
-import com.hccake.ballcat.admin.modules.notify.model.domain.AnnouncementNotifyInfo;
-import com.hccake.ballcat.admin.modules.notify.model.domain.NotifyInfo;
-import com.hccake.ballcat.admin.modules.notify.model.entity.UserAnnouncement;
-import com.hccake.ballcat.admin.modules.notify.service.UserAnnouncementService;
-import com.hccake.ballcat.admin.modules.sys.event.DictChangeEvent;
-import com.hccake.ballcat.admin.modules.sys.model.entity.SysUser;
+import com.hccake.ballcat.notify.event.AnnouncementCloseEvent;
+import com.hccake.ballcat.notify.event.StationNotifyPushEvent;
+import com.hccake.ballcat.notify.model.domain.AnnouncementNotifyInfo;
+import com.hccake.ballcat.notify.model.domain.NotifyInfo;
+import com.hccake.ballcat.notify.model.entity.UserAnnouncement;
+import com.hccake.ballcat.notify.service.UserAnnouncementService;
 import com.hccake.ballcat.admin.websocket.message.AnnouncementCloseMessage;
 import com.hccake.ballcat.admin.websocket.message.AnnouncementPushMessage;
 import com.hccake.ballcat.admin.websocket.message.DictChangeMessage;
+import com.hccake.ballcat.admin.websocket.message.LovChangeMessage;
 import com.hccake.ballcat.common.util.JsonUtils;
+import com.hccake.ballcat.system.event.DictChangeEvent;
+import com.hccake.ballcat.system.event.LovChangeEvent;
+import com.hccake.ballcat.system.model.entity.SysUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -33,6 +35,13 @@ public class PushEventListener {
 	private final UserAnnouncementService userAnnouncementService;
 
 	private final MessageDistributor messageDistributor;
+
+	@Async
+	@EventListener(LovChangeEvent.class)
+	public void onLovChangeEvent(LovChangeEvent event) {
+		LovChangeMessage message = LovChangeMessage.of(event.getKeyword());
+		messageDistributor.distribute(MessageDO.broadcastMessage(message.toString()));
+	}
 
 	/**
 	 * 字典修改事件监听

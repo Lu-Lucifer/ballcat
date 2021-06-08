@@ -3,7 +3,7 @@ package com.hccake.extend.mybatis.plus.toolkit;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.hccake.ballcat.common.core.domain.PageParam;
+import com.hccake.ballcat.common.model.domain.PageParam;
 
 import java.util.List;
 
@@ -12,6 +12,9 @@ import java.util.List;
  * @version 1.0
  */
 public final class PageUtil {
+
+	private PageUtil() {
+	}
 
 	/**
 	 * 根据 PageParam 生成一个 IPage 实例

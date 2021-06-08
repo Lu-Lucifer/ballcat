@@ -6,7 +6,124 @@
 
 - 全局数据校验支持
 
-- OSS starter 修改使用 AWS S3
+
+
+## [0.1.0]
+
+### Warning
+
+- 此版本重构了前端路由部分，服务端权限表 sys_permission 改为 sys_menu，改动较大，迁移时建议先备份原始数据，执行增量 sql 后若出现问题，再进行比对处理
+
+- 调整了模块名，sys => system，后续包名也都尽量不再使用缩写，注意修改对应类的引用包路径
+
+- 项目部分配置添加 ballcat. 前缀
+
+  - 文件存储现在修改为了对象存储（OssProperties.java），配置前缀为 ballcat.oss
+
+  - 登录验证码开关和超级管理员指定的配置（UpmsProperties.java），前缀为 ballcat.upms
+
+  - 登录密码的 AES 加解密密钥，忽略鉴权的 url 列表，iframe 嵌入配置开关等安全相关的配置 （SecurityProperties.java），前缀为 ballcat.security
+
+- 模块拆分重构，原 `admin.modules` 下的 `log`、`system`、`notify` 相关代码，全部独立模块。目前拆分为 `model`，`biz`，`controller` 三层，方便按需引入。`ballcat-admin-core` 依然默认集成所有模块
+
+  - log 模块涉及的表名以及类名修改，原 AdminXXXLog 类，全部去除 Admin 开头。表名前缀由 `admin_` 修改为 `log_`
+
+  - log 中的登录日志也不再默认开启，需要登录日志，可手动注册 `LoginLogHandler` 类，代码示例可参考 `ballcat-sample-admin` 项目中的  `LogHandlerConfig`。
+
+  - 同样访问日志和操作日志也需对应注册 handler，且在启动类上添加 @EnableXXXLog 注解
+
+  - mapper.xml 文件移动，由于模块拆分，目前各模块的 mapper.xml 直接放置在了 mapper 文件夹下，对应的文件扫描配置 `mybatis-plus.mapper-locations` 需要修改为 `classpath*:/mapper/**/*Mapper.xml`
+
+    ```yml
+    mybatis-plus:
+      mapper-locations: classpath*:/mapper/**/*Mapper.xml
+    ```
+
+
+
+### Added
+
+- feat: 新增了国际化插件 i18n extend 和 i18n starter
+- feat: BusinessException 的错误消息支持占位符了
+- feat: PageParam 分页查询参数对象，支持用户自定义其子类以便做额外的功能处理
+- feat: TreeUtils 现在构建树时，支持传入 Comprator，进行自定义排序
+- feat: 新增 SmsUtils，以及 GSMCharst 类，用于短信长度计算
+- feat: 新增了一个根据用户id查询 UserInfo 的接口
+
+
+
+### Changed
+
+- refactor: SysPermission 移除，新增 SysMenu 类，相关关联类同步修改，减少了大部分的配置属性，转交由前端处理
+- refactor: Lov 实体修改为 SysLov
+- refactor: 移除 AdminRuleProperties.java，adminRule 相关配置与登陆验证码开关控制一并合入 UpmsProperties, 密码加密密钥配置并入 SecurityProperties，并将其配置前缀统一添加 ballcat.
+- refactor: SysUserDetailsServiceImpl.getUserDetailsByUserInfo 方法调整为 public 级别, 便于以api方式登录的请求注入用户信息
+- refactor: 重构了 excel 自定义头生成器的使用方式
+- refactor: 修改 AbstractRedisThread.getObjType 默认实现, 使其更符合大多数情况(获取失败的情况下子类重写此方法)
+- refactor: 文件存储 starter-storage 重构，修改为对象存储，使用 S3 协议和云端交互，所有支持 S3 协议的云存储都可以使用，如亚马逊、阿里云、腾讯云、七牛云
+- refactor: 移除 userInfoDTO 中的 roleIds 属性
+- refactor: 系统配置添加缓存注解，提升查询效率，更新和删除修改为使用 confKey, 而不是 ID
+- pref: 根据 mapstruct 官方文档，调整了 lombok 和 mapstruct 的依赖引入方式
+- pref: 所有 @RequestParam 和 @PathVariable 注解，指定 value 值，避免因环境问题，编译未保存参数名称，导致的参数绑定异常
+- pref: 简化微信原生支付方法
+- pref: 前后端交互密码解密异常时的错误日志以及响应信息优化
+- fix: 禁止删除有子节点的组织，以及不能修改父组织为自己的子组织
+- fix: 修复由于 mapstruct 的引入方式修改，导致 yml 中配置信息不提示的问题
+
+
+
+### Dependency
+
+- Bump  spring-boot-admin from 2.4.1 to 2.4.1
+- Bump virtual-currency  from 0.4.1  to  0.4.2
+
+
+
+## [0.0.9]
+
+### Warning
+
+- 由于用户属性和用户资源类的抽象，更新版本后，需要删除原来缓存的用户数据，否则会造成反序列化移除
+- ExtendService#selectByPage 方法移除，原本使用此方法的分页查询，需要更改为使用 baseMapper#selectPage
+- 部分类路径有修改，注意迁移
+- 代码生成器独立到新的仓库：https://github.com/ballcat-projects/ballcat-codegen
+- 示例使用迁移到新的仓库：https://github.com/ballcat-projects/ballcat-samples
+
+### Added
+
+- feat: RedisHelper 工具类新增 list 的 rightPush 和 leftPop 方法
+- feat: 新增了一个基于 Redis 的线程队列
+- feat: 新增解绑用户角色关联关系的功能
+- feat: `ExtendService#saveBatchSomeColumn` 现在支持分批批量插入了
+- feat: admin-websocket 新增了 Lov 弹窗选择器修改时的 websocket 推送
+
+### Changed
+
+- refactor: 用户属性和用户资源抽象出接口，不再使用 Map 存储，具体使用类交由使用方进行构造，类似于` UserDetails`
+- refactor: common-desensitize 优化，支持自定义注解脱敏
+
+- refactor: 抽象 `AbstractThread` 类. 让下级自定义 poll 和 put 方法.
+- refactor: `AbstractQueueThread` 添加程序关闭时的处理方法，防止停机时的数据丢失问题
+- refactor: 简化了支付宝和微信的回调类，并添加了验签方法
+- refactor: 使用 `Jackson2ObjectMapperBuilder` 构造 `ObjectMapper`，保留使用配置文件配置 jackson 属性的能力，以及方便用户增加自定义配置
+- refactor: xss 防注入重构，抽取成一个 starter，限制基于 jsoup 的白名单过滤，可自定义排除路径和请求类型的配置，admin-core 包现在默认集成此 starter
+- refactor: 工具类添加 finnal 关键字和私有构造
+- refactor:  修改 extends 下的三个支付模块的类路径, 把 starter 修改为 extend
+- refactor:  优化 JsonUtils 的类型转换
+- fix: 修复 `LambdaQueryWrapperX#inIfPresent` 参数错误处理成流，导致的 sql 拼接异常
+- fix: 修复当没有字典项时，无法正常删除字典的 bug
+- fix: 修复几次版本更新导致的代码生成器的各种 bug，如目录项拖动，以及zip 文件流末端损坏等
+- fix: 操作日志记录时，参数为 null 导致的空指针问题
+
+### Removed
+
+- 移除新酷卡短信组件
+- 移除 mybatis-plus-extend 中的 selectByPage 方法，因为其无法真正修改返回类型，现在使用 `page.convert` 进行 数据转换
+
+### Dependency
+
+- Bump virtual-currency  from 0.3.2  to  0.4.1
+- Bump  spring-boot-admin from 2.4.0 to 2.3.1
 
 
 
@@ -16,11 +133,11 @@
 
 - 更新了 Service 层的父类，现在无法直接使用 service 对象，进行 Wrapper 条件构造
 - 更新了分页查询的排序参数，前端需要对应升级
-- 工具类移动到 common-util 模块, 相应包名已更改,请注意
+- commom-model和common-util的抽离，导致部分工具类和部分通用实体包名修改, 请注意替换
 
 ### Added
 
-- feat: Swagger3 支持
+- feat: Swagger3 支持，文档地址更新为 /swagger-ui/index.html
 - feat: 剥离全局异常捕获中请求方法和请求媒体类型不支持的异常，方便生产环境排查问题
 - feat: 新增 common-desensitize 脱敏模块，默认提供了部分常用脱敏类型，且支持SPI形式追加用户自定义脱敏处理器
 - feat: 新增 pay-ali 模块，用于支持支付宝支付
@@ -54,7 +171,7 @@
   - String Null 转 ''
   - Array 和 Collection Null 转 []
   - Map Null 转 {}
-
+- refactor: 从 common-core 中剥离出 common-util 和 common-model
 
 ### Removed
 

@@ -1,17 +1,11 @@
 package com.hccake.ballcat.admin;
 
 import com.anji.captcha.service.CaptchaService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hccake.ballcat.admin.constants.SecurityConst;
-import com.hccake.ballcat.admin.modules.notify.push.MailNotifyPusher;
-import com.hccake.ballcat.admin.modules.sys.checker.AdminRuleProperties;
-import com.hccake.ballcat.admin.oauth.UserInfoCoordinator;
-import com.hccake.ballcat.admin.oauth.filter.LoginCaptchaFilter;
-import com.hccake.ballcat.common.mail.MailAutoConfiguration;
-import com.hccake.ballcat.common.mail.sender.MailSender;
+import com.hccake.ballcat.oauth.UserInfoCoordinator;
+import com.hccake.ballcat.oauth.constant.SecurityConst;
+import com.hccake.ballcat.oauth.filter.LoginCaptchaFilter;
+import com.hccake.ballcat.system.properties.UpmsProperties;
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -27,11 +21,10 @@ import org.springframework.context.annotation.Configuration;
  * @date 2020/5/25 21:01
  */
 @MapperScan("com.hccake.ballcat.**.mapper")
-@ComponentScan
-@ServletComponentScan("com.hccake.ballcat.admin.oauth.filter")
+@ComponentScan("com.hccake.ballcat")
+@ServletComponentScan("com.hccake.ballcat.oauth.filter")
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(MailAutoConfiguration.class)
-@EnableConfigurationProperties(AdminRuleProperties.class)
+@EnableConfigurationProperties(UpmsProperties.class)
 public class UpmsAutoConfiguration {
 
 	@Bean
@@ -41,18 +34,11 @@ public class UpmsAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnBean(MailSender.class)
-	public MailNotifyPusher mailNotifyPusher(MailSender mailSender) {
-		return new MailNotifyPusher(mailSender);
-	}
-
-	@Bean
-	@ConditionalOnProperty(prefix = "ballcat.login.captcha", name = "enabled", havingValue = "true",
+	@ConditionalOnProperty(prefix = "ballcat.upms", name = "loginCaptchaEnabled", havingValue = "true",
 			matchIfMissing = true)
-	public FilterRegistrationBean<LoginCaptchaFilter> filterRegistrationBean(ObjectMapper objectMapper,
-			CaptchaService captchaService) {
+	public FilterRegistrationBean<LoginCaptchaFilter> filterRegistrationBean(CaptchaService captchaService) {
 		FilterRegistrationBean<LoginCaptchaFilter> bean = new FilterRegistrationBean<>();
-		LoginCaptchaFilter filter = new LoginCaptchaFilter(objectMapper, captchaService);
+		LoginCaptchaFilter filter = new LoginCaptchaFilter(captchaService);
 		bean.setFilter(filter);
 		// 比密码解密早一步
 		bean.setOrder(-1);
