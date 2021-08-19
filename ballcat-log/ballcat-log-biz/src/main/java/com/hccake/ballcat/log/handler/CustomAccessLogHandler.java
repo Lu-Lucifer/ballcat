@@ -1,17 +1,16 @@
 package com.hccake.ballcat.log.handler;
 
 import cn.hutool.core.util.URLUtil;
+import com.hccake.ballcat.common.desensitize.DesensitizationHandlerHolder;
+import com.hccake.ballcat.common.desensitize.enums.RegexDesensitizationTypeEnum;
 import com.hccake.ballcat.common.log.access.handler.AccessLogHandler;
 import com.hccake.ballcat.common.log.constant.LogConstant;
 import com.hccake.ballcat.common.log.util.LogUtils;
-import com.hccake.ballcat.common.desensitize.DesensitizationHandlerHolder;
-import com.hccake.ballcat.common.desensitize.enums.RegexDesensitizationTypeEnum;
+import com.hccake.ballcat.common.security.util.SecurityUtils;
 import com.hccake.ballcat.common.util.IpUtils;
 import com.hccake.ballcat.common.util.JsonUtils;
 import com.hccake.ballcat.log.model.entity.AccessLog;
 import com.hccake.ballcat.log.thread.AccessLogSaveThread;
-import com.hccake.ballcat.oauth.SysUserDetails;
-import com.hccake.ballcat.oauth.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.web.servlet.HandlerMapping;
@@ -58,7 +57,7 @@ public class CustomAccessLogHandler implements AccessLogHandler<AccessLog> {
 	 * @param myThrowable 异常信息
 	 */
 	@Override
-	public AccessLog prodLog(HttpServletRequest request, HttpServletResponse response, Long time,
+	public AccessLog buildLog(HttpServletRequest request, HttpServletResponse response, Long time,
 			Throwable myThrowable) {
 		Object matchingPatternAttr = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
 		String matchingPattern = matchingPatternAttr == null ? "" : String.valueOf(matchingPatternAttr);
@@ -95,7 +94,7 @@ public class CustomAccessLogHandler implements AccessLogHandler<AccessLog> {
 		}
 
 		// 如果登陆用户 则记录用户名和用户id
-		Optional.ofNullable(SecurityUtils.getSysUserDetails()).map(SysUserDetails::getSysUser).ifPresent(x -> {
+		Optional.ofNullable(SecurityUtils.getUser()).ifPresent(x -> {
 			accessLog.setUserId(x.getUserId());
 			accessLog.setUsername(x.getUsername());
 		});

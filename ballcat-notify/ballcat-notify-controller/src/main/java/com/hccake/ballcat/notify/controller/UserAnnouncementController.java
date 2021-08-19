@@ -6,7 +6,7 @@ import com.hccake.ballcat.common.model.result.R;
 import com.hccake.ballcat.notify.model.qo.UserAnnouncementQO;
 import com.hccake.ballcat.notify.model.vo.UserAnnouncementPageVO;
 import com.hccake.ballcat.notify.service.UserAnnouncementService;
-import com.hccake.ballcat.oauth.util.SecurityUtils;
+import com.hccake.ballcat.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class UserAnnouncementController {
 	@PatchMapping("/read/{announcementId}")
 	@PreAuthorize("@per.hasPermission('notify:userannouncement:read')")
 	public R<?> readAnnouncement(@PathVariable("announcementId") Long announcementId) {
-		Integer userId = SecurityUtils.getSysUser().getUserId();
+		Integer userId = SecurityUtils.getUser().getUserId();
 		userAnnouncementService.readAnnouncement(userId, announcementId);
 		return R.ok();
 	}

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName("log_operation_log")
 @ApiModel(value = "操作日志")
+@Accessors(chain = true)
 public class OperationLog {
 
 	private static final long serialVersionUID = 1L;

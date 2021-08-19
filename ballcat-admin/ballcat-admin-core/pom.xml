@@ -17,10 +17,10 @@
 			<groupId>com.hccake</groupId>
 			<artifactId>ballcat-common-desensitize</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>com.hccake</groupId>
-            <artifactId>ballcat-common-conf</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.hccake</groupId>
+			<artifactId>ballcat-spring-boot-starter-web</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.hccake</groupId>
 			<artifactId>ballcat-common-model</artifactId>
@@ -59,7 +59,7 @@
 		</dependency>
         <dependency>
             <groupId>com.hccake</groupId>
-            <artifactId>ballcat-oauth-controller</artifactId>
+            <artifactId>ballcat-auth-controller</artifactId>
         </dependency>
 		<dependency>
 			<groupId>com.hccake</groupId>
@@ -73,5 +73,5 @@
 			<groupId>com.hccake</groupId>
 			<artifactId>ballcat-log-controller</artifactId>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>

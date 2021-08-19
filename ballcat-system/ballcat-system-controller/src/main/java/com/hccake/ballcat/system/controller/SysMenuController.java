@@ -6,14 +6,16 @@ import com.hccake.ballcat.common.log.operation.annotation.DeleteOperationLogging
 import com.hccake.ballcat.common.log.operation.annotation.UpdateOperationLogging;
 import com.hccake.ballcat.common.model.result.BaseResultCode;
 import com.hccake.ballcat.common.model.result.R;
-import com.hccake.ballcat.oauth.SysUserDetails;
-import com.hccake.ballcat.oauth.domain.UserResources;
-import com.hccake.ballcat.oauth.util.SecurityUtils;
+import com.hccake.ballcat.common.security.constant.TokenAttributeNameConstants;
+import com.hccake.ballcat.common.security.userdetails.User;
+import com.hccake.ballcat.common.security.util.SecurityUtils;
 import com.hccake.ballcat.system.constant.SysPermissionConst;
 import com.hccake.ballcat.system.converter.SysMenuConverter;
 import com.hccake.ballcat.system.model.dto.SysMenuUpdateDTO;
 import com.hccake.ballcat.system.model.entity.SysMenu;
 import com.hccake.ballcat.system.model.qo.SysMenuQO;
+import com.hccake.ballcat.system.model.vo.SysMenuGrantVO;
+import com.hccake.ballcat.system.model.vo.SysMenuPageVO;
 import com.hccake.ballcat.system.model.vo.SysMenuRouterVO;
 import com.hccake.ballcat.system.service.SysMenuService;
 import io.swagger.annotations.Api;
@@ -45,11 +47,17 @@ public class SysMenuController {
 	@ApiOperation(value = "动态路由", notes = "动态路由")
 	@GetMapping("/router")
 	public R<List<SysMenuRouterVO>> getUserPermission() {
-
 		// 获取角色Code
-		SysUserDetails sysUserDetails = SecurityUtils.getSysUserDetails();
-		UserResources userResources = sysUserDetails.getUserResources();
-		Collection<String> roleCodes = userResources.getRoles();
+		User user = SecurityUtils.getUser();
+		Map<String, Object> attributes = user.getAttributes();
+
+		Object rolesObject = attributes.get(TokenAttributeNameConstants.ROLES);
+		if (!(rolesObject instanceof Collection)) {
+			return R.ok(new ArrayList<>());
+		}
+
+		@SuppressWarnings("unchecked")
+		Collection<String> roleCodes = (Collection<String>) rolesObject;
 		if (CollectionUtil.isEmpty(roleCodes)) {
 			return R.ok(new ArrayList<>());
 		}
@@ -75,8 +83,31 @@ public class SysMenuController {
 	@ApiOperation(value = "查询菜单列表", notes = "查询菜单列表")
 	@GetMapping("/list")
 	@PreAuthorize("@per.hasPermission('system:menu:read')")
-	public R<List<SysMenu>> getSysMenuPage(SysMenuQO sysMenuQO) {
-		return R.ok(sysMenuService.listOrderBySort(sysMenuQO));
+	public R<List<SysMenuPageVO>> getSysMenuPage(SysMenuQO sysMenuQO) {
+		List<SysMenu> sysMenus = sysMenuService.listOrderBySort(sysMenuQO);
+		if (CollectionUtil.isEmpty(sysMenus)) {
+			R.ok(new ArrayList<>());
+		}
+		List<SysMenuPageVO> voList = sysMenus.stream().map(SysMenuConverter.INSTANCE::poToPageVo)
+				.collect(Collectors.toList());
+		return R.ok(voList);
+	}
+
+	/**
+	 * 查询授权菜单列表
+	 * @return R 通用返回体
+	 */
+	@ApiOperation(value = "查询授权菜单列表", notes = "查询授权菜单列表")
+	@GetMapping("/grant-list")
+	@PreAuthorize("@per.hasPermission('system:menu:read')")
+	public R<List<SysMenuGrantVO>> getSysMenuGrantList() {
+		List<SysMenu> sysMenus = sysMenuService.list();
+		if (CollectionUtil.isEmpty(sysMenus)) {
+			R.ok(new ArrayList<>());
+		}
+		List<SysMenuGrantVO> voList = sysMenus.stream().map(SysMenuConverter.INSTANCE::poToGrantVo)
+				.collect(Collectors.toList());
+		return R.ok(voList);
 	}
 
 	/**

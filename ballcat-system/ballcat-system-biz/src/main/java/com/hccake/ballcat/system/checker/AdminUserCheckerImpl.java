@@ -1,7 +1,7 @@
 package com.hccake.ballcat.system.checker;
 
 import cn.hutool.core.util.StrUtil;
-import com.hccake.ballcat.oauth.util.SecurityUtils;
+import com.hccake.ballcat.common.security.util.SecurityUtils;
 import com.hccake.ballcat.system.model.entity.SysUser;
 import com.hccake.ballcat.system.properties.UpmsProperties;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class AdminUserCheckerImpl implements AdminUserChecker {
 	public boolean hasModifyPermission(SysUser targetUser) {
 		// 如果需要修改的用户是超级管理员，则只能本人修改
 		if (this.isAdminUser(targetUser)) {
-			return SecurityUtils.getSysUserDetails().getUsername().equals(targetUser.getUsername());
+			return SecurityUtils.getUser().getUsername().equals(targetUser.getUsername());
 		}
 		return true;
 	}
