@@ -59,6 +59,18 @@ public class I18nDataController {
 	}
 
 	/**
+	 * 查询指定国际化标识的所有数据
+	 * @param code 国际化标识
+	 * @return R 通用返回体
+	 */
+	@ApiOperation(value = "查询指定国际化标识的所有数据", notes = "查询指定国际化标识的所有数据")
+	@GetMapping("/list")
+	@PreAuthorize("@per.hasPermission('i18n:i18n-data:read')")
+	public R<List<I18nData>> listByCode(@RequestParam("code") String code) {
+		return R.ok(i18nDataService.listByCode(code));
+	}
+
+	/**
 	 * 新增国际化信息
 	 * @param i18nDataCreateDTO 国际化信息
 	 * @return R 通用返回体
@@ -68,7 +80,18 @@ public class I18nDataController {
 	@PostMapping
 	@PreAuthorize("@per.hasPermission('i18n:i18n-data:add')")
 	public R save(@Valid @RequestBody I18nDataCreateDTO i18nDataCreateDTO) {
-		return i18nDataService.create(i18nDataCreateDTO) ? R.ok()
+		// 转换为实体类列表
+		List<I18nData> list = new ArrayList<>();
+		List<I18nDataCreateDTO.LanguageText> languageTexts = i18nDataCreateDTO.getLanguageTexts();
+		for (I18nDataCreateDTO.LanguageText languageText : languageTexts) {
+			I18nData i18nData = new I18nData();
+			i18nData.setCode(i18nDataCreateDTO.getCode());
+			i18nData.setRemark(i18nDataCreateDTO.getRemark());
+			i18nData.setLanguageTag(languageText.getLanguageTag());
+			i18nData.setMessage(languageText.getMessage());
+			list.add(i18nData);
+		}
+		return i18nDataService.saveBatchSomeColumn(list) ? R.ok()
 				: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "新增国际化信息失败");
 	}
 
@@ -143,7 +166,7 @@ public class I18nDataController {
 	@GetMapping("/export")
 	@PreAuthorize("@per.hasPermission('i18n:i18n-data:export')")
 	public List<I18nDataExcelVO> exportI18nData(I18nDataQO i18nDataQO) {
-		List<I18nData> list = i18nDataService.query(i18nDataQO);
+		List<I18nData> list = i18nDataService.queryList(i18nDataQO);
 		if (CollectionUtil.isEmpty(list)) {
 			return new ArrayList<>();
 		}
