@@ -17,6 +17,10 @@ import org.apache.ibatis.mapping.SqlSource;
  */
 public abstract class BaseInsertBatch extends AbstractMethod {
 
+	protected BaseInsertBatch(String methodName) {
+		super(methodName);
+	}
+
 	@Override
 	public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
 		SqlSource sqlSource = languageDriver.createSqlSource(configuration, String.format(getSql(),
@@ -24,7 +28,7 @@ public abstract class BaseInsertBatch extends AbstractMethod {
 				modelClass);
 
 		// === mybatis 主键逻辑处理：主键生成策略，以及主键回填=======
-		KeyGenerator keyGenerator = new NoKeyGenerator();
+		KeyGenerator keyGenerator = NoKeyGenerator.INSTANCE;
 		String keyColumn = null;
 		String keyProperty = null;
 		// 如果需要回填主键
@@ -32,21 +36,21 @@ public abstract class BaseInsertBatch extends AbstractMethod {
 			// 表包含主键处理逻辑,如果不包含主键当普通字段处理
 			if (tableInfo.getIdType() == IdType.AUTO) {
 				/* 自增主键 */
-				keyGenerator = new Jdbc3KeyGenerator();
+				keyGenerator = Jdbc3KeyGenerator.INSTANCE;
 				keyProperty = getKeyProperty(tableInfo);
 				keyColumn = tableInfo.getKeyColumn();
 			}
 			else {
 				if (null != tableInfo.getKeySequence()) {
-					keyGenerator = TableInfoHelper.genKeyGenerator(getId(), tableInfo, builderAssistant);
+					keyGenerator = TableInfoHelper.genKeyGenerator(this.methodName, tableInfo, builderAssistant);
 					keyProperty = getKeyProperty(tableInfo);
 					keyColumn = tableInfo.getKeyColumn();
 				}
 			}
 		}
 
-		return this.addInsertMappedStatement(mapperClass, modelClass, getId(), sqlSource, keyGenerator, keyProperty,
-				keyColumn);
+		return this.addInsertMappedStatement(mapperClass, modelClass, this.methodName, sqlSource, keyGenerator,
+				keyProperty, keyColumn);
 	}
 
 	private String getKeyProperty(TableInfo tableInfo) {
@@ -77,13 +81,6 @@ public abstract class BaseInsertBatch extends AbstractMethod {
 	 * @author lingting 2020-06-09 20:38:54
 	 */
 	protected abstract String getSql();
-
-	/**
-	 * 获取脚本id 即 方法名
-	 * @return java.lang.String
-	 * @author lingting 2020-06-09 20:39:30
-	 */
-	protected abstract String getId();
 
 	protected String prepareValuesSqlForMysqlBatch(TableInfo tableInfo) {
 		return prepareValuesBuildSqlForMysqlBatch(tableInfo).toString();

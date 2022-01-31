@@ -3,9 +3,14 @@ package com.hccake.ballcat.common.datascope.handler;
 import com.hccake.ballcat.common.datascope.DataScope;
 import com.hccake.ballcat.common.datascope.annotation.DataPermission;
 import com.hccake.ballcat.common.datascope.holder.DataPermissionAnnotationHolder;
+import com.hccake.ballcat.common.datascope.holder.MappedStatementIdsWithoutDataScope;
 import lombok.RequiredArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -64,13 +69,18 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 	}
 
 	/**
-	 * 是否忽略权限控制，默认不忽略
+	 * <p>
+	 * 是否忽略权限控制
+	 * </p>
+	 * 若当前的 mappedStatementId 存在于 <Code>MappedStatementIdsWithoutDataScope<Code/>
+	 * 中，则表示无需处理
+	 * @param dataScopeList 当前需要控制的 dataScope 集合
 	 * @param mappedStatementId Mapper方法ID
 	 * @return always false
 	 */
 	@Override
-	public boolean ignorePermissionControl(String mappedStatementId) {
-		return false;
+	public boolean ignorePermissionControl(List<DataScope> dataScopeList, String mappedStatementId) {
+		return MappedStatementIdsWithoutDataScope.onAllWithoutSet(dataScopeList, mappedStatementId);
 	}
 
 }

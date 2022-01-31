@@ -17,24 +17,35 @@ package com.hccake.ballcat.common.security.oauth2.server.resource;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.hccake.ballcat.common.security.constant.TokenAttributeNameConstants;
+import com.hccake.ballcat.common.security.constant.UserInfoFiledNameConstants;
 import com.hccake.ballcat.common.security.userdetails.ClientPrincipal;
 import com.hccake.ballcat.common.security.userdetails.User;
+import com.nimbusds.oauth2.sdk.ErrorObject;
+import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionResponse;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionSuccessResponse;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.Audience;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.security.oauth2.server.resource.introspection.*;
+import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
+import org.springframework.security.oauth2.server.resource.introspection.BadOpaqueTokenException;
+import org.springframework.security.oauth2.server.resource.introspection.NimbusOpaqueTokenIntrospector;
+import org.springframework.security.oauth2.server.resource.introspection.OAuth2IntrospectionException;
+import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -43,8 +54,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -62,7 +79,7 @@ import java.util.*;
  */
 public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
-	private final Log logger = LogFactory.getLog(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Converter<String, RequestEntity<?>> requestEntityConverter;
 
@@ -102,7 +119,7 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 	}
 
 	private Converter<String, RequestEntity<?>> defaultRequestEntityConverter(URI introspectionUri) {
-		return (token) -> {
+		return token -> {
 			HttpHeaders headers = requestHeaders();
 			MultiValueMap<String, String> body = requestBody(token);
 			return new RequestEntity<>(body, headers, HttpMethod.POST, introspectionUri);
@@ -111,7 +128,8 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
 	private HttpHeaders requestHeaders() {
 		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
 		return headers;
 	}
 
@@ -161,14 +179,32 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 	}
 
 	private HTTPResponse adaptToNimbusResponse(ResponseEntity<String> responseEntity) {
-		HTTPResponse response = new HTTPResponse(responseEntity.getStatusCodeValue());
 		MediaType contentType = responseEntity.getHeaders().getContentType();
-		if (contentType != null) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, contentType.toString());
+
+		if (contentType == null) {
+			this.logger.trace("Did not receive Content-Type from introspection endpoint in response");
+
+			throw new OAuth2IntrospectionException(
+					"Introspection endpoint response was invalid, as no Content-Type header was provided");
 		}
+
+		// Nimbus expects JSON, but does not appear to validate this header first.
+		if (!contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+			this.logger.trace("Did not receive JSON-compatible Content-Type from introspection endpoint in response");
+
+			throw new OAuth2IntrospectionException("Introspection endpoint response was invalid, as content type '"
+					+ contentType + "' is not compatible with JSON");
+		}
+
+		HTTPResponse response = new HTTPResponse(responseEntity.getStatusCodeValue());
+		response.setHeader(HttpHeaders.CONTENT_TYPE, contentType.toString());
 		response.setContent(responseEntity.getBody());
+
 		if (response.getStatusCode() != HTTPResponse.SC_OK) {
-			throw new OAuth2IntrospectionException("Introspection endpoint responded with " + response.getStatusCode());
+			this.logger.trace("Introspection endpoint returned non-OK status code");
+
+			throw new OAuth2IntrospectionException(
+					"Introspection endpoint responded with HTTP status code " + response.getStatusCode());
 		}
 		return response;
 	}
@@ -184,7 +220,10 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
 	private TokenIntrospectionSuccessResponse castToNimbusSuccess(TokenIntrospectionResponse introspectionResponse) {
 		if (!introspectionResponse.indicatesSuccess()) {
-			throw new OAuth2IntrospectionException("Token introspection failed");
+			ErrorObject errorObject = introspectionResponse.toErrorResponse().getErrorObject();
+			String message = "Token introspection failed with response " + errorObject.toJSONObject().toJSONString();
+			this.logger.trace(message);
+			throw new OAuth2IntrospectionException(message);
 		}
 		return (TokenIntrospectionSuccessResponse) introspectionResponse;
 	}
@@ -196,44 +235,49 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 			for (Audience audience : response.getAudience()) {
 				audiences.add(audience.getValue());
 			}
-			claims.put(OAuth2IntrospectionClaimNames.AUDIENCE, Collections.unmodifiableList(audiences));
+			claims.put(OAuth2TokenIntrospectionClaimNames.AUD, Collections.unmodifiableList(audiences));
+		}
+		if (response.getClientID() != null) {
+			claims.put(OAuth2TokenIntrospectionClaimNames.CLIENT_ID, response.getClientID().getValue());
 		}
 		if (response.getExpirationTime() != null) {
 			Instant exp = response.getExpirationTime().toInstant();
-			claims.put(OAuth2IntrospectionClaimNames.EXPIRES_AT, exp);
+			claims.put(OAuth2TokenIntrospectionClaimNames.EXP, exp);
 		}
 		if (response.getIssueTime() != null) {
 			Instant iat = response.getIssueTime().toInstant();
-			claims.put(OAuth2IntrospectionClaimNames.ISSUED_AT, iat);
+			claims.put(OAuth2TokenIntrospectionClaimNames.IAT, iat);
 		}
 		if (response.getIssuer() != null) {
-			claims.put(OAuth2IntrospectionClaimNames.ISSUER, issuer(response.getIssuer().getValue()));
+			claims.put(OAuth2TokenIntrospectionClaimNames.ISS, issuer(response.getIssuer().getValue()));
 		}
 		if (response.getNotBeforeTime() != null) {
-			claims.put(OAuth2IntrospectionClaimNames.NOT_BEFORE, response.getNotBeforeTime().toInstant());
+			claims.put(OAuth2TokenIntrospectionClaimNames.NBF, response.getNotBeforeTime().toInstant());
 		}
 
 		if (response.getScope() != null) {
 			List<String> scopes = Collections.unmodifiableList(response.getScope().toStringList());
-			claims.put(OAuth2IntrospectionClaimNames.SCOPE, scopes);
+			claims.put(OAuth2TokenIntrospectionClaimNames.SCOPE, scopes);
 		}
 
-		boolean isClient = response.getClientID() != null;
-		if (isClient) {
-			claims.put(OAuth2IntrospectionClaimNames.CLIENT_ID, response.getClientID().getValue());
-			return buildClient(claims);
+		boolean isClient;
+		try {
+			isClient = response.getBooleanParameter("is_client");
 		}
-		else {
-			return buildUser(response.toJSONObject(), claims);
+		catch (ParseException e) {
+			logger.warn("自定端点返回的 is_client 属性解析异常: {}, 请求信息：[{}]", e.getMessage(), response.toJSONObject());
+			isClient = false;
 		}
+		return isClient ? buildClient(claims) : buildUser(response.toJSONObject(), claims);
+
 	}
 
 	@SuppressWarnings("unchecked")
 	private ClientPrincipal buildClient(Map<String, Object> claims) {
-		String clientId = (String) claims.get(OAuth2IntrospectionClaimNames.CLIENT_ID);
+		String clientId = (String) claims.get(OAuth2TokenIntrospectionClaimNames.CLIENT_ID);
 
 		List<String> scopes = null;
-		Object scopeValue = claims.get(OAuth2IntrospectionClaimNames.SCOPE);
+		Object scopeValue = claims.get(OAuth2TokenIntrospectionClaimNames.SCOPE);
 		if (scopeValue instanceof List) {
 			scopes = (List<String>) scopeValue;
 		}
@@ -262,24 +306,24 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
 		JSONObject info = (JSONObject) responseBody.getOrDefault(TokenAttributeNameConstants.INFO, new JSONObject());
 
-		Number userIdNumber = info.getAsNumber(TokenAttributeNameConstants.INFO_USER_ID);
+		Number userIdNumber = info.getAsNumber(UserInfoFiledNameConstants.USER_ID);
 		if (userIdNumber != null) {
 			builder.userId(userIdNumber.intValue());
 		}
 
-		Number typeNumber = info.getAsNumber(TokenAttributeNameConstants.INFO_TYPE);
+		Number typeNumber = info.getAsNumber(UserInfoFiledNameConstants.TYPE);
 		if (typeNumber != null) {
 			builder.type(typeNumber.intValue());
 		}
 
-		Number organizationIdNumber = info.getAsNumber(TokenAttributeNameConstants.INFO_ORGANIZATION_ID);
+		Number organizationIdNumber = info.getAsNumber(UserInfoFiledNameConstants.ORGANIZATION_ID);
 		if (organizationIdNumber != null) {
 			builder.organizationId(organizationIdNumber.intValue());
 		}
 
-		builder.username(info.getAsString(TokenAttributeNameConstants.INFO_USERNAME))
-				.nickname(info.getAsString(TokenAttributeNameConstants.INFO_NICKNAME))
-				.avatar(info.getAsString(TokenAttributeNameConstants.INFO_AVATAR)).status(1);
+		builder.username(info.getAsString(UserInfoFiledNameConstants.USERNAME))
+				.nickname(info.getAsString(UserInfoFiledNameConstants.NICKNAME))
+				.avatar(info.getAsString(UserInfoFiledNameConstants.AVATAR)).status(1);
 
 		Object authoritiesJSONArray = responseBody.get("authorities");
 		if (authoritiesJSONArray != null) {
@@ -288,7 +332,7 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 			builder.authorities(authorities);
 		}
 
-		Object attribute = responseBody.get("attributes");
+		Object attribute = responseBody.get(TokenAttributeNameConstants.ATTRIBUTES);
 		if (attribute != null) {
 			claims.putAll((JSONObject) attribute);
 		}
@@ -303,7 +347,7 @@ public class RemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 		}
 		catch (Exception ex) {
 			throw new OAuth2IntrospectionException(
-					"Invalid " + OAuth2IntrospectionClaimNames.ISSUER + " value: " + uri);
+					"Invalid " + OAuth2TokenIntrospectionClaimNames.ISS + " value: " + uri);
 		}
 	}
 

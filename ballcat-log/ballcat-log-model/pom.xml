@@ -17,8 +17,12 @@
 			<artifactId>mybatis-plus-annotation</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.swagger</groupId>
+			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -28,5 +32,5 @@
 			<groupId>cn.hutool</groupId>
 			<artifactId>hutool-core</artifactId>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>

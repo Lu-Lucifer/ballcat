@@ -1,12 +1,215 @@
-# Changelog
+# 更新日志
 
-更新日志
 
-## [Unreleased]
 
-- 全局数据校验支持
+## [0.6.0] 2021-01-20
 
-## [0.3.0]
+### :warning: Warning
+
+- Swagger2 相关注解迁移到 OpenAPI3，由于使用了 springdoc-openapi，且该项目当前版本的一些问题，如果没有在 服务中引入
+  **springdoc-openapi-ui** 的依赖，或者配置中添加 `springdoc.api-docs.enabled=false` 的配置，则会导致启动报错
+- 删除了 knife4j-ui 的版本管理，对于 OpenAPI3，请使用 knife4j 的 3.x 版本
+- springfox 组件未适配 springboot 2.6.2 版本，如需继续使用 springfox，请添加 `spring.mvc.pathmatch.matching-strategy=ant-path-matcher` 配置，以及注册 `SpringfoxHandlerProviderBeanPostProcessor` 到 spring 容器中
+- springboot 2.6.x 默认禁止循环依赖，如有循环依赖启动将会报错，请注意修改代码，或者添加配置 `spring.main.allow-circular-references = true ` (不建议)
+- `IPageArgumentResolver` 移除，如果直接使用 mybatisPlus 的 IPage 做为查询入参会有 SQL 注入风险，请注意修改！！！
+- `IPageArgumentResolver` 移除，如果直接使用 mybatisPlus 的 IPage 做为查询入参会有 SQL 注入风险，请注意修改！！！
+- `IPageArgumentResolver` 移除，如果直接使用 mybatisPlus 的 IPage 做为查询入参会有 SQL 注入风险，请注意修改！！！
+
+### ⭐ New Features
+
+- 【修改】修改 jackson 脱敏支持的模块添加方式，使用为注册 `JsonDesensitizeModule` 的形式，以便复用 spring-boot 默认的 module 注册。
+- 【修改】调整 `CustomJavaTimeModule` 的注册方式，防止被 JSR310 的 `JavaTimeModule` 覆盖
+- 【删除】移除过时已久的 `IPageArgumentResolver`，让 starter-web 和 mybatis-plus 模块解耦。
+- 【删除】移除过时的 Lov 相关代码。
+- 【修改】Swagger2 相关注解迁移到 OpenAPI3
+- 【修改】文档底层支持从 springfox 迁移到 springdoc-openapi
+- 【添加】对于 GET 请求的入参封装类，如 xxQO，添加 `@ParameterObject` 注解，以便在文档上正确展示查询入参
+- 【修改】由于 springfox 长久不更新，弃用基于该框架的 **ballcat-spring-boot-starter-swagger** 组件
+- 【新增】添加 **ballcat-extend-openapi**，模块，基于 springdoc-openapi 做了部分扩展，参看[文档](http://www.ballcat.cn/guide/feature/openapi.html)
+- 【删除】删除 knife4j-ui 的版本管理
+- 【修改】代码优化，显示指定部分参数或返回值的泛型
+- 【修改】Sonarlint 部分代码警告处理
+- 【删除】移除 dependencies pom 中无用的 pluginManagement 部分
+- 【修改】hutool 依赖管理改为使用 hutool 官方提供的 bom
+- 【新增】添加 **ballcat-extend-tesseract** 扩展模块，用于 OCR 文字识别工具的调用封装
+- 【修改】字典相关逻辑调整
+  - 去除字典只读/可写的属性控制
+  - 字典项增加启用/禁用的状态属性
+  - 字典现在在有字典项的情况下不允许删除（之前会自动级联删除）
+- 【修改】同步 mybtais-plus 升级 3.5.x 后，AbstractMethod 的方法名获取做的调整
+- 【修改】**ballcat-spring-boot-starter-oss** 更新 oss 相关方法与变量. 由 path 变为 key. 符合 oss 规范，原 rootPath 属性标记为过期，修改为 objectKeyPrefix
+- 【添加】**ballcat-spring-boot-starter-oss** 新增根据 `File`  直接上传的方法
+- 【修改】`StreamUtils` 克隆流方法优化. 使用 FileOutStream 保证不会因为文件过大而内存溢出
+- 【修改】`OssDisabledException` 父类由 `Exception` 修改为 `RuntimeException`
+- 【修改】**ballcat-common-idempotent** 幂等组件微调
+  - `RedisIdempotentKeyStore` 的 stringRedisTemplate 属性，改为构造器注入
+  - 取消 `IdempotentAspect` 切面的 @Component 注解，防止误注册
+
+
+
+### 🐞 Bug Fixes
+
+- 【修复】修复删除字典项时没有将变动通知到前端的问题
+- 【修复】修复 `FileUtils#updateTmpDir` 方法中文件夹创建异常的问题
+
+
+
+### 🔨 Dependency Upgrades
+
+- 【升级】spring-boot from  2.5.6 to 2.6.2
+- 【升级】lombok from 1.18.20 to 1.18.22
+- 【升级】spring-javaformat from 0.0.28 to 0.0.29
+- 【升级】hutool from 5.7.12 to 5.7.19
+- 【升级】dynamic-datasource from 3.4.1 to 3.5.0
+- 【升级】jasypt from 3.0.3 to 3.0.4
+- 【升级】jsoup from 1.14.2 to 1.14.3
+- 【升级】mybatis-plus from 3.4.3.4 to 3.5.0
+- 【升级】mybatis from 3.5.7 to 3.5.9
+- 【升级】jsqlparse from 4.2 to 4.3
+- 【升级】fastjson from 1.2.76 to 1.2.79
+- 【升级】spring-boot-admin from 2.5.4 to 2.6.0
+
+
+
+## [0.5.0] 2021-12-03
+
+### :warning: Warning
+
+- 由于业务实体类的统一修改，其对应的表结构发生了变化
+- 批量方法从 `saveBatchSomeColumn` 切换到 `saveBatch` 后，注意项目中的 jdbcUrl 配置，需要添加 rewriteBatchedStatements=true 条件，否则插入效率降低
+
+
+### ⭐ New Features
+
+- 【修改】 业务实体类添加父类 `LogicDeletedBaseEntity`，统一支持逻辑删除
+- 【修改】 业务实体类统一修改描述、备注等属性名为 remarks
+- 【修改】 业务代码批量插入部分方法从 `saveBatchSomeColumn` 切换到 `saveBatch`， 经实测，开启批处理事务以及 jdbcUrl 连接添加`rewriteBatchedStatements=true` 后,  循环 insert into 批量提交比 insert into values 语法速度更快。
+- 【新增】 **ballcat-spring-boot-starter-file** 组件，支持 local 本地 和 ftp 文件上传操作
+- 【添加】 `TreeUtils#treeToList()` 方法，支持将树平铺为列表
+- 【添加】 `ImageUtils#mixResolveClone()` 方法，先使用快速解析，若失败回退到正常解析方法
+- 【新增】 `FileUtils` 工具类
+- 【新增】 `BaseEntity` 和 `LogicDeletedBaseEntity` 实体类基类
+- 【新增】 支持定制 Redis Key 前缀的生成规则
+- 【新增】 `DistributeLock` , 更加方便的进行分布式锁的使用
+- 【新增】 `AbstractMessageEventListener` 类，提供默认的消息序列化处理
+- 【添加】 `ExtendService#saveBatch()` 方法
+- 【新增】 多线程对同一 websocket session 进行发送操作的支持
+- 【修改】 默认提供的 MybatisPlusConfig 配置类中的自动填充处理类的条件注解修改，方便用户替换为自己的 `MetaObjectHandler`
+- 【新增】 线程池配置 `@Async` 异步线程日志支持 traceId 输出
+- 【添加】 `TokenGrantBuilder#getAuthenticationManager()` 方法，方便子类继承时获取 AuthenticationManager (#133)
+- 【修改】 `FileService` ，OssClient 不再为必须依赖，当没有配置 Oss 时，默认回退使用 FileClient，根据配置走本地存储或者FTP
+- 【修改】 `MappedStatementIdsWithoutDataScope` 的 `WITHOUT_MAPPED_STATEMENT_ID_MAP` 属性类型为 `ConcurrentHashMap`
+- 【修改】 `TraceIdFilter` 默认在响应头中返回 TraceId 参数，方便排查问题
+- 【修改】 `UserInfoCoordinator` 从类调整为接口，并提供默认实现 `DefaultUserInfoCoordinatorImpl`
+
+
+
+### 🐞 Bug Fixes
+
+- 【修复】 数据权限使用 JDK动态代理或者桥接方法时无法正确找到 `@DataPermission` 注解的问题
+- 【修复】 数据权限在 SQL 右连接，内连接失效的问题
+- 【修复】 数据权限对于使用括号包裹的 sql 解析失效的问题
+- 【修复】 在仅使用  `ballcat.swagger.enabled=false` 的情况下，swagger 没有正常关闭的问题
+- 【修复】 由于跨域问题，导致 swagger 无法在聚合者 Aggregator 中对 文档提供者 Provider 进行调试的问题
+- 【修复】 WebSocket 在接收普通文本属性时的异常问题，现在会回退使用 `PlanTextMessageHandler` 进行处理
+- 【修复】 查询指定名称的组织时构建树失败的问题
+
+
+
+
+### 🔨 Dependency Upgrades
+
+- 【升级】 spring-boot from  2.5.4 to 2.5.6
+- 【升级】 spring-boot-admin from 2.5.1 to 2.5.4
+
+
+## [0.4.0] 2021-10-15
+
+### Warning
+
+- mybatis-plus 升级，其对应一些 count 方法，返回值修改为了 Long 类型，项目中有使用的地方需要对应修改
+- 默认登录时返回的 token 属性有所变更，原 roles 修改为 roleCodes，前端注意对应升级
+- websocket 默认使用 local 进行分发，这将导致集群状态下的数据推送异常，如需集群部署，请修改对应配置
+- websocket 相关接口 MessageSender 移除，该接口并入 MessageDistributor ，注意修改对应依赖引入类型
+
+### Added
+
+- feat：**ballcat-auth** 授权服务器定制增强：
+  - 允许用户自定义 `AccessTokenConverter`，修改自省端点 `/check_token` 的返回值
+  - 允许用户定制授权处理器或者新增授权处理器，用户可以通过覆盖 `TokenGrantBuilder` 实现
+  - 允许用户添加自己的 `AuthenticationProvider` 方便处理自定义的 grant_type
+  - 添加 OAuth2ClientConfigurer 抽象接口，方便用户替换 ClientDetailsService 的配置方式
+  - 和 **ballcat-system** 模块解耦，方便复用 **ballcat-auth** 快速搭建一个授权服务器，例如 C 端用户 和 后台用户分离登陆系统，各搭建一套基于 OAuth2 的登录。
+  - 根据 OAuth2 规范，调整 check_token 端点响应，在 token 不正确时响应 200，响应体为 `{ active: false }`，而不是返回 400
+- feat：数据权限对于 jsqlparse 4.2 后，连表使用尾缀多个 OnExpression 方式的 SQL 解析支持
+- feat：角色添加 scopeResource 属性，以便支持自定义数据权限设置一些信息
+- feat：默认的 jackson 时间序列化添加了 `Instant` 类型支持，防止在使用时出现异常 InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default
+
+
+
+### Changed
+
+- refactor：资源服务器对于客户端凭证生产的token 解析支持，对应的 userdetails 为 `ClientPrincipal`
+
+- refactor：授权服务器自省端点的 scope 属性响应调整，根据 OAuth2 自省端点协议，scope 应返回字符串，用空格间隔
+
+- refactor：数据权限调整
+
+  - 问题修复： fix 数据权限在表名使用 `` 转义字符时失效的问题
+  - 性能优化：对于无需数据权限控制的 sql 在解析一次后进行记录，后续不再进行解析处理
+  - 结构调整：防止误用以及避免歧义，DataScopeHolder 修改为 DataScopeSqlProcessor 的私有内部类
+
+- refactor：SelectData 试图对象中的 value 修改为 Object 类型，selected 和 disabled 修改为 Boolean 类型
+
+- refactor：系统用户相关的 service 和 mapper 层，修改使用 Collection 接收参数，方便使用
+
+- refactor：TokenAttributeNameConstants 常量类拆分
+
+- refactor：UserInfoDTO 属性调整，新增了 menus 用于存储用户拥有的菜单对象集合，修改 roles 属性用于存储用户拥有的角色对象集合，原 roles 属性修改为 roleCodes 存储角色标识集合
+
+- refactor：为避免歧义，登录和自省端点返回信息中的属性名称 roles 修改为 roleCodes
+
+- bug：修复使用 **ballcat-spring-boot-starter-web** 时，若没有引入 security 依赖则启动异常的问题
+
+- refactor： system 相关事件优化调整
+  1. 用户组织变动时发布 UserOrganizationChangeEvent 事件
+  2. 用户新建的事件由 UserChangeEvent 修改为 UserCreatedEvent
+  3. system 的 event 类从 biz 迁移到 model 模块中
+
+- refactor：**ballcat-common-websocket** 移除 MessageSender 接口，将其并入消息分发器 MessageDistributor
+
+- refactor：**ballcat-spring-boot-starter-websocket** 与 redis 解耦，将默认注册的消息分发器由 redis 改为 local，基于内存分发。可通过 ballcat.websocket.message-distributor 属性修改为 redis 或者 custom，值为 custom 表示，用户自己定制 MessageDistributor（如修改为使用 mq，可用性更高）
+
+  ```yaml
+  ballcat:
+  	websocket:
+  		# 默认为 local 仅支持单节点使用，redis 基于 PUB/SUB 消息订阅支持了集群下的消息推送问题
+  		message-distributor: redis # local | redis | custom
+  ```
+
+- refactor：**ballcat-spring-boot-starter-redis** 调整 AddMessageEventListenerToContainer 的注册方式，防止用户配置包扫描导致的加载顺序异常
+
+- refactor：有用户绑定组织时，不允许删除组织
+
+
+
+### Dependency
+
+- Bump spring-boot from 2.4.8 to 2.5.5
+- Bump lombok from 1.18.16 to 1.18.20
+- Bump mybatis-plus 3.4.4 to 3.4.3.4
+- Bump mybatis  3.5.6 to 3.5.7
+- Bump jsqlparser 4.0 to 4.2
+- Bump flatten-maven-plugin from 1.2.5 to 1.2.7
+- Bump spring-javaformat from 0.0.27 to 0.0.28
+- Bump hutool from 5.7.3 to 5.7.12
+- Bump spring-boot-admin from 2.4.2 to 2.5.1
+- Bump dynamic-datasource-spring-boot-starter from 3.3.2 to 3.4.1
+
+
+
+
+## [0.3.0] 2021-09-09
 
 ### Warning
 
@@ -14,23 +217,50 @@
 - 国际化重构，改动较大，注意对应代码调整。国际化使用文档参看：http://www.ballcat.cn/guide/feature/i18n.html
 - 由于 **ballcat-common-conf** 的删除，非 admin 服务中的 mybatis-plus 的相关配置，如分页插件，批量插入方法的注入，需要按需添加。
 - 操作日志优化，修改了 `OperationLogHandler` 的相关方法，如果有自定义 OperationLogHandler ，需要注意同步更新
+- 现在资源服务器默认关闭了表单登录功能，可通过配置开启表单登录并指定登录页地址
 
 
 
 ### Added
 
 - feat: 国际化功能的默认支持，新增 **ballcat-i18n** 相关模块，以便提供默认的业务国际化实现方式
+
 - feat: 登录用户名密码错误时的错误消息国际化处理
+
 - feat: **ballcat-common-redis** 针对 PUB/SUB 新增 `MessageEventListener` 接口，**ballcat-spring-boot-starter-redis**  中会自动注册所有实现 `MessageEventListener` 接口的监听器
+
 - feat:  **ballcat-common-redis** 中的 `@CacheDel` 注解，新增 multiDel 属性，方便批量删除缓存
+
 - feat: 新增 **ballcat-common-idempotent** 幂等模块
+
 - feat: 针对 hibernate-validation 校验的提示消息，支持使用 {}，占位替代 defaultMessage
+
 - feat:  **ballcat-common-core** 中默认新增了 `CreateGroup` 和 `UpdateGroup` 接口，方便分组校验使用
+
 - feat:  新增 **ballcat-spring-boot-starter-web** 模块，该模块基于 `spring-boot-starter-web`, 并使用 undertow 作为默认的嵌入式容器，且将 **ballcat-common-conf** 中对 web 应用的配置增强，如全局异常管理，以及 Sql 防注入处理，jackson 的默认配置等配置移动到此项目中
+
 - feat: **ballcat-extend-mybatis-plus** 模块中，为了支持连表查询的条件构建，新增 `OtherTableColumnAliasFunction` ，方便使用  `LambdaAliasQueryWrapperX` 进行关联表查询条件的构建
+
 - feat: **ballcat-spring-boot-starter-easyexcel** 支持导出时进行 Excel 头信息的国际化处理，使用 `{}` 进行占位表示，使用示例可参看 I18nData 的导出使用
+
 - feat: **ballcat-spring-boot-starter-swagger** 配置的扫描路径 `basePackage` ，支持使用 `,`  进行多包名的分割扫描
+
 - feat: **ballcat-spring-boot-starter-datascope** 中的数据权限控制注解 @DataPermission 扩展支持在 Mapper 之外使用，且支持方法嵌套调用时使用不同的 @DataPermission 环境
+
+- feat: **ballcat-common-security** 中资源服务器配置不再默认开启表单登录，新增两个配置属性用于开启并指定登录页地址：
+
+  ```yaml
+  ballcat:
+  	security:
+  		oauth2:
+  			resourceserver:
+  				# 是否开启表单登录，默认 false
+  				enable-form-login: true
+  				# 登录页地址，开启表单登录时生效，不配置则默认为 /login
+  				form-login-page: http://login-domin
+  ```
+
+
 
 
 
@@ -89,7 +319,7 @@
 
 
 
-## [0.2.0]
+## [0.2.0] 2021-08-11
 
 ### Added
 
@@ -139,7 +369,7 @@
 
 
 
-## [0.1.0]
+## [0.1.0] 2021-06-28
 
 ### Warning
 
@@ -200,12 +430,12 @@
 
 ### Dependency
 
-- Bump  spring-boot-admin from 2.4.1 to 2.4.1
+- Bump  spring-boot-admin from 2.3.1 to 2.4.1
 - Bump virtual-currency  from 0.4.1  to  0.4.2
 
 
 
-## [0.0.9]
+## [0.0.9] 2021-04-28
 
 ### Warning
 
@@ -253,7 +483,7 @@
 
 
 
-## [0.0.8]
+## [0.0.8] 2021-03-04
 
 ### Warning
 
@@ -320,7 +550,7 @@
 
 
 
-## [0.0.7]
+## [0.0.7] 2021-01-19
 
 ### Added
 
@@ -359,7 +589,7 @@
 
 
 
-## [0.0.6]
+## [0.0.6] 2020-12-03
 
 ### Warning
 
@@ -397,7 +627,7 @@
 
 
 
-## [0.0.5]
+## [0.0.5] 2020-09-18
 
 ### Added
 
@@ -448,7 +678,7 @@
 
 
 
-## [0.0.4]
+## [0.0.4] 2020-08-14
 
 ### Added
 
@@ -481,7 +711,7 @@
 
 
 
-## [0.0.3] - 2020-07-06
+## [0.0.3] 2020-07-06
 
 ### Added
 
@@ -540,7 +770,7 @@
 
 
 
-## [0.0.2]
+## [0.0.2] 2020-06-04
 
 ### Added
 

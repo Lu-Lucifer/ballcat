@@ -17,7 +17,9 @@ import com.hccake.ballcat.system.model.entity.SysOrganization;
 import com.hccake.ballcat.system.model.qo.SysOrganizationQO;
 import com.hccake.ballcat.system.model.vo.SysOrganizationTree;
 import com.hccake.ballcat.system.service.SysOrganizationService;
+import com.hccake.ballcat.system.service.SysUserService;
 import com.hccake.extend.mybatis.plus.service.impl.ExtendServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +35,11 @@ import java.util.stream.Collectors;
  * @author hccake 2020-09-23 12:09:43
  */
 @Service
+@RequiredArgsConstructor
 public class SysOrganizationServiceImpl extends ExtendServiceImpl<SysOrganizationMapper, SysOrganization>
 		implements SysOrganizationService {
+
+	private final SysUserService sysUserService;
 
 	/**
 	 * 返回组织架构的树形结构
@@ -44,7 +49,12 @@ public class SysOrganizationServiceImpl extends ExtendServiceImpl<SysOrganizatio
 	@Override
 	public List<SysOrganizationTree> listTree(SysOrganizationQO sysOrganizationQO) {
 		List<SysOrganization> list = baseMapper.selectList(sysOrganizationQO);
-		return TreeUtils.buildTree(list, 0, SysOrganizationConverter.INSTANCE::poToTree);
+		// TODO 临时补丁，处理查询指定名称的组织时构建树失败的问题，考虑检索放在前端处理以便支持模糊检索
+		Integer treeRootId = GlobalConstants.TREE_ROOT_ID;
+		if (CollectionUtil.isNotEmpty(list) && list.size() == 1) {
+			treeRootId = list.get(0).getParentId();
+		}
+		return TreeUtils.buildTree(list, treeRootId, SysOrganizationConverter.INSTANCE::poToTree);
 	}
 
 	/**
@@ -184,16 +194,20 @@ public class SysOrganizationServiceImpl extends ExtendServiceImpl<SysOrganizatio
 
 	/**
 	 * 根据组织ID 删除组织机构
-	 * @param organizationId 组织机构ID
+	 * @param id 组织机构ID
 	 * @return 删除成功: true
 	 */
 	@Override
-	public boolean removeById(Serializable organizationId) {
-		List<SysOrganization> children = baseMapper.listChildOrganization((Integer) organizationId);
-		if (CollectionUtil.isNotEmpty(children)) {
+	public boolean removeById(Serializable id) {
+		Integer organizationId = (Integer) id;
+		Boolean existsChildOrganization = baseMapper.existsChildOrganization(organizationId);
+		if (Boolean.TRUE.equals(existsChildOrganization)) {
 			throw new BusinessException(BaseResultCode.LOGIC_CHECK_ERROR.getCode(), "该组织机构拥有下级组织，不能删除！");
 		}
-		return SqlHelper.retBool(baseMapper.deleteById(organizationId));
+		if (sysUserService.existsForOrganization(organizationId)) {
+			throw new BusinessException(BaseResultCode.LOGIC_CHECK_ERROR.getCode(), "该组织机构拥有关联用户，不能删除！");
+		}
+		return SqlHelper.retBool(baseMapper.deleteById(id));
 	}
 
 	/**

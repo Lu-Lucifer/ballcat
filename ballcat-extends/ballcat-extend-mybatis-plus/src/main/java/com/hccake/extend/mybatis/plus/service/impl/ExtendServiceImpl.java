@@ -46,14 +46,38 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 		return entityClass;
 	}
 
-	protected Class<T> mapperClass = currentMapperClass();
+	protected Class<M> mapperClass = currentMapperClass();
 
-	protected Class<T> currentMapperClass() {
-		return (Class<T>) ReflectionKit.getSuperClassGenericType(getClass(), 0);
+	/**
+	 * 判断数据库操作是否成功
+	 * @param result 数据库操作返回影响条数
+	 * @return boolean
+	 * @deprecated 3.3.1
+	 */
+	@Deprecated
+	protected boolean retBool(Integer result) {
+		return SqlHelper.retBool(result);
+	}
+
+	protected Class<M> currentMapperClass() {
+		return (Class<M>) ReflectionKit.getSuperClassGenericType(this.getClass(), ExtendServiceImpl.class, 0);
 	}
 
 	protected Class<T> currentModelClass() {
-		return (Class<T>) ReflectionKit.getSuperClassGenericType(getClass(), 1);
+		return (Class<T>) ReflectionKit.getSuperClassGenericType(this.getClass(), ExtendServiceImpl.class, 1);
+	}
+
+	/**
+	 * 批量插入
+	 * @param entityList ignore
+	 * @param batchSize ignore
+	 * @return ignore
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public boolean saveBatch(Collection<T> entityList, int batchSize) {
+		String sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE);
+		return executeBatch(entityList, batchSize, (sqlSession, entity) -> sqlSession.insert(sqlStatement, entity));
 	}
 
 	/**

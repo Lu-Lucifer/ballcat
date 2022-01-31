@@ -16,7 +16,8 @@ import com.hccake.ballcat.file.service.FileService;
 import com.hccake.ballcat.system.checker.AdminUserChecker;
 import com.hccake.ballcat.system.constant.SysUserConst;
 import com.hccake.ballcat.system.converter.SysUserConverter;
-import com.hccake.ballcat.system.event.UserChangeEvent;
+import com.hccake.ballcat.system.event.UserCreatedEvent;
+import com.hccake.ballcat.system.event.UserOrganizationChangeEvent;
 import com.hccake.ballcat.system.mapper.SysUserMapper;
 import com.hccake.ballcat.system.model.dto.SysUserDTO;
 import com.hccake.ballcat.system.model.dto.SysUserScope;
@@ -109,20 +110,25 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 		}
 
 		// 设置角色标识
-		List<String> roles = new ArrayList<>();
+		Set<String> roleCodes = new HashSet<>();
 		for (SysRole role : roleList) {
-			roles.add(role.getCode());
+			roleCodes.add(role.getCode());
 		}
-		userInfoDTO.setRoles(roles);
+		userInfoDTO.setRoles(new HashSet<>(roleList));
+		userInfoDTO.setRoleCodes(roleCodes);
 
 		// 设置权限列表（permission）
 		Set<String> permissions = new HashSet<>();
-		for (String roleCode : roles) {
-			List<String> permissionList = sysMenuService.listByRoleCode(roleCode).stream().map(SysMenu::getPermission)
-					.filter(StrUtil::isNotEmpty).collect(Collectors.toList());
+		Set<SysMenu> menus = new HashSet<>();
+		for (String roleCode : roleCodes) {
+			List<SysMenu> sysMenuList = sysMenuService.listByRoleCode(roleCode);
+			menus.addAll(sysMenuList);
+			List<String> permissionList = sysMenuList.stream().map(SysMenu::getPermission).filter(StrUtil::isNotEmpty)
+					.collect(Collectors.toList());
 			permissions.addAll(permissionList);
 		}
-		userInfoDTO.setPermissions(new ArrayList<>(permissions));
+		userInfoDTO.setMenus(menus);
+		userInfoDTO.setPermissions(permissions);
 
 		return userInfoDTO;
 	}
@@ -160,8 +166,8 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 			});
 		}
 
-		// 发布用户更新事件
-		publisher.publishEvent(new UserChangeEvent(sysUser));
+		// 发布用户创建事件
+		publisher.publishEvent(new UserCreatedEvent(sysUser, sysUserDto.getRoleCodes()));
 
 		return true;
 	}
@@ -172,10 +178,34 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @return 更新成功 true: 更新失败 false
 	 */
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public boolean updateSysUser(SysUserDTO sysUserDTO) {
 		SysUser entity = SysUserConverter.INSTANCE.dtoToPo(sysUserDTO);
 		Assert.isTrue(adminUserChecker.hasModifyPermission(entity), "当前用户不允许修改!");
-		return SqlHelper.retBool(baseMapper.updateById(entity));
+
+		// 如果不更新组织，直接执行
+		Integer currentOrganizationId = entity.getOrganizationId();
+		if (currentOrganizationId == null) {
+			return SqlHelper.retBool(baseMapper.updateById(entity));
+		}
+
+		// 查询出当前库中用户
+		Integer userId = entity.getUserId();
+		SysUser oldUser = baseMapper.selectById(userId);
+		Assert.notNull(oldUser, "修改用户失败，当前用户不存在：{}", userId);
+
+		// 是否修改了组织
+		Integer originOrganizationId = oldUser.getOrganizationId();
+		boolean organizationIdModified = !currentOrganizationId.equals(originOrganizationId);
+		// 是否更改成功
+		boolean isUpdateSuccess = SqlHelper.retBool(baseMapper.updateById(entity));
+		// 如果修改了组织且修改成功，则发送用户组织更新事件
+		if (isUpdateSuccess && organizationIdModified) {
+			publisher
+					.publishEvent(new UserOrganizationChangeEvent(userId, originOrganizationId, currentOrganizationId));
+		}
+
+		return isUpdateSuccess;
 	}
 
 	/**
@@ -188,9 +218,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	@Transactional(rollbackFor = Exception.class)
 	public boolean updateUserScope(Integer userId, SysUserScope sysUserScope) {
 		// 更新用户角色关联关系
-		// TODO 在这里实现 自己业务 模块的权限控制
 		return sysUserRoleService.updateUserRoles(userId, sysUserScope.getRoleCodes());
-
 	}
 
 	/**
@@ -200,7 +228,6 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 */
 	@Override
 	public boolean deleteByUserId(Integer userId) {
-		// TODO 缓存控制
 		Assert.isFalse(adminUserChecker.isAdminUser(getById(userId)), "管理员不允许删除!");
 		return SqlHelper.retBool(baseMapper.deleteById(userId));
 	}
@@ -225,7 +252,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @return 更新成功：true
 	 */
 	@Override
-	public boolean updateUserStatusBatch(List<Integer> userIds, Integer status) {
+	public boolean updateUserStatusBatch(Collection<Integer> userIds, Integer status) {
 
 		List<SysUser> userList = baseMapper.listByUserIds(userIds);
 		Assert.notEmpty(userList, "更新用户状态失败，待更新用户列表为空");
@@ -272,7 +299,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @return List<SysUser>
 	 */
 	@Override
-	public List<SysUser> listByRoleCodes(List<String> roleCodes) {
+	public List<SysUser> listByRoleCodes(Collection<String> roleCodes) {
 		return baseMapper.listByRoleCodes(roleCodes);
 	}
 
@@ -282,7 +309,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @return 用户集合
 	 */
 	@Override
-	public List<SysUser> listByOrganizationIds(List<Integer> organizationIds) {
+	public List<SysUser> listByOrganizationIds(Collection<Integer> organizationIds) {
 		return baseMapper.listByOrganizationIds(organizationIds);
 	}
 
@@ -292,7 +319,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @return 用户集合
 	 */
 	@Override
-	public List<SysUser> listByUserTypes(List<Integer> userTypes) {
+	public List<SysUser> listByUserTypes(Collection<Integer> userTypes) {
 		return baseMapper.listByUserTypes(userTypes);
 	}
 
@@ -302,7 +329,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @return 用户集合
 	 */
 	@Override
-	public List<SysUser> listByUserIds(List<Integer> userIds) {
+	public List<SysUser> listByUserIds(Collection<Integer> userIds) {
 		return baseMapper.listByUserIds(userIds);
 
 	}
@@ -313,7 +340,7 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	 * @param userTypes 用户类型
 	 */
 	@Override
-	public List<SelectData<?>> listSelectData(List<Integer> userTypes) {
+	public List<SelectData<Void>> listSelectData(Collection<Integer> userTypes) {
 		return baseMapper.listSelectData(userTypes);
 	}
 
@@ -325,6 +352,16 @@ public class SysUserServiceImpl extends ExtendServiceImpl<SysUserMapper, SysUser
 	@Override
 	public List<String> listRoleCodes(Integer userId) {
 		return sysUserRoleService.listRoles(userId).stream().map(SysRole::getCode).collect(Collectors.toList());
+	}
+
+	/**
+	 * 是否存在指定组织的用户
+	 * @param organizationId 组织 id
+	 * @return boolean 存在返回 true
+	 */
+	@Override
+	public boolean existsForOrganization(Integer organizationId) {
+		return baseMapper.existsForOrganization(organizationId);
 	}
 
 }

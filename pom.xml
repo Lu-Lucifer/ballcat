@@ -45,7 +45,7 @@
 
 
 	<properties>
-		<revision>0.4.0-SNAPSHOT</revision>
+		<revision>0.6.0</revision>
 
 		<java.version>1.8</java.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -55,7 +55,7 @@
 
 		<maven-compiler-plugin.verison>3.8.0</maven-compiler-plugin.verison>
 		<flatten-maven-plugin.version>1.2.5</flatten-maven-plugin.version>
-		<spring-javaformat-checkstyle.version>0.0.27</spring-javaformat-checkstyle.version>
+		<spring-javaformat-checkstyle.version>0.0.29</spring-javaformat-checkstyle.version>
 
 		<nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
 		<maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
@@ -63,11 +63,11 @@
 		<maven-source-plugin.version>3.1.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
 
-		<spring-boot.version>2.5.4</spring-boot.version>
+		<spring-boot.version>2.6.2</spring-boot.version>
 
 		<!-- mapstruct 和 lombok 等注解处理器 -->
 		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
-		<org.projectlombok.version>1.18.16</org.projectlombok.version>
+		<lombok.version>1.18.22</lombok.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 	</properties>
 
@@ -82,7 +82,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${org.projectlombok.version}</version>
+			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -208,7 +208,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>${org.projectlombok.version}</version>
+							<version>${lombok.version}</version>
 						</path>
 
 						<!-- additional annotation processor required as of Lombok 1.18.16 -->
@@ -326,6 +326,7 @@
 						<version>${maven-javadoc-plugin.version}</version>
 						<configuration>
 							<doclint>none</doclint>
+							<additionalJOption>-J-Dfile.encoding=UTF-8</additionalJOption>
 						</configuration>
 						<executions>
 							<execution>

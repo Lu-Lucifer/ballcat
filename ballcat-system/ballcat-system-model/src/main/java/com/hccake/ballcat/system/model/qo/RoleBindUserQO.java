@@ -1,8 +1,10 @@
 package com.hccake.ballcat.system.model.qo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import lombok.Data;
+import org.springdoc.api.annotations.ParameterObject;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,20 +14,21 @@ import javax.validation.constraints.NotNull;
  * @author Hccake
  */
 @Data
-@ApiModel(value = "角色绑定用户查询对象")
+@Schema(title = "角色绑定用户查询对象")
+@ParameterObject
 public class RoleBindUserQO {
 
 	@NotNull(message = "角色标识不能为空！")
-	@ApiModelProperty(value = "角色标识")
+	@Parameter(description = "角色标识")
 	private String roleCode;
 
-	@ApiModelProperty(value = "用户ID")
+	@Parameter(description = "用户ID")
 	private Integer userId;
 
-	@ApiModelProperty(value = "用户名")
+	@Parameter(description = "用户名")
 	private String username;
 
-	@ApiModelProperty(value = "组织ID")
+	@Parameter(description = "组织ID")
 	private Integer organizationId;
 
 }

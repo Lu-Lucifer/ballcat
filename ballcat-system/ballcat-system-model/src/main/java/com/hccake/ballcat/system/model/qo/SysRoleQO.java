@@ -1,8 +1,10 @@
 package com.hccake.ballcat.system.model.qo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import lombok.Data;
+import org.springdoc.api.annotations.ParameterObject;
 
 /**
  * 角色查询对象
@@ -10,21 +12,22 @@ import lombok.Data;
  * @author Hccake
  */
 @Data
-@ApiModel(value = "角色查询对象")
+@Schema(title = "角色查询对象")
+@ParameterObject
 public class SysRoleQO {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "角色名称")
+	@Parameter(description = "角色名称")
 	private String name;
 
-	@ApiModelProperty(value = "角色标识")
+	@Parameter(description = "角色标识")
 	private String code;
 
-	@ApiModelProperty(value = "开始时间")
+	@Parameter(description = "开始时间")
 	private String startTime;
 
-	@ApiModelProperty(value = "结束时间")
+	@Parameter(description = "结束时间")
 	private String endTime;
 
 }

@@ -4,6 +4,9 @@
 
 ![](https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/ballcat-doc.png)
 
+> :tada::tada::tada: 基于 React 和 Ant Design 版本的前端 **ballcat-ui-react** 已发布，欢迎大家尝鲜使用
+
+
 **BallCat** 组织旨在为项目快速开发提供一系列的基础能力，方便使用者根据项目需求快速进行功能拓展。
 
 在以前使用其他后台管理脚手架进行开发时，经常会遇到因为项目业务原因需要进行二开的问题，在长期的开发后，一旦源项目进行迭代升级，很难进行同步更新。
@@ -30,19 +33,21 @@
 
 - **后端** ：Spring Boot、Spring Security、Spring Security OAuth2、Mybatis Plus、Hutool
 
-- **前端** ：Vue、Vue Router、Vuex、Axios、Ant Design Vue（前端对应的 react 版本已经在开发中，Vue3 版本也是未来肯定要支持的）
-
+- **前端** ：
+  - Vue、Vue Router、Vuex、Axios、Ant Design Vue（目前基于 Vue2，Vue3 版本将会跟随 AntDesignVue 3.x 一起上线）
+  - React、Ant Design、Umi、TypeScript
 
 
 ## 相关仓库
 
-| 项目            | 简介             | gitee 地址                                         | github 地址                                         |
-| --------------- | ---------------- | -------------------------------------------------- | --------------------------------------------------- |
-| ballcat         | 核心项目组件     | https://gitee.com/ballcat-projects/ballcat         | https://github.com/ballcat-projects/ballcat         |
-| ballcat-ui-vue  | 管理后台前端     | https://gitee.com/ballcat-projects/ballcat-ui-vue  | https://github.com/ballcat-projects/ballcat-ui-vue  |
-| ballcat-codegen | 代码生成器       | https://gitee.com/ballcat-projects/ballcat-codegen | https://github.com/ballcat-projects/ballcat-codegen |
-| ballcat-samples | 使用示例         | https://gitee.com/ballcat-projects/ballcat-samples | https://github.com/ballcat-projects/ballcat-samples |
-| ballcat-boot    | 单体应用模板项目 | https://gitee.com/ballcat-projects/ballcat-boot    | https://github.com/ballcat-projects/ballcat-boot    |
+| 项目             | 简介             | gitee 地址                                          | github 地址                                          |
+| ---------------- | ---------------- | --------------------------------------------------- | ---------------------------------------------------- |
+| ballcat          | 核心项目组件     | https://gitee.com/ballcat-projects/ballcat          | https://github.com/ballcat-projects/ballcat          |
+| ballcat-ui-vue   | 管理后台前端     | https://gitee.com/ballcat-projects/ballcat-ui-vue   | https://github.com/ballcat-projects/ballcat-ui-vue   |
+| ballcat-ui-react | 管理后台前端     | https://gitee.com/ballcat-projects/ballcat-ui-react | https://github.com/ballcat-projects/ballcat-ui-react |
+| ballcat-codegen  | 代码生成器       | https://gitee.com/ballcat-projects/ballcat-codegen  | https://github.com/ballcat-projects/ballcat-codegen  |
+| ballcat-samples  | 使用示例         | https://gitee.com/ballcat-projects/ballcat-samples  | https://github.com/ballcat-projects/ballcat-samples  |
+| ballcat-boot     | 单体应用模板项目 | https://gitee.com/ballcat-projects/ballcat-boot     | https://github.com/ballcat-projects/ballcat-boot     |
 
 > 注意 ballcat 是核心组件仓库，如果需要启动后端服务，请使用 ballcat-boot
 
@@ -127,14 +132,17 @@ http://codegen.ballcat.cn/
 |   |-- ballcat-extend-kafka			-- kafka 的一些操作扩展
 |   |-- ballcat-extend-kafka-stream		-- kafka 流处理的一些操作扩展
 |   |-- ballcat-extend-mybatis-plus		-- 基于 mybatis-plus 相关的一些扩展
+|   |-- ballcat-extend-openapi			-- 对 springdoc-openapi 的一点封装扩展
 |   |-- ballcat-extend-pay-ali			-- 针对支付宝支付的一些操作封装
 |   |-- ballcat-extend-pay-virtual		-- 针对虚拟货币支付的一些操作封装
 |   |-- ballcat-extend-pay-wx			-- 针对微信支付的一些操作封装
-|   `-- ballcat-extend-redis-module		-- redis module 的扩展功能（暂时只有布隆过滤器）
+|   |-- ballcat-extend-redis-module		-- redis module 的扩展功能（暂时只有布隆过滤器）
+|   `-- ballcat-extend-tesseract		-- 对 OCR 文字识别工具的一个操作封装
 |-- ballcat-starters        
 |   |-- ballcat-spring-boot-starter-datascope	-- 数据权限控制
 |   |-- ballcat-spring-boot-starter-dingtalk	-- 钉钉集成工具
 |   |-- ballcat-spring-boot-starter-easyexcel	-- 通过注解快速导入导出excle（easyexcel）
+|   |-- ballcat-spring-boot-starter-file		-- 文件上传 FTP or Local
 |   |-- ballcat-spring-boot-starter-i18n		-- 国际化方案
 |   |-- ballcat-spring-boot-starter-job			-- 定时任务集成（目前仅xxl-job）
 |   |-- ballcat-spring-boot-starter-kafka		-- 消息队列 kafka 集成
@@ -185,6 +193,14 @@ ballcat.sql
 ballcat-i18n.sql
 ```
 
+**默认 oauth_client_details 脚本中有一个 test client，该 client 只能用于开发及测试环境，其登陆时会跳过图形验证码以及密码解密过程，生产环境请删除该client**
+
+> 注意： ballcat/docs/update 下的是各个版本升级的增量 sql，初次搭建时无需执行。  
+> 当跟随 ballcat 做版本升级时，如从 0.5.0 版本升级到 0.6.0 版本时，需执行 update 文件夹下的 0.6.0.sql
+
+
+
+
 ### 配置本地hosts
 
 建议使用 switchHost 软件管理hosts配置!
@@ -207,8 +223,14 @@ ballcat-i18n.sql
 
 #### 代码下载
 
-```
+下载模板仓库 ballcat-boot 的代码，或者示例仓库 ballcat-sample 的代码
+
+```git
 git clone https://github.com/ballcat-projects/ballcat-boot.git
+```
+或者
+```
+git clone https://github.com/ballcat-projects/ballcat-samples.git
 ```
 
 #### 项目启动
@@ -253,6 +275,8 @@ npm run serve
 
 默认用户名密码：admin / a123456
 
+> 注意检查前端的 vue.config.js 中的 serverAddress 属性，需要改为对应的服务端地址，如 http://ballcat-admin:8080
+
 ### 更多文档
 
 参看官方文档，快速搭建一章： http://www.ballcat.cn/guide/quick-start.html
@@ -263,6 +287,6 @@ npm run serve
 
 如果群二维码失效，可以扫右边我的个人微信二维码，或者添加我的微信号 `Hccake_`，我再邀请你入群
 
-<img src="https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/ballcat-wechat-group_20210907.jpg" alt="微信" width="35%"/>
+<img src="https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/ballcat-wechat-group_20211203.jpg" alt="微信" width="35%"/>
 
 <img src="https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/wechat-hccake.jpg" alt="微信" width="35%"/>
