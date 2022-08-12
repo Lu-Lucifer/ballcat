@@ -1,7 +1,8 @@
 package com.hccake.ballcat.common.websocket.distribute;
 
 import com.hccake.ballcat.common.util.JsonUtils;
-import lombok.RequiredArgsConstructor;
+import com.hccake.ballcat.common.websocket.session.WebSocketSessionStore;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -13,12 +14,18 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  * @author Hccake 2021/1/12
  * @version 1.0
  */
-@RequiredArgsConstructor
-public class RedisMessageDistributor implements MessageDistributor, MessageListener {
+@Slf4j
+public class RedisMessageDistributor extends AbstractMessageDistributor implements MessageListener {
 
 	public static final String CHANNEL = "websocket-send";
 
 	private final StringRedisTemplate stringRedisTemplate;
+
+	public RedisMessageDistributor(WebSocketSessionStore webSocketSessionStore,
+			StringRedisTemplate stringRedisTemplate) {
+		super(webSocketSessionStore);
+		this.stringRedisTemplate = stringRedisTemplate;
+	}
 
 	/**
 	 * 消息分发
@@ -32,6 +39,7 @@ public class RedisMessageDistributor implements MessageDistributor, MessageListe
 
 	@Override
 	public void onMessage(Message message, byte[] bytes) {
+		log.info("redis channel Listener message send {}", message);
 		byte[] channelBytes = message.getChannel();
 		RedisSerializer<String> stringSerializer = stringRedisTemplate.getStringSerializer();
 		String channel = stringSerializer.deserialize(channelBytes);

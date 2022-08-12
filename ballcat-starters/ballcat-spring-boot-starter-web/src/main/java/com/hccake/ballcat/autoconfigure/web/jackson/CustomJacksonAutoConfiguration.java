@@ -5,18 +5,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hccake.ballcat.common.core.jackson.CustomJavaTimeModule;
-import com.hccake.ballcat.common.core.jackson.NullSerializerModifier;
+import com.hccake.ballcat.common.core.jackson.NullSerializerProvider;
 import com.hccake.ballcat.common.desensitize.json.DesensitizeStrategy;
 import com.hccake.ballcat.common.desensitize.json.JsonDesensitizeModule;
 import com.hccake.ballcat.common.desensitize.json.JsonDesensitizeSerializerModifier;
 import com.hccake.ballcat.common.util.json.JacksonJsonToolAdapter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
@@ -24,8 +23,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
  * @version 1.0
  * @date 2019/10/17 22:14
  */
-@Configuration
-@AutoConfigureBefore(JacksonAutoConfiguration.class)
+@AutoConfiguration(before = JacksonAutoConfiguration.class)
 public class CustomJacksonAutoConfiguration {
 
 	/**
@@ -44,8 +42,7 @@ public class CustomJacksonAutoConfiguration {
 		// 序列化时忽略未知属性
 		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// NULL值修改
-		objectMapper.setSerializerFactory(
-				objectMapper.getSerializerFactory().withSerializerModifier(new NullSerializerModifier()));
+		objectMapper.setSerializerProvider(new NullSerializerProvider());
 		// 有特殊需要转义字符, 不报错
 		objectMapper.enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
 		// 更新 JsonUtils 中的 ObjectMapper，保持容器和工具类中的 ObjectMapper 对象一致

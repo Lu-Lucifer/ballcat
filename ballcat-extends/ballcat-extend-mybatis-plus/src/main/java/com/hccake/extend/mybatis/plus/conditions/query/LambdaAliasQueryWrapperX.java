@@ -43,16 +43,27 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 	}
 
 	/**
+	 * 用于生成嵌套 sql
+	 * <p>
+	 * 故 sqlSelect 不向下传递
+	 * </p>
+	 */
+	@Override
+	protected LambdaAliasQueryWrapperX<T> instance() {
+		return new LambdaAliasQueryWrapperX<>(getEntityClass());
+	}
+
+	/**
 	 * 查询条件构造时添加上表别名
 	 * @param column 字段Lambda
 	 * @return 表别名.字段名，如：t.id
 	 */
 	@Override
 	protected String columnToString(SFunction<T, ?> column) {
-		if (column instanceof OtherTableColumnAliasFunction) {
+		if (column instanceof ColumnFunction) {
 			@SuppressWarnings("unchecked")
-			OtherTableColumnAliasFunction<T> otherTableColumnAlias = (OtherTableColumnAliasFunction<T>) column;
-			return otherTableColumnAlias.apply(null);
+			ColumnFunction<T> columnFunction = (ColumnFunction<T>) column;
+			return columnFunction.apply(null);
 		}
 		String columnName = super.columnToString(column, true);
 		return tableAlias == null ? columnName : tableAlias + "." + columnName;

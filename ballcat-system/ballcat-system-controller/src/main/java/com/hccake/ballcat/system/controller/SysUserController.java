@@ -1,6 +1,8 @@
 package com.hccake.ballcat.system.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.hccake.ballcat.common.core.validation.group.CreateGroup;
+import com.hccake.ballcat.common.core.validation.group.UpdateGroup;
 import com.hccake.ballcat.common.log.operation.annotation.CreateOperationLogging;
 import com.hccake.ballcat.common.log.operation.annotation.DeleteOperationLogging;
 import com.hccake.ballcat.common.log.operation.annotation.UpdateOperationLogging;
@@ -10,8 +12,7 @@ import com.hccake.ballcat.common.model.domain.SelectData;
 import com.hccake.ballcat.common.model.result.BaseResultCode;
 import com.hccake.ballcat.common.model.result.R;
 import com.hccake.ballcat.common.model.result.SystemResultCode;
-import com.hccake.ballcat.common.security.properties.SecurityProperties;
-import com.hccake.ballcat.common.security.util.PasswordUtils;
+import com.hccake.ballcat.system.component.PasswordHelper;
 import com.hccake.ballcat.system.constant.SysUserConst;
 import com.hccake.ballcat.system.converter.SysUserConverter;
 import com.hccake.ballcat.system.model.dto.SysUserDTO;
@@ -30,13 +31,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.groups.Default;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +67,7 @@ public class SysUserController {
 
 	private final SysUserRoleService sysUserRoleService;
 
-	private final SecurityProperties securityProperties;
+	private final PasswordHelper passwordHelper;
 
 	/**
 	 * 分页查询用户
@@ -68,7 +77,7 @@ public class SysUserController {
 	@GetMapping("/page")
 	@PreAuthorize("@per.hasPermission('system:user:read')")
 	@Operation(summary = "分页查询系统用户")
-	public R<PageResult<SysUserPageVO>> getUserPage(PageParam pageParam, SysUserQO qo) {
+	public R<PageResult<SysUserPageVO>> getUserPage(@Validated PageParam pageParam, SysUserQO qo) {
 		return R.ok(sysUserService.queryPage(pageParam, qo));
 	}
 
@@ -110,16 +119,24 @@ public class SysUserController {
 	@CreateOperationLogging(msg = "新增系统用户")
 	@PreAuthorize("@per.hasPermission('system:user:add')")
 	@Operation(summary = "新增系统用户", description = "新增系统用户")
-	public R<Void> addSysUser(@Valid @RequestBody SysUserDTO sysUserDTO) {
+	public R<Void> addSysUser(@Validated({ Default.class, CreateGroup.class }) @RequestBody SysUserDTO sysUserDTO) {
 		SysUser user = sysUserService.getByUsername(sysUserDTO.getUsername());
 		if (user != null) {
 			return R.failed(BaseResultCode.LOGIC_CHECK_ERROR, "用户名已存在");
 		}
+
 		// 明文密码
-		String password = PasswordUtils.decodeAES(sysUserDTO.getPass(), securityProperties.getPasswordSecretKey());
-		sysUserDTO.setPassword(password);
-		return sysUserService.addSysUser(sysUserDTO) ? R.ok()
-				: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "新增系统用户失败");
+		String rawPassword = passwordHelper.decodeAes(sysUserDTO.getPass());
+		sysUserDTO.setPassword(rawPassword);
+
+		// 密码规则校验
+		if (passwordHelper.validateRule(rawPassword)) {
+			return sysUserService.addSysUser(sysUserDTO) ? R.ok()
+					: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "新增系统用户失败");
+		}
+		else {
+			return R.failed(SystemResultCode.BAD_REQUEST, "密码格式不符合规则!");
+		}
 	}
 
 	/**
@@ -131,7 +148,7 @@ public class SysUserController {
 	@UpdateOperationLogging(msg = "修改系统用户")
 	@PreAuthorize("@per.hasPermission('system:user:edit')")
 	@Operation(summary = "修改系统用户", description = "修改系统用户")
-	public R<Void> updateUserInfo(@Valid @RequestBody SysUserDTO sysUserDto) {
+	public R<Void> updateUserInfo(@Validated({ Default.class, UpdateGroup.class }) @RequestBody SysUserDTO sysUserDto) {
 		return sysUserService.updateSysUser(sysUserDto) ? R.ok()
 				: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "修改系统用户失败");
 	}
@@ -193,13 +210,19 @@ public class SysUserController {
 	public R<Void> updateUserPass(@PathVariable("userId") Integer userId, @RequestBody SysUserPassDTO sysUserPassDTO) {
 		String pass = sysUserPassDTO.getPass();
 		if (!pass.equals(sysUserPassDTO.getConfirmPass())) {
-			return R.failed(SystemResultCode.BAD_REQUEST, "错误的密码!");
+			return R.failed(SystemResultCode.BAD_REQUEST, "两次密码输入不一致!");
 		}
 
-		// 明文密码
-		String password = PasswordUtils.decodeAES(pass, securityProperties.getPasswordSecretKey());
-		return sysUserService.updatePassword(userId, password) ? R.ok()
-				: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "修改用户密码失败！");
+		// 解密明文密码
+		String rawPassword = passwordHelper.decodeAes(pass);
+		// 密码规则校验
+		if (passwordHelper.validateRule(rawPassword)) {
+			return sysUserService.updatePassword(userId, rawPassword) ? R.ok()
+					: R.failed(BaseResultCode.UPDATE_DATABASE_ERROR, "修改用户密码失败！");
+		}
+		else {
+			return R.failed(SystemResultCode.BAD_REQUEST, "密码格式不符合规则!");
+		}
 	}
 
 	/**

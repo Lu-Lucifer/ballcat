@@ -1,7 +1,6 @@
 package com.hccake.ballcat.auth.mobile;
 
 import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
@@ -9,8 +8,10 @@ import org.springframework.security.core.SpringSecurityCoreVersion;
 import java.util.Collection;
 
 /**
+ * 手机号登录令牌
+ *
  * @author lengleng
- * @date 2018/1/9 手机号登录令牌
+ * @date 2018/1/9
  */
 @EqualsAndHashCode(callSuper = true)
 public class MobileAuthenticationToken extends AbstractAuthenticationToken {
@@ -42,7 +43,6 @@ public class MobileAuthenticationToken extends AbstractAuthenticationToken {
 	}
 
 	@Override
-	@SneakyThrows
 	public void setAuthenticated(boolean isAuthenticated) {
 		if (isAuthenticated) {
 			throw new IllegalArgumentException(

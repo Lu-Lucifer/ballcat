@@ -13,7 +13,8 @@ import com.hccake.ballcat.common.redis.serialize.JacksonSerializer;
 import com.hccake.ballcat.common.redis.serialize.PrefixJdkRedisSerializer;
 import com.hccake.ballcat.common.redis.serialize.PrefixStringRedisSerializer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -24,10 +25,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
+ * Redis 自动配置类
+ *
  * @author Hccake
  * @version 1.0
- * @date 2019/9/2 14:13 指定扫描包
+ * @date 2019/9/2 14:13
  */
+@AutoConfiguration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(CacheProperties.class)
 public class RedisAutoConfiguration {
@@ -39,6 +43,7 @@ public class RedisAutoConfiguration {
 	 * @return GlobalCacheProperties
 	 */
 	@Bean
+	@ConditionalOnMissingBean
 	public CachePropertiesHolder cachePropertiesHolder(CacheProperties cacheProperties) {
 		CachePropertiesHolder cachePropertiesHolder = new CachePropertiesHolder();
 		cachePropertiesHolder.setCacheProperties(cacheProperties);
@@ -51,6 +56,7 @@ public class RedisAutoConfiguration {
 	 * @return JacksonSerializer
 	 */
 	@Bean
+	@ConditionalOnMissingBean
 	public CacheSerializer cacheSerializer(ObjectMapper objectMapper) {
 		return new JacksonSerializer(objectMapper);
 	}
@@ -61,6 +67,7 @@ public class RedisAutoConfiguration {
 	 * @return CacheLock
 	 */
 	@Bean
+	@ConditionalOnMissingBean
 	public CacheLock cacheLock(StringRedisTemplate stringRedisTemplate) {
 		CacheLock cacheLock = new CacheLock();
 		cacheLock.setStringRedisTemplate(stringRedisTemplate);
@@ -76,14 +83,26 @@ public class RedisAutoConfiguration {
 	 */
 	@Bean
 	@DependsOn("cacheLock")
+	@ConditionalOnMissingBean
 	public CacheStringAspect cacheStringAspect(StringRedisTemplate stringRedisTemplate,
 			CacheSerializer cacheSerializer) {
 		return new CacheStringAspect(stringRedisTemplate, cacheSerializer);
 	}
 
+	/**
+	 * redis key 前缀处理器
+	 * @return IRedisPrefixConverter
+	 */
 	@Bean
 	@DependsOn("cachePropertiesHolder")
-	@ConditionalOnClass(IRedisPrefixConverter.class)
+	@ConditionalOnProperty(prefix = "ballcat.redis", name = "key-prefix")
+	@ConditionalOnMissingBean(IRedisPrefixConverter.class)
+	public IRedisPrefixConverter redisPrefixConverter() {
+		return new DefaultRedisPrefixConverter(CachePropertiesHolder.keyPrefix());
+	}
+
+	@Bean
+	@ConditionalOnBean(IRedisPrefixConverter.class)
 	@ConditionalOnMissingBean
 	public StringRedisTemplate stringRedisTemplate(IRedisPrefixConverter redisPrefixConverter) {
 		StringRedisTemplate template = new StringRedisTemplate();
@@ -93,8 +112,7 @@ public class RedisAutoConfiguration {
 	}
 
 	@Bean
-	@DependsOn("cachePropertiesHolder")
-	@ConditionalOnClass(IRedisPrefixConverter.class)
+	@ConditionalOnBean(IRedisPrefixConverter.class)
 	@ConditionalOnMissingBean(name = "redisTemplate")
 	public RedisTemplate<Object, Object> redisTemplate(IRedisPrefixConverter redisPrefixConverter) {
 		RedisTemplate<Object, Object> template = new RedisTemplate<>();
@@ -108,14 +126,6 @@ public class RedisAutoConfiguration {
 	public RedisHelper redisHelper(StringRedisTemplate template) {
 		RedisHelper.setTemplate(template);
 		return new RedisHelper();
-	}
-
-	@Bean
-	@DependsOn("cachePropertiesHolder")
-	@ConditionalOnProperty(name = "ballcat.redis.key-prefix")
-	@ConditionalOnMissingBean(IRedisPrefixConverter.class)
-	public IRedisPrefixConverter redisPrefixConverter() {
-		return new DefaultRedisPrefixConverter(CachePropertiesHolder.keyPrefix());
 	}
 
 }

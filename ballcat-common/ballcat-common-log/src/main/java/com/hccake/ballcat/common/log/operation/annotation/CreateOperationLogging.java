@@ -23,4 +23,18 @@ public @interface CreateOperationLogging {
 	@AliasFor(annotation = OperationLogging.class)
 	String msg();
 
+	/**
+	 * 是否保存方法入参
+	 * @return boolean
+	 */
+	@AliasFor(annotation = OperationLogging.class)
+	boolean recordParams() default true;
+
+	/**
+	 * 是否保存方法返回值
+	 * @return boolean
+	 */
+	@AliasFor(annotation = OperationLogging.class)
+	boolean recordResult() default true;
+
 }

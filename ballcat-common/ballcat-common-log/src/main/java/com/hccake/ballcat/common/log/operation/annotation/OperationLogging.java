@@ -26,4 +26,16 @@ public @interface OperationLogging {
 	 */
 	OperationTypeEnum type();
 
+	/**
+	 * 是否保存方法入参
+	 * @return boolean
+	 */
+	boolean recordParams() default true;
+
+	/**
+	 * 是否保存方法返回值
+	 * @return boolean
+	 */
+	boolean recordResult() default true;
+
 }

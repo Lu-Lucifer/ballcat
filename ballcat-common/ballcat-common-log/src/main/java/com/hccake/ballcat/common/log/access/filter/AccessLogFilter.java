@@ -1,12 +1,16 @@
 package com.hccake.ballcat.common.log.access.filter;
 
-import com.hccake.ballcat.common.log.access.handler.AccessLogHandler;
-import com.hccake.ballcat.common.log.util.LogUtils;
 import com.hccake.ballcat.common.core.request.wrapper.RepeatBodyRequestWrapper;
+import com.hccake.ballcat.common.log.access.handler.AccessLogHandler;
+import com.hccake.ballcat.common.log.constant.LogConstant;
+import com.hccake.ballcat.common.log.util.LogUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -33,6 +37,11 @@ public class AccessLogFilter extends OncePerRequestFilter {
 	private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
 	/**
+	 * URL 路径匹配的帮助类
+	 */
+	private static final UrlPathHelper URL_PATH_HELPER = new UrlPathHelper();
+
+	/**
 	 * Same contract as for {@code doFilter}, but guaranteed to be just invoked once per
 	 * request within a single request thread. See {@link #shouldNotFilterAsyncDispatch()}
 	 * for details.
@@ -49,9 +58,9 @@ public class AccessLogFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		// 跳过部分忽略 url
-		String requestUri = request.getRequestURI();
+		String lookupPathForRequest = URL_PATH_HELPER.getLookupPathForRequest(request);
 		for (String ignoreUrlPattern : ignoreUrlPatterns) {
-			if (ANT_PATH_MATCHER.match(ignoreUrlPattern, requestUri)) {
+			if (ANT_PATH_MATCHER.match(ignoreUrlPattern, lookupPathForRequest)) {
 				filterChain.doFilter(request, response);
 				return;
 			}
@@ -71,6 +80,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
 		// 开始时间
 		Long startTime = System.currentTimeMillis();
 		Throwable myThrowable = null;
+		final String traceId = MDC.get(LogConstant.TRACE_ID);
 		try {
 			filterChain.doFilter(requestWrapper, responseWrapper);
 		}
@@ -80,6 +90,10 @@ public class AccessLogFilter extends OncePerRequestFilter {
 			throw throwable;
 		}
 		finally {
+			// 这里抛BusinessException后会丢失traceId，需要重新设置
+			if (StringUtils.isBlank(MDC.get(LogConstant.TRACE_ID))) {
+				MDC.put(LogConstant.TRACE_ID, traceId);
+			}
 			// 结束时间
 			Long endTime = System.currentTimeMillis();
 			// 执行时长

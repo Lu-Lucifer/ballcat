@@ -2,14 +2,6 @@ package com.hccake.ballcat.common.oss;
 
 import com.hccake.ballcat.common.oss.domain.StreamTemp;
 import com.hccake.ballcat.common.oss.exception.OssDisabledException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +13,15 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * @author lingting 2021/5/11 9:59
@@ -93,6 +94,7 @@ public class OssClient implements DisposableBean {
 
 	/**
 	 * 文件上传, 本方法会读一遍流, 计算流大小, 推荐使用 upload(stream, relativeKey, size) 方法
+	 * <h1>注意: 本方法不会主动关闭流. 请手动关闭传入的流</h1>
 	 * @param relativeKey 文件相对 getRoot() 的路径
 	 * @param stream 文件输入流
 	 * @return 文件绝对路径
@@ -100,19 +102,45 @@ public class OssClient implements DisposableBean {
 	 */
 	public String upload(InputStream stream, String relativeKey) throws IOException {
 		final StreamTemp temp = getSize(stream);
-		return upload(temp.getStream(), relativeKey, temp.getSize());
+		try (final InputStream tempStream = temp.getStream()) {
+			return upload(tempStream, relativeKey, temp.getSize());
+		}
 	}
 
+	/**
+	 * 通过流上传文件
+	 * <h1>注意: 本方法不会主动关闭流. 请手动关闭传入的流</h1>
+	 * @param stream 流
+	 * @param relativeKey 相对key
+	 * @param size 流大小
+	 * @return java.lang.String
+	 */
 	public String upload(InputStream stream, String relativeKey, Long size) {
 		return upload(stream, relativeKey, size, acl);
 	}
 
+	/**
+	 * 通过文件对象上传文件
+	 * @param file 文件
+	 * @param relativeKey 相对key
+	 * @return java.lang.String
+	 * @throws IOException 流操作时异常
+	 */
 	public String upload(File file, String relativeKey) throws IOException {
 		try (final FileInputStream stream = new FileInputStream(file)) {
 			return upload(stream, relativeKey, Files.size(file.toPath()), acl);
 		}
 	}
 
+	/**
+	 * 通过流上传文件
+	 * <h1>注意: 本方法不会主动关闭流. 请手动关闭传入的流</h1>
+	 * @param stream 流
+	 * @param relativeKey 相对key
+	 * @param size 流大小
+	 * @param acl 文件权限
+	 * @return java.lang.String
+	 */
 	public String upload(InputStream stream, String relativeKey, Long size, ObjectCannedACL acl) {
 		final String objectKey = getObjectKey(relativeKey);
 		final PutObjectRequest.Builder builder = PutObjectRequest.builder().bucket(bucket).key(objectKey);
@@ -130,7 +158,7 @@ public class OssClient implements DisposableBean {
 		getClient().deleteObject(builder -> builder.bucket(bucket).key(getObjectKey(objectKey)));
 	}
 
-	@SneakyThrows
+	@SneakyThrows(UnsupportedEncodingException.class)
 	public void copy(String absoluteSource, String absoluteTarget) {
 		String s = getCopyUrl(absoluteSource);
 		final CopyObjectRequest request = CopyObjectRequest.builder().copySource(s).destinationBucket(bucket)
