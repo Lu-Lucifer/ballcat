@@ -1,10 +1,18 @@
 package com.hccake.ballcat.common.util.tree;
 
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import lombok.experimental.UtilityClass;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -81,7 +89,7 @@ public class TreeUtils {
 		}
 		// 根据 parentId 进行分组
 		Map<I, List<T>> childrenMap = tStream
-				.collect(Collectors.groupingBy(T::getParentId, LinkedHashMap::new, Collectors.toList()));
+			.collect(Collectors.groupingBy(T::getParentKey, LinkedHashMap::new, Collectors.toList()));
 
 		// 根据根节点ID拿到一级节点
 		List<T> treeList = childrenMap.get(rootId);
@@ -98,10 +106,10 @@ public class TreeUtils {
 	 * @param childrenMap 子节点集合Map(k: parentId, v: Node)
 	 */
 	public <T extends TreeNode<I>, I> void setChildren(T parent, Map<I, List<T>> childrenMap) {
-		I parentId = parent.getId();
+		I parentId = parent.getKey();
 		List<T> children = childrenMap.get(parentId);
 		// 如果有孩子节点则赋值，且给孩子节点的孩子节点赋值
-		if (CollectionUtil.isNotEmpty(children)) {
+		if (CollUtil.isNotEmpty(children)) {
 			parent.setChildren(children);
 			children.forEach(node -> TreeUtils.setChildren(node, childrenMap));
 		}
@@ -132,7 +140,7 @@ public class TreeUtils {
 	public <T extends TreeNode<I>, I> void fillLeaf(T parent, List<T> leafs) {
 		List<T> children = parent.getChildren();
 		// 如果节点没有子节点则说明为叶子节点
-		if (CollectionUtil.isEmpty(children)) {
+		if (CollUtil.isEmpty(children)) {
 			leafs.add(parent);
 			return;
 		}
@@ -164,13 +172,13 @@ public class TreeUtils {
 	 */
 	public <T extends TreeNode<I>, I> void fillTreeNodeIds(List<I> ids, List<T> treeList) {
 		// 如果节点没有子节点则说明为叶子节点
-		if (CollectionUtil.isEmpty(treeList)) {
+		if (CollUtil.isEmpty(treeList)) {
 			return;
 		}
 		for (T treeNode : treeList) {
-			ids.add(treeNode.getId());
+			ids.add(treeNode.getKey());
 			List<T> children = treeNode.getChildren();
-			if (CollectionUtil.isNotEmpty(children)) {
+			if (CollUtil.isNotEmpty(children)) {
 				fillTreeNodeIds(ids, children);
 			}
 		}
@@ -212,7 +220,7 @@ public class TreeUtils {
 
 			// 如果当前节点的含有子节点，则添加到队列中
 			List<T> children = node.getChildren();
-			if (CollectionUtil.isNotEmpty(children)) {
+			if (CollUtil.isNotEmpty(children)) {
 				queue.addAll(children);
 			}
 
@@ -245,8 +253,10 @@ public class TreeUtils {
 	 * @return 所有树节点组成的列表
 	 */
 	public <T extends TreeNode<I>, I, R> List<R> treeToList(List<T> treeNodes, Function<T, R> converter) {
-		return treeNodes.stream().map(node -> treeToList(node, converter)).flatMap(Collection::stream)
-				.collect(Collectors.toList());
+		return treeNodes.stream()
+			.map(node -> treeToList(node, converter))
+			.flatMap(Collection::stream)
+			.collect(Collectors.toList());
 	}
 
 	/**
@@ -258,12 +268,12 @@ public class TreeUtils {
 	 */
 	public <T extends TreeNode<I>, I> List<T> pruneTree(List<T> treeNodes, Predicate<T> matcher) {
 		List<T> result = new ArrayList<>();
-		if (CollectionUtil.isEmpty(treeNodes)) {
+		if (CollUtil.isEmpty(treeNodes)) {
 			return result;
 		}
 		for (T treeNode : treeNodes) {
 			List<T> children = pruneTree(treeNode.getChildren(), matcher);
-			if (CollectionUtil.isNotEmpty(children)) {
+			if (CollUtil.isNotEmpty(children)) {
 				treeNode.setChildren(children);
 				result.add(treeNode);
 			}
@@ -284,12 +294,35 @@ public class TreeUtils {
 	 */
 	public <T extends TreeNode<I>, I> T pruneTree(T treeNode, Predicate<T> matcher) {
 		List<T> children = pruneTree(treeNode.getChildren(), matcher);
-		boolean childrenMatched = CollectionUtil.isNotEmpty(children);
+		boolean childrenMatched = CollUtil.isNotEmpty(children);
 		if (childrenMatched) {
 			treeNode.setChildren(children);
 		}
 		boolean nodeMatched = matcher.test(treeNode);
 		return (nodeMatched || childrenMatched) ? treeNode : null;
+	}
+
+	/**
+	 * 遍历树节点（深度优先）
+	 */
+	public <T extends TreeNode<I>, I> void forEachDFS(T treeNode, T parentTreeNode, BiConsumer<T, T> action) {
+		action.accept(treeNode, parentTreeNode);
+		List<T> children = treeNode.getChildren();
+		forEachDFS(children, parentTreeNode, action);
+	}
+
+	/**
+	 * 遍历树节点（深度优先）
+	 */
+	public <T extends TreeNode<I>, I> void forEachDFS(List<T> treeNodes, T parentTreeNode, BiConsumer<T, T> action) {
+		if (treeNodes == null || treeNodes.isEmpty()) {
+			return;
+		}
+		for (T treeNode : treeNodes) {
+			List<T> children = treeNode.getChildren();
+			action.accept(treeNode, parentTreeNode);
+			forEachDFS(children, treeNode, action);
+		}
 	}
 
 }

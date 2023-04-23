@@ -1,7 +1,7 @@
 package com.hccake.extend.kafka;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -42,8 +42,6 @@ public class KafkaProducerBuilder {
 
 	/**
 	 * 添加 kafka 路径 host:port
-	 *
-	 * @author lingting 2020-06-19 16:30:03
 	 */
 	public KafkaProducerBuilder addBootstrapServers(String uri) {
 		bootstrapServers.add(uri);
@@ -57,8 +55,6 @@ public class KafkaProducerBuilder {
 
 	/**
 	 * 添加配置
-	 *
-	 * @author lingting 2020-06-19 16:30:50
 	 */
 	public KafkaProducerBuilder put(Object key, Object val) {
 		properties.put(key, val);
@@ -67,8 +63,6 @@ public class KafkaProducerBuilder {
 
 	/**
 	 * 添加配置
-	 *
-	 * @author lingting 2020-06-19 16:30:50
 	 */
 	public KafkaProducerBuilder putAll(Properties properties) {
 		this.properties.putAll(properties);
@@ -98,9 +92,9 @@ public class KafkaProducerBuilder {
 	}
 
 	public Properties getProperties() {
-		bootstrapServers
-				.addAll(ListUtil.toList(properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, StrUtil.EMPTY)
-						.split(BOOTSTRAP_SERVERS_DELIMITER)));
+		bootstrapServers.addAll(
+				ListUtil.toList(properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, CharSequenceUtil.EMPTY)
+					.split(BOOTSTRAP_SERVERS_DELIMITER)));
 		properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
 				String.join(BOOTSTRAP_SERVERS_DELIMITER, bootstrapServers));
 		return properties;

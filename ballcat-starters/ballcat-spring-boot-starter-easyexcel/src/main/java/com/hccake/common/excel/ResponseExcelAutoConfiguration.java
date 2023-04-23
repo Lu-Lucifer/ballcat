@@ -4,6 +4,7 @@ import com.hccake.common.excel.aop.DynamicNameAspect;
 import com.hccake.common.excel.aop.RequestExcelArgumentResolver;
 import com.hccake.common.excel.aop.ResponseExcelReturnValueHandler;
 import com.hccake.common.excel.config.ExcelConfigProperties;
+import com.hccake.common.excel.head.EmptyHeadGenerator;
 import com.hccake.common.excel.processor.NameProcessor;
 import com.hccake.common.excel.processor.NameSpelExpressionProcessor;
 import lombok.RequiredArgsConstructor;
@@ -58,12 +59,22 @@ public class ResponseExcelAutoConfiguration {
 	}
 
 	/**
+	 * 空的 Excel 头生成器
+	 * @return EmptyHeadGenerator
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public EmptyHeadGenerator emptyHeadGenerator() {
+		return new EmptyHeadGenerator();
+	}
+
+	/**
 	 * 追加 Excel返回值处理器 到 springmvc 中
 	 */
 	@PostConstruct
 	public void setReturnValueHandlers() {
 		List<HandlerMethodReturnValueHandler> returnValueHandlers = requestMappingHandlerAdapter
-				.getReturnValueHandlers();
+			.getReturnValueHandlers();
 
 		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<>();
 		newHandlers.add(responseExcelReturnValueHandler);

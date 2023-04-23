@@ -1,6 +1,8 @@
 package com.hccake.ballcat.auth.configurer;
 
+import com.hccake.ballcat.auth.authentication.ClientBasicAuthenticationProvider;
 import com.hccake.ballcat.auth.authentication.TokenGrantBuilder;
+import com.hccake.ballcat.auth.configuration.ICustomAuthorizationServerConfigurer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -11,11 +13,11 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter;
 import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
@@ -26,12 +28,11 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 /**
  * OAuth2 授权服务器配置
  *
- * @author Hccake
- * @version 1.0
- * @date 2019/9/27 16:14
+ * @author Hccake 2019/9/27 16:14
  */
+@Deprecated
 @RequiredArgsConstructor
-public class CustomAuthorizationServerConfigurer implements AuthorizationServerConfigurer {
+public class CustomAuthorizationServerConfigurer implements ICustomAuthorizationServerConfigurer {
 
 	private final OAuth2ClientConfigurer clientConfigurer;
 
@@ -49,6 +50,10 @@ public class CustomAuthorizationServerConfigurer implements AuthorizationServerC
 
 	private final TokenGrantBuilder tokenGrantBuilder;
 
+	private final ClientDetailsService clientDetailsService;
+
+	private final PasswordEncoder passwordEncoder;
+
 	@Autowired(required = false)
 	private TokenEnhancer tokenEnhancer;
 
@@ -57,21 +62,22 @@ public class CustomAuthorizationServerConfigurer implements AuthorizationServerC
 	 * @param security AuthorizationServerSecurityConfigurer
 	 */
 	@Override
-	public void configure(AuthorizationServerSecurityConfigurer security) {
+	public void configure(CustomAuthorizationServerSecurityConfigurer security) {
+		// 不能交给 spring 托管，否则会被注册到资源服务器的权限控制中
+		ClientBasicAuthenticationProvider authenticationProvider = new ClientBasicAuthenticationProvider(
+				clientDetailsService, passwordEncoder);
 		// @formatter:off
 		security.tokenKeyAccess("permitAll()")
 			.checkTokenAccess("isAuthenticated()")
+			.addAuthenticationProvider(authenticationProvider)
 			.authenticationEntryPoint(authenticationEntryPoint)
 			.allowFormAuthenticationForClients()
 			// 处理使用 allowFormAuthenticationForClients 后，注册的过滤器异常处理不走自定义配置的问题
-			.addObjectPostProcessor(new ObjectPostProcessor<Object>() {
+			.addObjectPostProcessor(new ObjectPostProcessor<ClientCredentialsTokenEndpointFilter>() {
 				@Override
-				public <O> O postProcess(O object) {
-					if(object instanceof ClientCredentialsTokenEndpointFilter) {
-						ClientCredentialsTokenEndpointFilter filter = (ClientCredentialsTokenEndpointFilter) object;
-						filter.setAuthenticationEntryPoint(authenticationEntryPoint);
-					}
-					return object;
+				public ClientCredentialsTokenEndpointFilter postProcess(ClientCredentialsTokenEndpointFilter filter) {
+					filter.setAuthenticationEntryPoint(authenticationEntryPoint);
+					return filter;
 				}
 			});
 		// @formatter:on

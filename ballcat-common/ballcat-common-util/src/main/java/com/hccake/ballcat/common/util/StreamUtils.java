@@ -1,16 +1,12 @@
 package com.hccake.ballcat.common.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * @author lingting 2021/4/21 17:45
@@ -23,10 +19,90 @@ public class StreamUtils {
 	 */
 	public static final int DEFAULT_SIZE = 10485760;
 
+	public static byte[] read(InputStream in) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		write(in, out);
+		try {
+			return out.toByteArray();
+		}
+		finally {
+			close(out);
+		}
+	}
+
+	public static void write(InputStream in, OutputStream out) throws IOException {
+		write(in, out, DEFAULT_SIZE);
+	}
+
+	public static void write(InputStream in, OutputStream out, int size) throws IOException {
+		byte[] bytes = new byte[size];
+		int len;
+
+		while (true) {
+			len = in.read(bytes);
+			if (len <= 0) {
+				break;
+			}
+
+			out.write(bytes, 0, len);
+		}
+	}
+
+	public static String toString(InputStream in) throws IOException {
+		return toString(in, DEFAULT_SIZE, StandardCharsets.UTF_8);
+	}
+
+	public static String toString(InputStream in, int size, Charset charset) throws IOException {
+		byte[] bytes = new byte[size];
+		int len;
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		while (true) {
+			len = in.read(bytes);
+			if (len <= 0) {
+				break;
+			}
+			outputStream.write(bytes, 0, len);
+		}
+
+		return outputStream.toString(charset.name());
+	}
+
+	/**
+	 * 从流中读取 int
+	 * @author lingting 2021-07-22 14:54
+	 */
+	public static int readInt(InputStream is, int noOfBytes, boolean bigEndian) throws IOException {
+		int ret = 0;
+		int sv = bigEndian ? ((noOfBytes - 1) * 8) : 0;
+		int cnt = bigEndian ? -8 : 8;
+		for (int i = 0; i < noOfBytes; i++) {
+			ret |= is.read() << sv;
+			sv += cnt;
+		}
+		return ret;
+	}
+
+	public static void close(Closeable closeable) {
+		try {
+			if (closeable != null) {
+				closeable.close();
+			}
+		}
+		catch (Exception e) {
+			//
+		}
+	}
+
 	/**
 	 * 克隆文件流
+	 * <p color="red">
+	 * 注意: 在使用后及时关闭复制流
+	 * </p>
 	 * @param stream 源流
 	 * @param amounts 数量
+	 * @return 返回指定数量的从源流复制出来的只读流
 	 * @author lingting 2021-04-16 16:18
 	 */
 	public static InputStream[] clone(InputStream stream, Integer amounts) throws IOException {
@@ -45,7 +121,7 @@ public class StreamUtils {
 			for (int i = 0, outsLength = outs.length; i < outsLength; i++) {
 				FileOutputStream out = outs[i];
 				if (out == null) {
-					files[i] = FileUtils.getTemplateFile("clone." + i + "." + System.currentTimeMillis());
+					files[i] = FileUtils.createTemp("clone." + i + "." + System.currentTimeMillis());
 					out = new FileOutputStream(files[i]);
 					outs[i] = out;
 				}
@@ -61,58 +137,10 @@ public class StreamUtils {
 				//
 			}
 
-			streams[i] = new FileInputStream(files[i]);
+			streams[i] = Files.newInputStream(files[i].toPath());
 		}
 
 		return streams;
-	}
-
-	/**
-	 * 流转字符串
-	 * @author lingting 2021-04-29 18:07
-	 */
-	public static String toString(InputStream stream) throws IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-		StringBuilder stringBuilder = new StringBuilder();
-		String line;
-		while ((line = reader.readLine()) != null) {
-			stringBuilder.append(line);
-		}
-		return stringBuilder.toString();
-	}
-
-	/**
-	 * 将输入流内容写入输出流
-	 * @param inputStream 输入流
-	 * @param outputStream 输出流
-	 * @author lingting 2021-10-19 22:41
-	 */
-	public static void write(InputStream inputStream, OutputStream outputStream) throws IOException {
-		write(inputStream, outputStream, DEFAULT_SIZE);
-	}
-
-	public static void write(InputStream inputStream, OutputStream outputStream, int size) throws IOException {
-		int len;
-		byte[] bytes = new byte[size < 1 ? DEFAULT_SIZE : size];
-
-		while ((len = inputStream.read(bytes)) > 0) {
-			outputStream.write(bytes, 0, len);
-		}
-	}
-
-	/**
-	 * 从流中读取 int
-	 * @author lingting 2021-07-22 14:54
-	 */
-	public static int readInt(InputStream is, int noOfBytes, boolean bigEndian) throws IOException {
-		int ret = 0;
-		int sv = bigEndian ? ((noOfBytes - 1) * 8) : 0;
-		int cnt = bigEndian ? -8 : 8;
-		for (int i = 0; i < noOfBytes; i++) {
-			ret |= is.read() << sv;
-			sv += cnt;
-		}
-		return ret;
 	}
 
 }

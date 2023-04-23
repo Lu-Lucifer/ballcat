@@ -1,6 +1,5 @@
 package com.hccake.ballcat.system.authentication;
 
-import cn.hutool.core.collection.CollectionUtil;
 import com.hccake.ballcat.common.security.constant.UserAttributeNameConstants;
 import com.hccake.ballcat.common.security.userdetails.User;
 import com.hccake.ballcat.system.model.dto.UserInfoDTO;
@@ -13,6 +12,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,7 +54,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
 		Collection<String> permissions = userInfoDTO.getPermissions();
 
 		Collection<String> dbAuthsSet = new HashSet<>();
-		if (CollectionUtil.isNotEmpty(roleCodes)) {
+		if (!CollectionUtils.isEmpty(roleCodes)) {
 			// 获取角色
 			dbAuthsSet.addAll(roleCodes);
 			// 获取资源
@@ -62,7 +62,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
 
 		}
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
-				.createAuthorityList(dbAuthsSet.toArray(new String[0]));
+			.createAuthorityList(dbAuthsSet.toArray(new String[0]));
 
 		// 默认将角色和权限放入属性中
 		HashMap<String, Object> attributes = new HashMap<>(8);

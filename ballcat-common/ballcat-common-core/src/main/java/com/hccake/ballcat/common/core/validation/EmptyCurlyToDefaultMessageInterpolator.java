@@ -9,7 +9,7 @@ import java.util.Locale;
 
 /**
  * 将消息中空的花括号替换为校验注解的默认值
- *
+ * <p>
  * 扩展自原有的 {@link ResourceBundleMessageInterpolator} 消息处理器
  *
  * @author hccake
@@ -17,10 +17,6 @@ import java.util.Locale;
 public class EmptyCurlyToDefaultMessageInterpolator extends ResourceBundleMessageInterpolator {
 
 	private static final String EMPTY_CURLY_BRACES = "{}";
-
-	private static final String LEFT_CURLY_BRACES = "{";
-
-	private static final String RIGHT_CURLY_BRACES = "}";
 
 	public EmptyCurlyToDefaultMessageInterpolator() {
 	}
@@ -35,8 +31,9 @@ public class EmptyCurlyToDefaultMessageInterpolator extends ResourceBundleMessag
 		// 如果包含花括号占位符
 		if (message.contains(EMPTY_CURLY_BRACES)) {
 			// 获取注解类型
-			Class<? extends Annotation> annotationType = context.getConstraintDescriptor().getAnnotation()
-					.annotationType();
+			Class<? extends Annotation> annotationType = context.getConstraintDescriptor()
+				.getAnnotation()
+				.annotationType();
 
 			Method messageMethod;
 			try {
@@ -51,9 +48,7 @@ public class EmptyCurlyToDefaultMessageInterpolator extends ResourceBundleMessag
 				Object defaultValue = messageMethod.getDefaultValue();
 				if (defaultValue instanceof String) {
 					String defaultMessage = (String) defaultValue;
-					if (defaultMessage.startsWith(LEFT_CURLY_BRACES) && defaultMessage.endsWith(RIGHT_CURLY_BRACES)) {
-						message = message.replace(EMPTY_CURLY_BRACES, defaultMessage);
-					}
+					message = message.replace(EMPTY_CURLY_BRACES, defaultMessage);
 				}
 			}
 		}

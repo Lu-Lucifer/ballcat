@@ -12,8 +12,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "ballcat.system")
+@ConfigurationProperties(prefix = SystemProperties.PREFIX)
 public class SystemProperties {
+
+	public static final String PREFIX = "ballcat.system";
 
 	/**
 	 * 超级管理员的配置

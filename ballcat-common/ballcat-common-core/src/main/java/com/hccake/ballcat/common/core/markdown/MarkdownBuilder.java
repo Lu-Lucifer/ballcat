@@ -1,7 +1,10 @@
 package com.hccake.ballcat.common.core.markdown;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.hccake.ballcat.common.util.json.JacksonJsonToolAdapter;
+import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,10 @@ public class MarkdownBuilder {
 	public static final String TITLE_PREFIX = "#";
 
 	public static final String QUOTE_PREFIX = "> ";
+
+	public static final String CODE_PREFIX = "``` ";
+
+	public static final String CODE_SUFFIX = "```";
 
 	public static final String BOLD_PREFIX = "**";
 
@@ -43,19 +50,17 @@ public class MarkdownBuilder {
 	/**
 	 * 添加自定义内容
 	 * @param content 自定义内容
-	 * @author lingting 2020-06-10 23:14:54
 	 */
-	public MarkdownBuilder append(String content) {
-		lineTextBuilder.append(content);
+	public MarkdownBuilder append(Object content) {
+		lineTextBuilder.append(toString(content));
 		return this;
 	}
 
 	/**
 	 * 有序列表 自动生成 索引
 	 * @param content 文本
-	 * @author lingting 2020-06-10 23:13:41
 	 */
-	public MarkdownBuilder orderList(String content) {
+	public MarkdownBuilder orderList(Object content) {
 		// 获取最后一个字符串
 		String tmp = "";
 		if (!this.content.isEmpty()) {
@@ -77,42 +82,37 @@ public class MarkdownBuilder {
 	 * 有序列表
 	 * @param index 索引
 	 * @param content 文本
-	 * @author lingting 2020-06-10 23:13:41
 	 */
-	public MarkdownBuilder orderList(int index, String content) {
+	public MarkdownBuilder orderList(int index, Object content) {
 		lineBreak();
-		lineTextBuilder.append(index).append(ORDER_LIST_PREFIX).append(content);
+		lineTextBuilder.append(index).append(ORDER_LIST_PREFIX).append(toString(content));
 		return this;
 	}
 
 	/**
 	 * 无序列表 - item1 - item2
-	 *
-	 * @author lingting 2020-06-10 23:09:29
 	 */
-	public MarkdownBuilder unorderedList(String content) {
+	public MarkdownBuilder unorderedList(Object content) {
 		// 换行
 		lineBreak();
-		lineTextBuilder.append(UNORDERED_LIST_PREFIX).append(content);
+		lineTextBuilder.append(UNORDERED_LIST_PREFIX).append(toString(content));
 		return this;
 	}
 
 	/**
 	 * 图片
 	 * @param url 图片链接
-	 * @author lingting 2020-06-10 23:03:04
 	 */
 	public MarkdownBuilder pic(String url) {
-		return pic(StrUtil.EMPTY, url);
+		return pic("", url);
 	}
 
 	/**
 	 * 图片
 	 * @param title 图片标题
 	 * @param url 图片路径
-	 * @author lingting 2020-06-10 23:03:11
 	 */
-	public MarkdownBuilder pic(String title, String url) {
+	public MarkdownBuilder pic(Object title, String url) {
 		lineTextBuilder.append("![").append(title).append("](").append(url).append(")");
 		return this;
 	}
@@ -121,58 +121,88 @@ public class MarkdownBuilder {
 	 * 链接
 	 * @param title 标题
 	 * @param url http 路径
-	 * @author lingting 2020-06-10 23:01:15
 	 */
-	public MarkdownBuilder link(String title, String url) {
+	public MarkdownBuilder link(Object title, String url) {
 		lineTextBuilder.append("[").append(title).append("](").append(url).append(")");
 		return this;
 	}
 
 	/**
 	 * 斜体
-	 *
-	 * @author lingting 2020-06-10 22:59:26
 	 */
-	public MarkdownBuilder italic(String content) {
-		lineTextBuilder.append(ITALIC_PREFIX).append(content).append(ITALIC_PREFIX);
+	public MarkdownBuilder italic(Object content) {
+		lineTextBuilder.append(ITALIC_PREFIX).append(toString(content)).append(ITALIC_PREFIX);
 		return this;
 	}
 
 	/**
 	 * 加粗
-	 *
-	 * @author lingting 2020-06-10 22:58:39
 	 */
-	public MarkdownBuilder bold(String content) {
-		lineTextBuilder.append(BOLD_PREFIX).append(content).append(BOLD_PREFIX);
+	public MarkdownBuilder bold(Object content) {
+		lineTextBuilder.append(BOLD_PREFIX).append(toString(content)).append(BOLD_PREFIX);
 		return this;
 	}
 
 	/**
 	 * 引用 > 文本
 	 * @param content 文本
-	 * @author lingting 2020-06-10 22:58:04
 	 */
-	public MarkdownBuilder quote(String content) {
+	public MarkdownBuilder quote(Object... content) {
 		lineBreak();
-		this.content.add(QUOTE_PREFIX + content);
+		lineTextBuilder.append(QUOTE_PREFIX);
+		for (Object o : content) {
+			lineTextBuilder.append(toString(o));
+		}
 		return this;
 	}
 
 	/**
-	 * 添加引用后 强制换行
-	 *
-	 * @author lingting 2020-06-12 15:50:29
+	 * 添加引用后, 换行, 写入下一行引用
 	 */
-	public MarkdownBuilder quoteLineBreak(String content) {
+	public MarkdownBuilder quoteBreak(Object... content) {
+		// 当前行引用内容
 		quote(content);
-		return forceLineBreak();
+		// 空引用行
+		return quote();
+	}
+
+	/**
+	 * 代码
+	 */
+	public MarkdownBuilder code(String type, Object... code) {
+		lineBreak();
+		lineTextBuilder.append(CODE_PREFIX).append(type);
+		lineBreak();
+		for (Object o : code) {
+			lineTextBuilder.append(toString(o));
+		}
+		lineBreak();
+		lineTextBuilder.append(CODE_SUFFIX);
+		return lineBreak();
+	}
+
+	/**
+	 * 代码
+	 */
+	public MarkdownBuilder json(Object obj) {
+		String json;
+		if (obj instanceof String) {
+			json = (String) obj;
+		}
+		else {
+			json = multiJson(obj);
+		}
+		return code("json", json);
+	}
+
+	@SneakyThrows
+	private String multiJson(Object obj) {
+		ObjectMapper mapper = JacksonJsonToolAdapter.getMapper().copy().enable(SerializationFeature.INDENT_OUTPUT);
+		return mapper.writeValueAsString(obj);
 	}
 
 	/**
 	 * 强制换行
-	 *
-	 * @author lingting 2020-06-10 22:56:25
 	 */
 	public MarkdownBuilder forceLineBreak() {
 		content.add(lineTextBuilder.toString());
@@ -182,8 +212,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 换行 当已编辑文本长度不为0时换行
-	 *
-	 * @author lingting 2020-06-10 22:56:25
 	 */
 	public MarkdownBuilder lineBreak() {
 		if (lineTextBuilder.length() != 0) {
@@ -197,35 +225,43 @@ public class MarkdownBuilder {
 	 *
 	 * @author lingting 2020-06-10 22:55:39
 	 */
-	private MarkdownBuilder title(int i, String content) {
+	private MarkdownBuilder title(int i, Object content) {
 		// 如果当前操作行已有字符，需要换行
 		lineBreak();
 		for (int j = 0; j < i; j++) {
 			lineTextBuilder.append(TITLE_PREFIX);
 		}
-		this.content.add(lineTextBuilder.append(" ").append(content).toString());
+		this.content.add(lineTextBuilder.append(" ").append(toString(content)).toString());
 		lineTextBuilder = new StringBuilder();
 		return this;
 	}
 
-	public MarkdownBuilder title1(String text) {
+	public MarkdownBuilder title1(Object text) {
 		return title(1, text);
 	}
 
-	public MarkdownBuilder title2(String text) {
+	public MarkdownBuilder title2(Object text) {
 		return title(2, text);
 	}
 
-	public MarkdownBuilder title3(String text) {
+	public MarkdownBuilder title3(Object text) {
 		return title(3, text);
 	}
 
-	public MarkdownBuilder title4(String text) {
+	public MarkdownBuilder title4(Object text) {
 		return title(4, text);
 	}
 
-	public MarkdownBuilder title5(String text) {
+	public MarkdownBuilder title5(Object text) {
 		return title(5, text);
+	}
+
+	String toString(Object o) {
+		if (o == null) {
+			return "";
+
+		}
+		return o.toString();
 	}
 
 	@Override
@@ -235,8 +271,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 构筑 Markdown 文本
-	 *
-	 * @author lingting 2020-06-11 22:55:40
 	 */
 	public String build() {
 		lineBreak();

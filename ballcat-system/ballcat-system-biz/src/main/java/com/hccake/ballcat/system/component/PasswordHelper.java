@@ -1,11 +1,11 @@
 package com.hccake.ballcat.system.component;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.crypto.CryptoException;
 import com.hccake.ballcat.common.core.exception.BusinessException;
-import com.hccake.ballcat.common.security.properties.SecurityProperties;
 import com.hccake.ballcat.common.security.util.PasswordUtils;
 import com.hccake.ballcat.system.properties.SystemProperties;
+import org.ballcat.security.properties.SecurityProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ public class PasswordHelper {
 		this.securityProperties = securityProperties;
 		this.passwordEncoder = passwordEncoder;
 		String passwordRule = systemProperties.getPasswordRule();
-		this.passwordPattern = StrUtil.isEmpty(passwordRule) ? null : Pattern.compile(passwordRule);
+		this.passwordPattern = CharSequenceUtil.isEmpty(passwordRule) ? null : Pattern.compile(passwordRule);
 	}
 
 	/**

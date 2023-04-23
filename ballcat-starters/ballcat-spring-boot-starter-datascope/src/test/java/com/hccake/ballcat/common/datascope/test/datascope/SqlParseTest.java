@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
@@ -26,8 +25,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  */
 class SqlParseTest {
 
-	DataScope tenantDataScope = new DataScope() {
+	static class TenantDataScope implements DataScope {
+
 		final String columnName = "tenant_id";
+
+		private static final Set<String> TABLE_NAMES = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		static {
+			TABLE_NAMES.addAll(Arrays.asList("entity", "entity1", "entity2", "entity3", "t1", "t2"));
+		}
 
 		@Override
 		public String getResource() {
@@ -35,10 +40,8 @@ class SqlParseTest {
 		}
 
 		@Override
-		public Collection<String> getTableNames() {
-			Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-			tableNames.addAll(Arrays.asList("entity", "entity1", "entity2", "entity3", "t1", "t2"));
-			return tableNames;
+		public boolean includes(String tableName) {
+			return TABLE_NAMES.contains(tableName);
 		}
 
 		@Override
@@ -46,7 +49,10 @@ class SqlParseTest {
 			Column column = SqlParseUtils.getAliasColumn(tableName, tableAlias, columnName);
 			return new EqualsTo(column, new LongValue("1"));
 		}
-	};
+
+	}
+
+	DataScope tenantDataScope = new TenantDataScope();
 
 	DataPermissionHandler dataPermissionHandler = new DefaultDataPermissionHandler(
 			Collections.singletonList(tenantDataScope));
@@ -290,19 +296,33 @@ class SqlParseTest {
 	}
 
 	@Test
-	void selectInnerJoin() {
+	void testInnerJoin() {
 		// inner join
-		assertSql("SELECT * FROM entity e " + "inner join entity1 e1 on e1.id = e.id " + "WHERE e.id = ? OR e.name = ?",
+		assertSql("SELECT * FROM entity e inner join entity1 e1 on e1.id = e.id WHERE e.id = ? OR e.name = ?",
 				"SELECT * FROM entity e "
 						+ "INNER JOIN entity1 e1 ON e1.id = e.id AND e.tenant_id = 1 AND e1.tenant_id = 1 "
 						+ "WHERE e.id = ? OR e.name = ?");
 
-		assertSql(
-				"SELECT * FROM entity e " + "inner join entity1 e1 on e1.id = e.id " + "WHERE (e.id = ? OR e.name = ?)",
+		assertSql("SELECT * FROM entity e inner join entity1 e1 on e1.id = e.id WHERE (e.id = ? OR e.name = ?)",
 				"SELECT * FROM entity e "
 						+ "INNER JOIN entity1 e1 ON e1.id = e.id AND e.tenant_id = 1 AND e1.tenant_id = 1 "
 						+ "WHERE (e.id = ? OR e.name = ?)");
+	}
 
+	@Test
+	void testJoin() {
+		// inner join
+		assertSql("SELECT * FROM entity e join entity1 e1 on e1.id = e.id WHERE e.id = ? OR e.name = ?",
+				"SELECT * FROM entity e " + "JOIN entity1 e1 ON e1.id = e.id AND e.tenant_id = 1 AND e1.tenant_id = 1 "
+						+ "WHERE e.id = ? OR e.name = ?");
+
+		assertSql("SELECT * FROM entity e join entity1 e1 on e1.id = e.id WHERE (e.id = ? OR e.name = ?)",
+				"SELECT * FROM entity e " + "JOIN entity1 e1 ON e1.id = e.id AND e.tenant_id = 1 AND e1.tenant_id = 1 "
+						+ "WHERE (e.id = ? OR e.name = ?)");
+	}
+
+	@Test
+	void testSimpleJoin() {
 		// 隐式内连接
 		assertSql("SELECT * FROM entity,entity1 " + "WHERE entity.id = entity1.id", "SELECT * FROM entity, entity1 "
 				+ "WHERE entity.id = entity1.id AND entity.tenant_id = 1 AND entity1.tenant_id = 1");
@@ -327,7 +347,6 @@ class SqlParseTest {
 		assertSql("SELECT * FROM (((entity,entity1))) " + "WHERE entity.id = entity1.id",
 				"SELECT * FROM (((entity, entity1))) " + "WHERE entity.id = entity1.id "
 						+ "AND entity.tenant_id = 1 AND entity1.tenant_id = 1");
-
 	}
 
 	@Test
@@ -345,7 +364,7 @@ class SqlParseTest {
 				+ "sys_user_role ur\n" + "left join\n" + "sys_role r\n" + "on r.code = ur.role_code\n"
 				+ "WHERE ur.user_id = ?\n" + "and r.deleted = 0";
 		Assertions
-				.assertDoesNotThrow(() -> dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()));
+			.assertDoesNotThrow(() -> dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()));
 
 	}
 

@@ -1,6 +1,6 @@
 package com.hccake.ballcat.i18n.controller;
 
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.hccake.ballcat.common.core.constant.enums.ImportModeEnum;
 import com.hccake.ballcat.common.log.operation.annotation.CreateOperationLogging;
 import com.hccake.ballcat.common.log.operation.annotation.DeleteOperationLogging;
@@ -19,8 +19,8 @@ import com.hccake.ballcat.i18n.model.vo.I18nDataPageVO;
 import com.hccake.ballcat.i18n.service.I18nDataService;
 import com.hccake.common.excel.annotation.RequestExcel;
 import com.hccake.common.excel.annotation.ResponseExcel;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -133,13 +133,14 @@ public class I18nDataController {
 	public R<List<I18nData>> importI18nData(@RequestExcel List<I18nDataExcelVO> excelVos,
 			@RequestParam("importMode") ImportModeEnum importModeEnum) {
 
-		if (CollectionUtil.isEmpty(excelVos)) {
+		if (CollUtil.isEmpty(excelVos)) {
 			return R.ok();
 		}
 
 		// 转换结构
-		List<I18nData> list = excelVos.stream().map(I18nDataConverter.INSTANCE::excelVoToPo)
-				.collect(Collectors.toList());
+		List<I18nData> list = excelVos.stream()
+			.map(I18nDataConverter.INSTANCE::excelVoToPo)
+			.collect(Collectors.toList());
 
 		// 跳过已有数据，返回已有数据列表
 		if (importModeEnum == ImportModeEnum.SKIP_EXISTING) {
@@ -166,7 +167,7 @@ public class I18nDataController {
 	@Operation(summary = "导出国际化信息", description = "导出国际化信息")
 	public List<I18nDataExcelVO> exportI18nData(I18nDataQO i18nDataQO) {
 		List<I18nData> list = i18nDataService.queryList(i18nDataQO);
-		if (CollectionUtil.isEmpty(list)) {
+		if (CollUtil.isEmpty(list)) {
 			return new ArrayList<>();
 		}
 		// 转换为 excel vo 对象

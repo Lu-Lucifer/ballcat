@@ -32,7 +32,6 @@ public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K,
 
 	/**
 	 * @param supplier 生成key的方式
-	 * @author lingting 2020-06-22 10:43:34
 	 */
 	public static <K, V> KafkaKeyValueStore<K, V> init(KeyValueStore<K, V> store, Supplier<K> supplier) {
 		KafkaKeyValueStore<K, V> keyValueStore = new KafkaKeyValueStore<>();
@@ -64,7 +63,6 @@ public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K,
 	/**
 	 * 获取插入数据的key
 	 * @return 生成的key
-	 * @author lingting 2020-06-22 10:14:15
 	 */
 	public K getKey() {
 		return supplier.get();
@@ -96,7 +94,6 @@ public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K,
 	 * 直接插入数据
 	 * @param v 值
 	 * @param kvKeyValueStore 目标
-	 * @author lingting 2020-06-22 10:36:53
 	 */
 	@Override
 	public void forkPush(V v, KeyValueStore<K, V> kvKeyValueStore) {

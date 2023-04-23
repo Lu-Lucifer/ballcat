@@ -6,6 +6,7 @@ import lombok.Getter;
 
 /**
  * 返回code
+ *
  * @author lingting 2021/2/1 11:31
  */
 @Getter
@@ -30,12 +31,12 @@ public enum ResponseCode {
 	@JsonCreator
 	public static ResponseCode of(String status) {
 		switch (status) {
-		case "SUCCESS":
-			return SUCCESS;
-		case "FAIL":
-			return FAIL;
-		default:
-			return ERROR;
+			case "SUCCESS":
+				return SUCCESS;
+			case "FAIL":
+				return FAIL;
+			default:
+				return ERROR;
 		}
 	}
 

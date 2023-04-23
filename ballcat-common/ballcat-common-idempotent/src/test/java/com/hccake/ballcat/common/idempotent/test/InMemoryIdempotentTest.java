@@ -1,7 +1,7 @@
 package com.hccake.ballcat.common.idempotent.test;
 
 import com.hccake.ballcat.common.idempotent.exception.IdempotentException;
-import com.hccake.ballcat.common.idempotent.key.InMemoryIdempotentKeyStore;
+import com.hccake.ballcat.common.idempotent.key.store.InMemoryIdempotentKeyStore;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
@@ -33,8 +33,10 @@ class InMemoryIdempotentTest {
 		Assertions.assertDoesNotThrow(executable);
 		Assertions.assertThrowsExactly(IdempotentException.class, executable);
 
-		Awaitility.await().atMost(1100, TimeUnit.MILLISECONDS).pollDelay(1000, TimeUnit.MILLISECONDS)
-				.untilAsserted(() -> Assertions.assertDoesNotThrow(executable));
+		Awaitility.await()
+			.atMost(1100, TimeUnit.MILLISECONDS)
+			.pollDelay(1000, TimeUnit.MILLISECONDS)
+			.untilAsserted(() -> Assertions.assertDoesNotThrow(executable));
 	}
 
 	@Test

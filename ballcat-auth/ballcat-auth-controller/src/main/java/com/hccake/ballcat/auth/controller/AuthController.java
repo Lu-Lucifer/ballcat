@@ -1,6 +1,6 @@
 package com.hccake.ballcat.auth.controller;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.hccake.ballcat.common.model.result.R;
 import com.hccake.ballcat.common.model.result.SystemResultCode;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Hccake
+ * @deprecated 使用 sas 后不再需要自定义登出
  */
+@Deprecated
 @RestController
 @RequestMapping("/oauth")
 @RequiredArgsConstructor
@@ -36,13 +38,13 @@ public class AuthController {
 	 */
 	@DeleteMapping("/logout")
 	public R<Void> logout(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-		if (StrUtil.isBlank(authHeader)) {
+		if (CharSequenceUtil.isBlank(authHeader)) {
 			return R.failed(SystemResultCode.FORBIDDEN, "退出失败，token 为空");
 		}
 
-		String tokenValue = authHeader.replace(OAuth2AccessToken.BEARER_TYPE, StrUtil.EMPTY).trim();
+		String tokenValue = authHeader.replace(OAuth2AccessToken.BEARER_TYPE, CharSequenceUtil.EMPTY).trim();
 		OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenValue);
-		if (accessToken == null || StrUtil.isBlank(accessToken.getValue())) {
+		if (accessToken == null || CharSequenceUtil.isBlank(accessToken.getValue())) {
 			return R.failed(SystemResultCode.FORBIDDEN, "退出失败，token 无效");
 		}
 

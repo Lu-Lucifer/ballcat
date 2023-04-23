@@ -25,7 +25,6 @@ public abstract class AbstractVerifyThread<T extends VerifyObj, R> extends Abstr
 	 * 根据校验对象信息获取交易数据
 	 * @param obj 校验对象信息
 	 * @return live.lingting.virtual.currency.Transaction
-	 * @author lingting 2021-01-05 11:22
 	 */
 	public abstract Optional<TransactionInfo> getTransaction(T obj);
 
@@ -33,7 +32,6 @@ public abstract class AbstractVerifyThread<T extends VerifyObj, R> extends Abstr
 	 * 处理交易
 	 * @param obj 校验对象信息
 	 * @param optional 交易数据
-	 * @author lingting 2021-01-05 11:13
 	 */
 	public abstract void handler(T obj, @NotNull Optional<TransactionInfo> optional);
 
@@ -42,7 +40,6 @@ public abstract class AbstractVerifyThread<T extends VerifyObj, R> extends Abstr
 	 * @param obj 校验对象
 	 * @param optional 交易数据
 	 * @param r 处理结果
-	 * @author lingting 2021-01-05 11:18
 	 */
 	public abstract void failed(T obj, @NotNull Optional<TransactionInfo> optional, R r);
 
@@ -51,7 +48,6 @@ public abstract class AbstractVerifyThread<T extends VerifyObj, R> extends Abstr
 	 * @param obj 校验对象
 	 * @param optional 交易数据
 	 * @param r 处理结果
-	 * @author lingting 2021-01-05 11:19
 	 */
 	public abstract void success(T obj, @NotNull Optional<TransactionInfo> optional, R r);
 
@@ -59,7 +55,6 @@ public abstract class AbstractVerifyThread<T extends VerifyObj, R> extends Abstr
 	 * 异常处理
 	 * @param obj 校验对象
 	 * @param e 异常信息
-	 * @author lingting 2021-01-05 11:29
 	 */
 	public abstract void error(T obj, Throwable e);
 

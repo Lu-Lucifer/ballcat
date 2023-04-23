@@ -38,10 +38,9 @@ public class SchoolDataScope implements DataScope {
 	}
 
 	@Override
-	public Collection<String> getTableNames() {
-		Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-		tableNames.addAll(Collections.singletonList("h2student"));
-		return tableNames;
+	public boolean includes(String tableName) {
+		// 可以利用表前缀做匹配
+		return tableName.toLowerCase().startsWith("h2student");
 	}
 
 	@Override
@@ -61,8 +60,10 @@ public class SchoolDataScope implements DataScope {
 		}
 
 		// 提取当前登录用户拥有的学校权限
-		List<Expression> list = loginUser.getSchoolNameList().stream().map(StringValue::new)
-				.collect(Collectors.toList());
+		List<Expression> list = loginUser.getSchoolNameList()
+			.stream()
+			.map(StringValue::new)
+			.collect(Collectors.toList());
 		Column column = new Column(tableAlias == null ? columnId : tableAlias.getName() + "." + columnId);
 		ExpressionList expressionList = new ExpressionList();
 		expressionList.setExpressions(list);

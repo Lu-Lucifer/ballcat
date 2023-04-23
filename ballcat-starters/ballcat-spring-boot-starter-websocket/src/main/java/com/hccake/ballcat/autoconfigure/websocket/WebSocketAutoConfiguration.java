@@ -1,6 +1,7 @@
 package com.hccake.ballcat.autoconfigure.websocket;
 
 import com.hccake.ballcat.autoconfigure.websocket.config.LocalMessageDistributorConfig;
+import com.hccake.ballcat.autoconfigure.websocket.config.RocketMqMessageDistributorConfig;
 import com.hccake.ballcat.autoconfigure.websocket.config.RedisMessageDistributorConfig;
 import com.hccake.ballcat.autoconfigure.websocket.config.WebSocketHandlerConfig;
 import com.hccake.ballcat.common.websocket.handler.JsonMessageHandler;
@@ -30,7 +31,8 @@ import java.util.List;
  * @author Yakir Hccake
  */
 @AutoConfiguration
-@Import({ WebSocketHandlerConfig.class, LocalMessageDistributorConfig.class, RedisMessageDistributorConfig.class })
+@Import({ WebSocketHandlerConfig.class, LocalMessageDistributorConfig.class, RedisMessageDistributorConfig.class,
+		RocketMqMessageDistributorConfig.class })
 @EnableWebSocket
 @RequiredArgsConstructor
 @EnableConfigurationProperties(WebSocketProperties.class)
@@ -45,8 +47,8 @@ public class WebSocketAutoConfiguration {
 			@Autowired(required = false) SockJsServiceConfigurer sockJsServiceConfigurer) {
 		return registry -> {
 			WebSocketHandlerRegistration registration = registry
-					.addHandler(webSocketHandler, webSocketProperties.getPath())
-					.addInterceptors(handshakeInterceptor.toArray(new HandshakeInterceptor[0]));
+				.addHandler(webSocketHandler, webSocketProperties.getPath())
+				.addInterceptors(handshakeInterceptor.toArray(new HandshakeInterceptor[0]));
 
 			String[] allowedOrigins = webSocketProperties.getAllowedOrigins();
 			if (allowedOrigins != null && allowedOrigins.length > 0) {

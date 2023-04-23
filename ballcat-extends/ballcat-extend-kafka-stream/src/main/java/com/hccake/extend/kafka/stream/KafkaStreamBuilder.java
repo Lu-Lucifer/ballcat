@@ -1,14 +1,7 @@
 package com.hccake.extend.kafka.stream;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.StrUtil;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.regex.Pattern;
+import cn.hutool.core.text.CharSequenceUtil;
 import lombok.Getter;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -22,6 +15,10 @@ import org.apache.kafka.streams.processor.StreamPartitioner;
 import org.apache.kafka.streams.processor.TimestampExtractor;
 import org.apache.kafka.streams.processor.TopicNameExtractor;
 import org.apache.kafka.streams.state.StoreBuilder;
+
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 
 /**
  * kafka Stream 流构建方法
@@ -58,7 +55,6 @@ public class KafkaStreamBuilder {
 	/**
 	 * 添加 kafka 路径 host:port
 	 *
-	 * @author lingting 2020-06-19 16:30:03
 	 */
 	public KafkaStreamBuilder addBootstrapServers(String uri) {
 		bootstrapServers.add(uri);
@@ -72,8 +68,6 @@ public class KafkaStreamBuilder {
 
 	/**
 	 * 添加配置
-	 *
-	 * @author lingting 2020-06-19 16:30:50
 	 */
 	public KafkaStreamBuilder put(Object key, Object val) {
 		properties.put(key, val);
@@ -82,8 +76,6 @@ public class KafkaStreamBuilder {
 
 	/**
 	 * 添加配置
-	 *
-	 * @author lingting 2020-06-19 16:30:50
 	 */
 	public KafkaStreamBuilder putAll(Properties properties) {
 		this.properties.putAll(properties);
@@ -271,8 +263,6 @@ public class KafkaStreamBuilder {
 
 	/**
 	 * 自定义的构筑方法， 传入 topology 和属性
-	 *
-	 * @author lingting 2020-06-23 20:24:52
 	 */
 	public KafkaStreams build(BiFunction<Topology, Properties, KafkaStreams> biFunction) {
 		return biFunction.apply(topology, getProperties());
@@ -297,9 +287,9 @@ public class KafkaStreamBuilder {
 	}
 
 	public Properties getProperties() {
-		bootstrapServers
-				.addAll(ListUtil.toList(properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, StrUtil.EMPTY)
-						.split(BOOTSTRAP_SERVERS_DELIMITER)));
+		bootstrapServers.addAll(
+				ListUtil.toList(properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, CharSequenceUtil.EMPTY)
+					.split(BOOTSTRAP_SERVERS_DELIMITER)));
 		properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
 				String.join(BOOTSTRAP_SERVERS_DELIMITER, bootstrapServers));
 		return properties;

@@ -26,7 +26,6 @@ public class VirtualPayAutoConfiguration {
 
 	/**
 	 * infura 配置类
-	 * @author lingting 2021-01-05 10:40
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -37,17 +36,16 @@ public class VirtualPayAutoConfiguration {
 			EtherscanProperties properties) {
 		EtherscanProperties.Infura infura = properties.getInfura();
 		return new live.lingting.virtual.currency.etherscan.properties.EtherscanProperties()
-				// 节点
-				.setEndpoints(properties.getEndpoints())
-				// project id
-				.setProjectId(infura.getProjectId())
-				// project secret
-				.setProjectSecret(infura.getProjectSecret());
+			// 节点
+			.setEndpoints(properties.getEndpoints())
+			// project id
+			.setProjectId(infura.getProjectId())
+			// project secret
+			.setProjectSecret(infura.getProjectSecret());
 	}
 
 	/**
 	 * infura 平台实现类
-	 * @author lingting 2021-01-05 10:35
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -64,7 +62,6 @@ public class VirtualPayAutoConfiguration {
 
 	/**
 	 * tronscan 配置类
-	 * @author lingting 2021-01-05 10:40
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -74,13 +71,12 @@ public class VirtualPayAutoConfiguration {
 	public live.lingting.virtual.currency.tronscan.properties.TronscanProperties tronscanProperties(
 			TronscanProperties properties) {
 		return new live.lingting.virtual.currency.tronscan.properties.TronscanProperties()
-				// 节点
-				.setEndpoints(properties.getEndpoints());
+			// 节点
+			.setEndpoints(properties.getEndpoints());
 	}
 
 	/**
 	 * tronscan 平台实现类
-	 * @author lingting 2021-01-05 10:35
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -96,7 +92,6 @@ public class VirtualPayAutoConfiguration {
 
 	/**
 	 * bitcoin 配置类
-	 * @author lingting 2021-01-05 10:40
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -106,13 +101,12 @@ public class VirtualPayAutoConfiguration {
 	public live.lingting.virtual.currency.bitcoin.properties.BitcoinProperties bitcoinProperties(
 			BitcoinProperties properties) {
 		return new live.lingting.virtual.currency.bitcoin.properties.BitcoinProperties()
-				// 比特节点
-				.setEndpoints(properties.getEndpoints());
+			// 比特节点
+			.setEndpoints(properties.getEndpoints());
 	}
 
 	/**
 	 * bitcoin 平台实现类
-	 * @author lingting 2021-01-05 10:35
 	 */
 	@Bean
 	@ConditionalOnMissingBean

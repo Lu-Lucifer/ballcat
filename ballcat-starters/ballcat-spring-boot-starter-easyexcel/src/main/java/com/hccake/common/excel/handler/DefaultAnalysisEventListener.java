@@ -2,7 +2,8 @@ package com.hccake.common.excel.handler;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.hccake.common.excel.kit.Validators;
-import com.hccake.common.excel.vo.ErrorMessage;
+import com.hccake.common.excel.domain.ErrorMessage;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.ConstraintViolation;
@@ -25,6 +26,7 @@ public class DefaultAnalysisEventListener extends ListAnalysisEventListener<Obje
 
 	private final List<ErrorMessage> errorMessageList = new ArrayList<>();
 
+	@Setter
 	private Long lineNum = 1L;
 
 	@Override
@@ -33,8 +35,9 @@ public class DefaultAnalysisEventListener extends ListAnalysisEventListener<Obje
 
 		Set<ConstraintViolation<Object>> violations = Validators.validate(o);
 		if (!violations.isEmpty()) {
-			Set<String> messageSet = violations.stream().map(ConstraintViolation::getMessage)
-					.collect(Collectors.toSet());
+			Set<String> messageSet = violations.stream()
+				.map(ConstraintViolation::getMessage)
+				.collect(Collectors.toSet());
 			errorMessageList.add(new ErrorMessage(lineNum, messageSet));
 		}
 		else {

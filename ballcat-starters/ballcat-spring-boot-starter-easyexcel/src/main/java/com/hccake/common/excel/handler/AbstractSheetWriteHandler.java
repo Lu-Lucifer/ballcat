@@ -8,12 +8,12 @@ import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
 import com.alibaba.excel.write.handler.WriteHandler;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.hccake.common.excel.annotation.ResponseExcel;
-import com.hccake.common.excel.annotation.Sheet;
 import com.hccake.common.excel.aop.DynamicNameAspect;
 import com.hccake.common.excel.config.ExcelConfigProperties;
 import com.hccake.common.excel.converters.LocalDateStringConverter;
 import com.hccake.common.excel.converters.LocalDateTimeStringConverter;
 
+import com.hccake.common.excel.domain.SheetBuildProperties;
 import com.hccake.common.excel.enhance.WriterBuilderEnhancer;
 import com.hccake.common.excel.head.HeadGenerator;
 import com.hccake.common.excel.head.HeadMeta;
@@ -53,6 +53,7 @@ import java.util.UUID;
 /**
  * @author lengleng
  * @author L.cm
+ * @author Hccake
  * @date 2020/3/31
  */
 @RequiredArgsConstructor
@@ -73,8 +74,8 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 
 	@Override
 	public void check(ResponseExcel responseExcel) {
-		if (responseExcel.sheets().length == 0) {
-			throw new ExcelException("@ResponseExcel sheet 配置不合法");
+		if (responseExcel.fill() && !StringUtils.hasText(responseExcel.template())) {
+			throw new ExcelException("@ResponseExcel fill 必须配合 template 使用");
 		}
 	}
 
@@ -83,18 +84,20 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 	public void export(Object o, HttpServletResponse response, ResponseExcel responseExcel) {
 		check(responseExcel);
 		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		String name = (String) Objects.requireNonNull(requestAttributes).getAttribute(DynamicNameAspect.EXCEL_NAME_KEY,
-				RequestAttributes.SCOPE_REQUEST);
+		String name = (String) Objects.requireNonNull(requestAttributes)
+			.getAttribute(DynamicNameAspect.EXCEL_NAME_KEY, RequestAttributes.SCOPE_REQUEST);
 		if (name == null) {
 			name = UUID.randomUUID().toString();
 		}
-		String fileName = String.format("%s%s", URLEncoder.encode(name, "UTF-8"), responseExcel.suffix().getValue());
+		String fileName = String.format("%s%s", URLEncoder.encode(name, "UTF-8"), responseExcel.suffix().getValue())
+			.replaceAll("\\+", "%20");
 		// 根据实际的文件类型找到对应的 contentType
-		String contentType = MediaTypeFactory.getMediaType(fileName).map(MediaType::toString)
-				.orElse("application/vnd.ms-excel");
+		String contentType = MediaTypeFactory.getMediaType(fileName)
+			.map(MediaType::toString)
+			.orElse("application/vnd.ms-excel");
 		response.setContentType(contentType);
 		response.setCharacterEncoding("utf-8");
-		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileName);
+		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8''" + fileName);
 		write(o, response, responseExcel);
 	}
 
@@ -107,26 +110,26 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 	@SneakyThrows(IOException.class)
 	public ExcelWriter getExcelWriter(HttpServletResponse response, ResponseExcel responseExcel) {
 		ExcelWriterBuilder writerBuilder = EasyExcel.write(response.getOutputStream())
-				.registerConverter(LocalDateStringConverter.INSTANCE)
-				.registerConverter(LocalDateTimeStringConverter.INSTANCE).autoCloseStream(true)
-				.excelType(responseExcel.suffix()).inMemory(responseExcel.inMemory());
+			.registerConverter(LocalDateStringConverter.INSTANCE)
+			.registerConverter(LocalDateTimeStringConverter.INSTANCE)
+			.autoCloseStream(true)
+			.excelType(responseExcel.suffix())
+			.inMemory(responseExcel.inMemory());
 
 		if (StringUtils.hasText(responseExcel.password())) {
 			writerBuilder.password(responseExcel.password());
 		}
 
 		if (responseExcel.include().length != 0) {
-			writerBuilder.includeColumnFiledNames(Arrays.asList(responseExcel.include()));
+			writerBuilder.includeColumnFieldNames(Arrays.asList(responseExcel.include()));
 		}
 
 		if (responseExcel.exclude().length != 0) {
-			writerBuilder.excludeColumnFiledNames(Arrays.asList(responseExcel.exclude()));
+			writerBuilder.excludeColumnFieldNames(Arrays.asList(responseExcel.exclude()));
 		}
 
-		if (responseExcel.writeHandler().length != 0) {
-			for (Class<? extends WriteHandler> clazz : responseExcel.writeHandler()) {
-				writerBuilder.registerWriteHandler(BeanUtils.instantiateClass(clazz));
-			}
+		for (Class<? extends WriteHandler> clazz : responseExcel.writeHandler()) {
+			writerBuilder.registerWriteHandler(BeanUtils.instantiateClass(clazz));
 		}
 
 		// 开启国际化头信息处理
@@ -137,10 +140,8 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 		// 自定义注入的转换器
 		registerCustomConverter(writerBuilder);
 
-		if (responseExcel.converter().length != 0) {
-			for (Class<? extends Converter> clazz : responseExcel.converter()) {
-				writerBuilder.registerConverter(BeanUtils.instantiateClass(clazz));
-			}
+		for (Class<? extends Converter> clazz : responseExcel.converter()) {
+			writerBuilder.registerConverter(BeanUtils.instantiateClass(clazz));
 		}
 
 		String templatePath = configProperties.getTemplatePath();
@@ -165,19 +166,37 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 	}
 
 	/**
+	 * 构建一个 空的 WriteSheet 对象
+	 * @param sheetBuildProperties sheet build 属性
+	 * @param template 模板信息
+	 * @return WriteSheet
+	 */
+	public WriteSheet emptySheet(SheetBuildProperties sheetBuildProperties, String template) {
+		// Sheet 编号和名称
+		Integer sheetNo = sheetBuildProperties.getSheetNo() >= 0 ? sheetBuildProperties.getSheetNo() : null;
+		String sheetName = sheetBuildProperties.getSheetName();
+
+		// 是否模板写入
+		ExcelWriterSheetBuilder writerSheetBuilder = StringUtils.hasText(template) ? EasyExcel.writerSheet(sheetNo)
+				: EasyExcel.writerSheet(sheetNo, sheetName);
+
+		return writerSheetBuilder.build();
+	}
+
+	/**
 	 * 获取 WriteSheet 对象
-	 * @param sheet sheet annotation info
+	 * @param sheetBuildProperties sheet annotation info
 	 * @param dataClass 数据类型
 	 * @param template 模板
 	 * @param bookHeadEnhancerClass 自定义头处理器
 	 * @return WriteSheet
 	 */
-	public WriteSheet sheet(Sheet sheet, Class<?> dataClass, String template,
+	public WriteSheet emptySheet(SheetBuildProperties sheetBuildProperties, Class<?> dataClass, String template,
 			Class<? extends HeadGenerator> bookHeadEnhancerClass) {
 
 		// Sheet 编号和名称
-		Integer sheetNo = sheet.sheetNo() >= 0 ? sheet.sheetNo() : null;
-		String sheetName = sheet.sheetName();
+		Integer sheetNo = sheetBuildProperties.getSheetNo() >= 0 ? sheetBuildProperties.getSheetNo() : null;
+		String sheetName = sheetBuildProperties.getSheetName();
 
 		// 是否模板写入
 		ExcelWriterSheetBuilder writerSheetBuilder = StringUtils.hasText(template) ? EasyExcel.writerSheet(sheetNo)
@@ -185,8 +204,8 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 
 		// 头信息增强 1. 优先使用 sheet 指定的头信息增强 2. 其次使用 @ResponseExcel 中定义的全局头信息增强
 		Class<? extends HeadGenerator> headGenerateClass = null;
-		if (isNotInterface(sheet.headGenerateClass())) {
-			headGenerateClass = sheet.headGenerateClass();
+		if (isNotInterface(sheetBuildProperties.getHeadGenerateClass())) {
+			headGenerateClass = sheetBuildProperties.getHeadGenerateClass();
 		}
 		else if (isNotInterface(bookHeadEnhancerClass)) {
 			headGenerateClass = bookHeadEnhancerClass;
@@ -197,11 +216,11 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 		}
 		else if (dataClass != null) {
 			writerSheetBuilder.head(dataClass);
-			if (sheet.excludes().length > 0) {
-				writerSheetBuilder.excludeColumnFiledNames(Arrays.asList(sheet.excludes()));
+			if (sheetBuildProperties.getExcludes().length > 0) {
+				writerSheetBuilder.excludeColumnFieldNames(Arrays.asList(sheetBuildProperties.getExcludes()));
 			}
-			if (sheet.includes().length > 0) {
-				writerSheetBuilder.includeColumnFiledNames(Arrays.asList(sheet.includes()));
+			if (sheetBuildProperties.getIncludes().length > 0) {
+				writerSheetBuilder.includeColumnFieldNames(Arrays.asList(sheetBuildProperties.getIncludes()));
 			}
 		}
 
@@ -218,7 +237,7 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 		Assert.notNull(headGenerator, "The header generated bean does not exist.");
 		HeadMeta head = headGenerator.head(dataClass);
 		writerSheetBuilder.head(head.getHead());
-		writerSheetBuilder.excludeColumnFiledNames(head.getIgnoreHeadFields());
+		writerSheetBuilder.excludeColumnFieldNames(head.getIgnoreHeadFields());
 	}
 
 	/**

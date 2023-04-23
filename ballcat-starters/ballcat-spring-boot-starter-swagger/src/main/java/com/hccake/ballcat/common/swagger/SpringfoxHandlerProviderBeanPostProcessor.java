@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 
 /**
  * springFox 与 springboot 2.6.x 不兼容问题的处理
- * {@link https://github.com/springfox/springfox/issues/3462}
+ * <p>
+ * <a href="https://github.com/springfox/springfox/issues/3462">相关 issues 地址</a>
  *
  * @author hccake
  */
@@ -30,8 +31,9 @@ public class SpringfoxHandlerProviderBeanPostProcessor implements BeanPostProces
 	}
 
 	private <T extends RequestMappingInfoHandlerMapping> void customizeSpringfoxHandlerMappings(List<T> mappings) {
-		List<T> copy = mappings.stream().filter(mapping -> mapping.getPatternParser() == null)
-				.collect(Collectors.toList());
+		List<T> copy = mappings.stream()
+			.filter(mapping -> mapping.getPatternParser() == null)
+			.collect(Collectors.toList());
 		mappings.clear();
 		mappings.addAll(copy);
 	}

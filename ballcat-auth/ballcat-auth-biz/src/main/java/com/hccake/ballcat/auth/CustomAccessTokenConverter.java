@@ -1,6 +1,6 @@
 package com.hccake.ballcat.auth;
 
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.hccake.ballcat.common.security.userdetails.ClientPrincipal;
 import com.hccake.ballcat.common.security.userdetails.User;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * @author hccake
  */
+@Deprecated
 @RequiredArgsConstructor
 public class CustomAccessTokenConverter extends DefaultAccessTokenConverter {
 
@@ -29,7 +30,7 @@ public class CustomAccessTokenConverter extends DefaultAccessTokenConverter {
 		Object scopeValue = response.get("scope");
 		if (scopeValue instanceof Collection) {
 			Collection<String> scopes = (Collection<String>) scopeValue;
-			response.put("scope", CollectionUtil.join(scopes, " "));
+			response.put("scope", CollUtil.join(scopes, " "));
 		}
 
 		// 是否是客户端
@@ -44,8 +45,9 @@ public class CustomAccessTokenConverter extends DefaultAccessTokenConverter {
 		// 如果是自己系统内部认可的远程 资源服务器，在拥有权限的情况下，把所有的属性都返回回去
 		// 因为实际业务中，可能会在 attributes 中存放一些敏感信息，比如数据权限相关属性
 		Collection<? extends GrantedAuthority> requestClientAuthorities = SecurityContextHolder.getContext()
-				.getAuthentication().getAuthorities();
-		if (CollectionUtil.isEmpty(requestClientAuthorities)) {
+			.getAuthentication()
+			.getAuthorities();
+		if (CollUtil.isEmpty(requestClientAuthorities)) {
 			return response;
 		}
 

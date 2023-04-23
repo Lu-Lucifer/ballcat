@@ -1,11 +1,11 @@
 package com.hccake.ballcat.common.redis.lock;
 
-import cn.hutool.core.lang.Assert;
-import com.hccake.ballcat.common.redis.core.CacheLock;
 import com.hccake.ballcat.common.redis.lock.function.ExceptionHandler;
 import com.hccake.ballcat.common.redis.lock.function.ThrowingExecutor;
+import org.springframework.util.Assert;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -20,6 +20,10 @@ public final class DistributedLock<T> implements Action<T>, StateHandler<T> {
 
 	String key;
 
+	Long timeout;
+
+	TimeUnit timeUnit;
+
 	ThrowingExecutor<T> executeAction;
 
 	UnaryOperator<T> successAction;
@@ -33,12 +37,14 @@ public final class DistributedLock<T> implements Action<T>, StateHandler<T> {
 	}
 
 	@Override
-	public StateHandler<T> action(String lockKey, ThrowingExecutor<T> action) {
+	public StateHandler<T> action(String lockKey, long timeout, TimeUnit timeUnit, ThrowingExecutor<T> action) {
 		Assert.isTrue(this.executeAction == null, "execute action has been already set");
 		Assert.notNull(action, "execute action cant be null");
-		Assert.notBlank(lockKey, "lock key cant be blank");
+		Assert.hasText(lockKey, "lock key cant be blank");
 		this.executeAction = action;
 		this.key = lockKey;
+		this.timeout = timeout;
+		this.timeUnit = timeUnit;
 		return this;
 	}
 
@@ -68,7 +74,7 @@ public final class DistributedLock<T> implements Action<T>, StateHandler<T> {
 	@Override
 	public T lock() {
 		String requestId = UUID.randomUUID().toString();
-		if (Boolean.TRUE.equals(CacheLock.lock(this.key, requestId))) {
+		if (Boolean.TRUE.equals(CacheLock.lock(this.key, requestId, this.timeout, this.timeUnit))) {
 			T value = null;
 			boolean exResolved = false;
 			try {

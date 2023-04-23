@@ -18,7 +18,11 @@ import org.springframework.web.servlet.HandlerMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 访问日志
@@ -111,8 +115,8 @@ public class CustomAccessLogHandler implements AccessLogHandler<AccessLog> {
 			for (String paramKey : needDesensitizeParams) {
 				String[] values = parameterMap.get(paramKey);
 				if (values != null && values.length != 0) {
-					String value = DesensitizationHandlerHolder.getRegexDesensitizationHandler().handle(values[0],
-							RegexDesensitizationTypeEnum.ENCRYPTED_PASSWORD);
+					String value = DesensitizationHandlerHolder.getRegexDesensitizationHandler()
+						.handle(values[0], RegexDesensitizationTypeEnum.ENCRYPTED_PASSWORD);
 					parameterMap.put(paramKey, new String[] { value });
 				}
 			}

@@ -32,16 +32,21 @@ public class ClassDataScope implements DataScope {
 
 	final String columnId = "class_name";
 
+	private final Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+	public ClassDataScope() {
+		tableNames.addAll(Arrays.asList("h2student", "h2teacher"));
+	}
+
 	@Override
 	public String getResource() {
 		return RESOURCE_NAME;
 	}
 
 	@Override
-	public Collection<String> getTableNames() {
-		Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-		tableNames.addAll(Arrays.asList("h2student", "h2teacher"));
-		return tableNames;
+	public boolean includes(String tableName) {
+		// 使用 new TreeSet<>(String.CASE_INSENSITIVE_ORDER) 的形式判断，可忽略表名大小写
+		return tableNames.contains(tableName);
 	}
 
 	@Override
@@ -61,8 +66,10 @@ public class ClassDataScope implements DataScope {
 		}
 
 		// 提取当前登录用户拥有的班级权限
-		List<Expression> list = loginUser.getClassNameList().stream().map(StringValue::new)
-				.collect(Collectors.toList());
+		List<Expression> list = loginUser.getClassNameList()
+			.stream()
+			.map(StringValue::new)
+			.collect(Collectors.toList());
 		Column column = new Column(tableAlias == null ? columnId : tableAlias.getName() + "." + columnId);
 		ExpressionList expressionList = new ExpressionList();
 		expressionList.setExpressions(list);

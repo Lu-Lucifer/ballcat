@@ -1,5 +1,6 @@
 package com.hccake.extend.mybatis.plus.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
@@ -128,7 +129,7 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 				(sqlSession, entity) -> {
 					Object idVal = tableInfo.getPropertyValue(entity, keyProperty);
 					return StringUtils.checkValNull(idVal) || CollectionUtils
-							.isEmpty(sqlSession.selectList(getSqlStatement(SqlMethod.SELECT_BY_ID), entity));
+						.isEmpty(sqlSession.selectList(getSqlStatement(SqlMethod.SELECT_BY_ID), entity));
 				}, (sqlSession, entity) -> {
 					MapperMethod.ParamMap<T> param = new MapperMethod.ParamMap<>();
 					param.put(Constants.ENTITY, entity);
@@ -233,12 +234,11 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 	 * @param list 数据列表
 	 * @param batchSize 批次插入数据量
 	 * @return int 改动行
-	 * @author lingting 2020-08-26 22:11
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean saveBatchSomeColumn(Collection<T> list, int batchSize) {
-		if (CollectionUtil.isEmpty(list)) {
+		if (CollUtil.isEmpty(list)) {
 			return false;
 		}
 		List<List<T>> segmentDataList = CollectionUtil.split(list, batchSize);

@@ -1,12 +1,19 @@
 package com.hccake.ballcat.notify.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.text.StrPool;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.hccake.ballcat.notify.enums.AnnouncementStatusEnum;
+import com.hccake.ballcat.common.core.constant.enums.BooleanEnum;
+import com.hccake.ballcat.common.core.exception.BusinessException;
+import com.hccake.ballcat.common.model.domain.PageParam;
+import com.hccake.ballcat.common.model.domain.PageResult;
+import com.hccake.ballcat.common.model.result.BaseResultCode;
+import com.hccake.ballcat.common.model.result.SystemResultCode;
+import com.hccake.ballcat.file.service.FileService;
 import com.hccake.ballcat.notify.converter.AnnouncementConverter;
 import com.hccake.ballcat.notify.converter.NotifyInfoConverter;
+import com.hccake.ballcat.notify.enums.AnnouncementStatusEnum;
 import com.hccake.ballcat.notify.event.AnnouncementCloseEvent;
 import com.hccake.ballcat.notify.event.NotifyPublishEvent;
 import com.hccake.ballcat.notify.mapper.AnnouncementMapper;
@@ -16,13 +23,6 @@ import com.hccake.ballcat.notify.model.entity.Announcement;
 import com.hccake.ballcat.notify.model.qo.AnnouncementQO;
 import com.hccake.ballcat.notify.model.vo.AnnouncementPageVO;
 import com.hccake.ballcat.notify.service.AnnouncementService;
-import com.hccake.ballcat.common.core.constant.enums.BooleanEnum;
-import com.hccake.ballcat.common.core.exception.BusinessException;
-import com.hccake.ballcat.common.model.domain.PageParam;
-import com.hccake.ballcat.common.model.domain.PageResult;
-import com.hccake.ballcat.common.model.result.BaseResultCode;
-import com.hccake.ballcat.common.model.result.SystemResultCode;
-import com.hccake.ballcat.file.service.FileService;
 import com.hccake.extend.mybatis.plus.service.impl.ExtendServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -124,7 +124,7 @@ public class AnnouncementServiceImpl extends ExtendServiceImpl<AnnouncementMappe
 		if (announcement.getStatus() != AnnouncementStatusEnum.UNPUBLISHED.getValue()) {
 			throw new BusinessException(SystemResultCode.BAD_REQUEST.getCode(), "不允许修改已经发布过的公告！");
 		}
-		if (BooleanEnum.TRUE.getValue() != announcement.getImmortal()
+		if (BooleanEnum.TRUE.intValue().equals(announcement.getImmortal())
 				&& LocalDateTime.now().isAfter(announcement.getDeadline())) {
 			throw new BusinessException(SystemResultCode.BAD_REQUEST.getCode(), "公告失效时间必须迟于当前时间！");
 		}
@@ -169,7 +169,7 @@ public class AnnouncementServiceImpl extends ExtendServiceImpl<AnnouncementMappe
 		List<String> objectNames = new ArrayList<>();
 		for (MultipartFile file : files) {
 			String objectName = "announcement/" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-					+ StrUtil.SLASH + IdUtil.fastSimpleUUID() + StrUtil.DOT
+					+ StrPool.SLASH + IdUtil.fastSimpleUUID() + StrPool.DOT
 					+ FileUtil.extName(file.getOriginalFilename());
 			try {
 				objectName = fileService.upload(file.getInputStream(), objectName, file.getSize());

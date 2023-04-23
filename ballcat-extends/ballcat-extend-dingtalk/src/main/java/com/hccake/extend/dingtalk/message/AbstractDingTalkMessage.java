@@ -30,8 +30,6 @@ public abstract class AbstractDingTalkMessage implements DingTalkMessage {
 
 	/**
 	 * 添加 at 对象的手机号
-	 *
-	 * @author lingting 2020-06-10 21:57:08
 	 */
 	public AbstractDingTalkMessage addPhone(String phone) {
 		atPhones.add(phone);
@@ -41,7 +39,6 @@ public abstract class AbstractDingTalkMessage implements DingTalkMessage {
 	/**
 	 * 获取消息类型
 	 * @return 返回消息类型
-	 * @author lingting 2020-06-10 22:12:30
 	 */
 	public abstract MessageTypeEnum getType();
 
@@ -49,14 +46,13 @@ public abstract class AbstractDingTalkMessage implements DingTalkMessage {
 	 * 设置非公有属性
 	 * @param params 已设置完公有参数的参数类
 	 * @return 已设置完成的参数类
-	 * @author lingting 2020-06-10 22:11:04
 	 */
 	public abstract DingTalkParams put(DingTalkParams params);
 
 	@Override
 	public String generate() {
 		DingTalkParams params = put(new DingTalkParams().setType(getType().getVal())
-				.setAt(new DingTalkParams.At().setAtAll(atAll).setAtMobiles(atPhones)));
+			.setAt(new DingTalkParams.At().setAtAll(atAll).setAtMobiles(atPhones)));
 		return params.toString();
 	}
 

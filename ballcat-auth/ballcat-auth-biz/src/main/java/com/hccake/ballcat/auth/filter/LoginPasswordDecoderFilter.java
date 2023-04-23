@@ -3,6 +3,8 @@ package com.hccake.ballcat.auth.filter;
 import com.hccake.ballcat.common.core.request.wrapper.ModifyParamMapRequestWrapper;
 import com.hccake.ballcat.common.model.result.R;
 import com.hccake.ballcat.common.model.result.SystemResultCode;
+import com.hccake.ballcat.common.security.ScopeNames;
+import com.hccake.ballcat.common.security.userdetails.ClientPrincipal;
 import com.hccake.ballcat.common.security.util.PasswordUtils;
 import com.hccake.ballcat.common.security.util.SecurityUtils;
 import com.hccake.ballcat.common.util.JsonUtils;
@@ -10,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -17,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,15 +31,12 @@ import java.util.Map;
  * @version 1.0
  * @date 2019/9/28 16:57
  */
+@Deprecated
 @Slf4j
 @RequiredArgsConstructor
 public class LoginPasswordDecoderFilter extends OncePerRequestFilter {
 
 	private final String passwordSecretKey;
-
-	private static final String PASSWORD = "password";
-
-	private static final String GRANT_TYPE = "grant_type";
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -49,27 +49,32 @@ public class LoginPasswordDecoderFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		// 测试客户端 跳过密码解密（swagger 或 postman测试时使用）
-		if (SecurityUtils.isTestClient()) {
+		// 非密码模式下，直接跳过
+		String grantType = request.getParameter(OAuth2ParameterNames.GRANT_TYPE);
+		if (!AuthorizationGrantType.PASSWORD.getValue().equals(grantType)) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		// 测试客户端密码不加密，直接跳过（swagger 或 postman测试时使用）
+		ClientPrincipal clientPrincipal = SecurityUtils.getClientPrincipal();
+		if (clientPrincipal != null && clientPrincipal.getScope().contains(ScopeNames.SKIP_PASSWORD_DECODE)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		// 解密前台加密后的密码
 		Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
-		String passwordAes = request.getParameter(PASSWORD);
+		String passwordAes = request.getParameter(OAuth2ParameterNames.PASSWORD);
 
 		try {
-			if (request.getParameter(GRANT_TYPE).equals(PASSWORD)) {
-				String password = PasswordUtils.decodeAES(passwordAes, passwordSecretKey);
-				parameterMap.put(PASSWORD, new String[] { password });
-			}
+			String password = PasswordUtils.decodeAES(passwordAes, passwordSecretKey);
+			parameterMap.put(OAuth2ParameterNames.PASSWORD, new String[] { password });
 		}
 		catch (Exception e) {
 			log.error("[doFilterInternal] password decode aes error，passwordAes: {}，passwordSecretKey: {}", passwordAes,
 					passwordSecretKey, e);
-			response.setHeader("Content-Type", MediaType.APPLICATION_JSON.toString());
-			response.setHeader("Accept-Charset", StandardCharsets.UTF_8.toString());
+			response.setHeader("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			R<String> r = R.failed(SystemResultCode.UNAUTHORIZED, "用户名或密码错误！");
 			response.getWriter().write(JsonUtils.toJson(r));
