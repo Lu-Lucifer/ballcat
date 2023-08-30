@@ -36,8 +36,8 @@ public class AnnouncementLoginEventListener {
 	private final UserAnnouncementService userAnnouncementService;
 
 	/**
-	 * 登陆成功时间监听 用户未读公告生成
-	 * @param event 登陆成功 event
+	 * 登录成功时间监听 用户未读公告生成
+	 * @param event 登录成功 event
 	 */
 	@EventListener(AuthenticationSuccessEvent.class)
 	public void onAuthenticationSuccessEvent(AuthenticationSuccessEvent event) throws InterruptedException {
@@ -53,7 +53,7 @@ public class AnnouncementLoginEventListener {
 			SysUser sysUser = getSysUser(user);
 
 			// 获取当前用户未拉取过的公告信息
-			Integer userId = sysUser.getUserId();
+			Long userId = sysUser.getUserId();
 			List<Announcement> announcements = announcementService.listUnPulled(userId);
 			// 获取当前用户的各个过滤属性
 			Map<Integer, Object> filterAttrs = recipientHandler.getFilterAttrs(sysUser);

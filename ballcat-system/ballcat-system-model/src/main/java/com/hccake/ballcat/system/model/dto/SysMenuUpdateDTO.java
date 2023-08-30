@@ -22,13 +22,13 @@ public class SysMenuUpdateDTO {
 	 */
 	@NotNull(message = "菜单ID不能为空")
 	@Schema(title = "菜单ID")
-	private Integer id;
+	private Long id;
 
 	/**
 	 * 父级ID
 	 */
 	@Schema(title = "父级ID")
-	private Integer parentId;
+	private Long parentId;
 
 	/**
 	 * 菜单名称
@@ -101,6 +101,6 @@ public class SysMenuUpdateDTO {
 	 */
 	@NotNull(message = "原菜单ID不能为空")
 	@Schema(title = "原菜单ID")
-	private Integer originalId;
+	private Long originalId;
 
 }

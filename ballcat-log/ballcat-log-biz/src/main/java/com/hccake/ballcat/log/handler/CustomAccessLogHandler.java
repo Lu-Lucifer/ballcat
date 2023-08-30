@@ -1,10 +1,10 @@
 package com.hccake.ballcat.log.handler;
 
 import cn.hutool.core.util.URLUtil;
+import com.hccake.ballcat.common.core.constant.MDCConstants;
 import com.hccake.ballcat.common.desensitize.DesensitizationHandlerHolder;
 import com.hccake.ballcat.common.desensitize.enums.RegexDesensitizationTypeEnum;
 import com.hccake.ballcat.common.log.access.handler.AccessLogHandler;
-import com.hccake.ballcat.common.log.constant.LogConstant;
 import com.hccake.ballcat.common.log.util.LogUtils;
 import com.hccake.ballcat.common.security.util.SecurityUtils;
 import com.hccake.ballcat.common.util.IpUtils;
@@ -27,8 +27,7 @@ import java.util.Optional;
 /**
  * 访问日志
  *
- * @author hccake
- * @date 2019-10-16 16:09:25
+ * @author hccake 2019-10-16 16:09:25
  */
 @Slf4j
 public class CustomAccessLogHandler implements AccessLogHandler<AccessLog> {
@@ -65,7 +64,7 @@ public class CustomAccessLogHandler implements AccessLogHandler<AccessLog> {
 		// @formatter:off
 		String uri = URLUtil.getPath(request.getRequestURI());
 		AccessLog accessLog = new AccessLog()
-				.setTraceId(MDC.get(LogConstant.TRACE_ID))
+				.setTraceId(MDC.get(MDCConstants.TRACE_ID_KEY))
 				.setCreateTime(LocalDateTime.now())
 				.setTime(time)
 				.setIp(IpUtils.getIpAddr(request))
@@ -81,26 +80,48 @@ public class CustomAccessLogHandler implements AccessLogHandler<AccessLog> {
 		String params = getParams(request);
 		accessLog.setReqParams(params);
 
-		// 非文件上传请求，记录body，用户改密时不记录body
-		// TODO 使用注解控制此次请求是否记录body，更方便个性化定制
-		if (!LogUtils.isMultipartContent(request) && !"/system/user/pass/{userId}".equals(matchingPattern)) {
+		// 记录请求体
+		if (shouldRecordRequestBody(request, uri)) {
 			accessLog.setReqBody(LogUtils.getRequestBody(request));
 		}
 
-		// 只记录响应头为 application/json 的返回数据
-		// 后台日志对于分页数据请求，不记录返回值
-		if (!uri.endsWith("/page") && response.getContentType() != null
-				&& response.getContentType().contains(APPLICATION_JSON)) {
+		// 只记录响应体
+		if (shouldRecordResponseBody(response, uri)) {
 			accessLog.setResult(LogUtils.getResponseBody(request, response));
 		}
 
-		// 如果登陆用户 则记录用户名和用户id
+		// 如果登录用户 则记录用户名和用户id
 		Optional.ofNullable(SecurityUtils.getUser()).ifPresent(x -> {
 			accessLog.setUserId(x.getUserId());
 			accessLog.setUsername(x.getUsername());
 		});
 
 		return accessLog;
+	}
+
+	/**
+	 * 是否应该记录请求体
+	 * @param request 请求信息
+	 * @param uri 当前请求的uri
+	 * @return 记录返回 true，否则返回 false
+	 */
+	protected boolean shouldRecordRequestBody(HttpServletRequest request, String uri) {
+		// TODO 使用注解控制此次请求是否记录body，更方便个性化定制
+		// 文件上传请求、用户改密时、验证码请求不记录body
+		return !LogUtils.isMultipartContent(request) && !uri.matches("^/system/user/pass/[^/]+/?$")
+				&& !uri.matches("^/captcha/.*$");
+	}
+
+	/**
+	 * 是否应该记录响应体
+	 * @param response 响应信息
+	 * @param uri 当前请求的uri
+	 * @return 记录返回 true，否则返回 false
+	 */
+	protected boolean shouldRecordResponseBody(HttpServletResponse response, String uri) {
+		// 只对 content-type 为 application/json 的响应记录响应体（分页请求除外）
+		return !uri.endsWith("/page") && response.getContentType() != null
+				&& response.getContentType().contains(APPLICATION_JSON);
 	}
 
 	/**

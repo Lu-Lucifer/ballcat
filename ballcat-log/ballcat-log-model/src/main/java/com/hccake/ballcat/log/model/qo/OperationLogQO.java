@@ -31,7 +31,7 @@ public class OperationLogQO {
 	 * 用户ID
 	 */
 	@Parameter(description = "用户ID")
-	private Integer userId;
+	private Long userId;
 
 	/**
 	 * 日志消息
@@ -64,17 +64,17 @@ public class OperationLogQO {
 	private Integer type;
 
 	/**
-	 * 登陆时间区间（开始时间）
+	 * 登录时间区间（开始时间）
 	 */
 	@DateTimeFormat(pattern = NORM_DATETIME_PATTERN)
-	@Parameter(description = "开始时间（登陆时间区间）")
+	@Parameter(description = "开始时间（登录时间区间）")
 	private LocalDateTime startTime;
 
 	/**
-	 * 登陆时间区间（结束时间）
+	 * 登录时间区间（结束时间）
 	 */
 	@DateTimeFormat(pattern = NORM_DATETIME_PATTERN)
-	@Parameter(description = "结束时间（登陆时间区间）")
+	@Parameter(description = "结束时间（登录时间区间）")
 	private LocalDateTime endTime;
 
 }

@@ -19,9 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * @author Hccake
- * @version 1.0
- * @date 2019/9/25 20:44
+ * @author Hccake 2019/9/25 20:44
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -35,7 +33,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		SysUser sysUser = sysUserService.getByUsername(username);
 		if (sysUser == null) {
-			log.error("登陆：用户名错误，用户名：{}", username);
+			log.error("登录：用户名错误，用户名：{}", username);
 			throw new UsernameNotFoundException("username error!");
 		}
 		UserInfoDTO userInfoDTO = sysUserService.findUserInfo(sysUser);
@@ -72,9 +70,21 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
 		// 用户额外属性
 		userInfoCoordinator.coordinateAttribute(userInfoDTO, attributes);
 
-		return new User(sysUser.getUserId(), sysUser.getUsername(), sysUser.getPassword(), sysUser.getNickname(),
-				sysUser.getAvatar(), sysUser.getStatus(), sysUser.getOrganizationId(), sysUser.getType(), authorities,
-				attributes);
+		return User.builder()
+			.userId(sysUser.getUserId())
+			.username(sysUser.getUsername())
+			.password(sysUser.getPassword())
+			.nickname(sysUser.getNickname())
+			.avatar(sysUser.getAvatar())
+			.status(sysUser.getStatus())
+			.organizationId(sysUser.getOrganizationId())
+			.email(sysUser.getEmail())
+			.phoneNumber(sysUser.getPhoneNumber())
+			.gender(sysUser.getGender())
+			.type(sysUser.getType())
+			.authorities(authorities)
+			.attributes(attributes)
+			.build();
 	}
 
 }
