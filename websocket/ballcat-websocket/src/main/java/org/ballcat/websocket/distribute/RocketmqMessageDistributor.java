@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.websocket.distribute;
 
-import org.ballcat.common.util.JsonUtils;
-import org.ballcat.websocket.exception.ErrorJsonMessageException;
-import org.ballcat.websocket.session.WebSocketSessionStore;
+import java.nio.charset.StandardCharsets;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -25,9 +25,10 @@ import org.apache.rocketmq.spring.annotation.MessageModel;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.ballcat.common.util.JsonUtils;
+import org.ballcat.websocket.exception.ErrorJsonMessageException;
+import org.ballcat.websocket.session.WebSocketSessionStore;
 import org.springframework.beans.factory.annotation.Value;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * MQ发送消息，接收到消息时进行推送, 广播模式

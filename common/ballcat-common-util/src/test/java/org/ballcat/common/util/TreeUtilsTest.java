@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.util;
 
-import org.ballcat.common.util.tree.TreeNode;
-import org.ballcat.common.util.tree.TreeUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package org.ballcat.common.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+
+import org.ballcat.common.util.tree.TreeNode;
+import org.ballcat.common.util.tree.TreeUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author hccake
@@ -73,6 +74,8 @@ class TreeUtilsTest {
 		Assertions.assertEquals(list, abstractIdTreeNodes);
 	}
 
+	@lombok.Setter
+	@lombok.Getter
 	static class TestTreeNode implements TreeNode<Long> {
 
 		/**
@@ -92,12 +95,12 @@ class TreeUtilsTest {
 
 		@Override
 		public Long getKey() {
-			return id;
+			return this.id;
 		}
 
 		@Override
 		public Long getParentKey() {
-			return parentId;
+			return this.parentId;
 		}
 
 		@Override
@@ -109,23 +112,7 @@ class TreeUtilsTest {
 		@Override
 		@SuppressWarnings("unchecked")
 		public <T extends TreeNode<Long>> List<T> getChildren() {
-			return (List<T>) children;
-		}
-
-		public Long getId() {
-			return id;
-		}
-
-		public void setId(Long id) {
-			this.id = id;
-		}
-
-		public Long getParentId() {
-			return parentId;
-		}
-
-		public void setParentId(Long parentId) {
-			this.parentId = parentId;
+			return (List<T>) this.children;
 		}
 
 	}

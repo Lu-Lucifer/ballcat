@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.core.thread;
 
-import org.ballcat.common.lock.JavaReentrantLock;
+package org.ballcat.common.core.thread;
 
 import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.ballcat.common.lock.JavaReentrantLock;
 
 /**
  * @author lingting 2023-04-22 10:39
@@ -53,16 +54,16 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 		}
 
 		try {
-			lock.runByInterruptibly(() -> {
-				queue.add(t);
-				lock.signalAll();
+			this.lock.runByInterruptibly(() -> {
+				this.queue.add(t);
+				this.lock.signalAll();
 			});
 		}
 		catch (InterruptedException e) {
 			interrupt();
 		}
 		catch (Exception e) {
-			log.error("{} put error, param: {}", this.getClass().toString(), t, e);
+			this.log.error("{} put error, param: {}", this.getClass().toString(), t, e);
 		}
 	}
 
@@ -79,9 +80,9 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 		while (isRun()) {
 			try {
 				T t = pool();
-				lock.runByInterruptibly(() -> {
+				this.lock.runByInterruptibly(() -> {
 					if (t == null) {
-						lock.await(24, TimeUnit.HOURS);
+						this.lock.await(24, TimeUnit.HOURS);
 						return;
 					}
 
@@ -89,7 +90,7 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 					// 需要休眠
 					if (sleepTime > 0) {
 						// 如果是被唤醒
-						if (lock.await(sleepTime, TimeUnit.MILLISECONDS)) {
+						if (this.lock.await(sleepTime, TimeUnit.MILLISECONDS)) {
 							replay(t);
 							return;
 						}
@@ -110,17 +111,17 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 	}
 
 	protected T pool() {
-		return queue.poll();
+		return this.queue.poll();
 	}
 
 	protected abstract void process(T t);
 
 	protected void error(Exception e) {
-		log.error("类: {}; 线程: {}; 运行异常! ", getSimpleName(), getId(), e);
+		this.log.error("类: {}; 线程: {}; 运行异常! ", getSimpleName(), getId(), e);
 	}
 
 	protected void shutdown() {
-		log.warn("类: {}; 线程: {}; 被中断! 剩余数据: {}", getSimpleName(), getId(), queue.size());
+		this.log.warn("类: {}; 线程: {}; 被中断! 剩余数据: {}", getSimpleName(), getId(), this.queue.size());
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.datascope.handler;
 
 import org.ballcat.datascope.annotation.DataPermission;
@@ -55,7 +56,7 @@ public class DataPermissionRule {
 	 * @return boolean 默认返回 false
 	 */
 	public boolean ignore() {
-		return ignore;
+		return this.ignore;
 	}
 
 	/**
@@ -64,7 +65,7 @@ public class DataPermissionRule {
 	 * @return 资源类型数组
 	 */
 	public String[] includeResources() {
-		return includeResources;
+		return this.includeResources;
 	}
 
 	/**
@@ -73,7 +74,7 @@ public class DataPermissionRule {
 	 * @return 资源类型数组
 	 */
 	public String[] excludeResources() {
-		return excludeResources;
+		return this.excludeResources;
 	}
 
 	public DataPermissionRule setIgnore(boolean ignore) {

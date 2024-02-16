@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.config.configurer;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 import lombok.RequiredArgsConstructor;
 import org.ballcat.springsecurity.oauth2.server.authorization.authentication.BallcatOAuth2TokenRevocationAuthenticationProvider;
@@ -26,9 +30,6 @@ import org.springframework.security.oauth2.server.authorization.authentication.O
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2TokenRevocationAuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationConverter;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * 令牌撤销端点配置的自定义扩展
@@ -49,7 +50,7 @@ public class OAuth2TokenRevocationEndpointConfigurerExtension implements OAuth2A
 			authenticationProviders
 				.removeIf(x -> x.getClass().isAssignableFrom(OAuth2TokenRevocationAuthenticationProvider.class));
 			authenticationProviders.add(0,
-					new BallcatOAuth2TokenRevocationAuthenticationProvider(authorizationService));
+					new BallcatOAuth2TokenRevocationAuthenticationProvider(this.authorizationService));
 		};
 
 		final Consumer<List<AuthenticationConverter>> convertersConsumer = converters -> {
@@ -58,7 +59,7 @@ public class OAuth2TokenRevocationEndpointConfigurerExtension implements OAuth2A
 		};
 
 		oAuth2AuthorizationServerConfigurer.tokenRevocationEndpoint(
-				tokenRevocation -> tokenRevocation.revocationResponseHandler(oAuth2TokenRevocationResponseHandler)
+				tokenRevocation -> tokenRevocation.revocationResponseHandler(this.oAuth2TokenRevocationResponseHandler)
 					.revocationRequestConverters(convertersConsumer)
 					.authenticationProviders(authenticationProvidersConsumer));
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.dingtalk;
 
 import org.ballcat.dingtalk.message.DingTalkTextMessage;
@@ -39,16 +40,16 @@ class DingTalkTest {
 
 	@BeforeEach
 	void before() {
-		sender = new DingTalkSender(webhook).setSecret(secret);
+		this.sender = new DingTalkSender(this.webhook).setSecret(this.secret);
 	}
 
 	@Test
 	void send() {
-		assertTrue(StringUtils.hasText(sender.getUrl()));
-		assertTrue(StringUtils.hasText(sender.getSecret()));
+		assertTrue(StringUtils.hasText(this.sender.getUrl()));
+		assertTrue(StringUtils.hasText(this.sender.getSecret()));
 		DingTalkTextMessage message = new DingTalkTextMessage();
 		message.setContent("测试机器人消息通知");
-		DingTalkResponse response = sender.sendMessage(message);
+		DingTalkResponse response = this.sender.sendMessage(message);
 		assertTrue(response.isSuccess());
 	}
 

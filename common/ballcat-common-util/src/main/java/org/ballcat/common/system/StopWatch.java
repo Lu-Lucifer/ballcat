@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.system;
 
 import java.util.concurrent.TimeUnit;
@@ -38,25 +39,25 @@ public class StopWatch {
 	 * 开始计时, 如果已开始, 则从延续之前的计时
 	 */
 	public void start() {
-		if (startTimeNanos != null) {
+		if (this.startTimeNanos != null) {
 			return;
 		}
-		durationNanos = null;
-		startTimeNanos = System.nanoTime();
+		this.durationNanos = null;
+		this.startTimeNanos = System.nanoTime();
 	}
 
 	/**
 	 * 是否正在运行
 	 */
 	public boolean isRunning() {
-		return startTimeNanos != null;
+		return this.startTimeNanos != null;
 	}
 
 	public void stop() {
-		if (startTimeNanos != null) {
-			durationNanos = System.nanoTime() - startTimeNanos;
+		if (this.startTimeNanos != null) {
+			this.durationNanos = System.nanoTime() - this.startTimeNanos;
 		}
-		startTimeNanos = null;
+		this.startTimeNanos = null;
 	}
 
 	public void restart() {
@@ -74,10 +75,10 @@ public class StopWatch {
 	 * </p>
 	 */
 	public long timeNanos() {
-		if (durationNanos == null) {
-			return startTimeNanos == null ? 0 : System.nanoTime() - startTimeNanos;
+		if (this.durationNanos == null) {
+			return this.startTimeNanos == null ? 0 : System.nanoTime() - this.startTimeNanos;
 		}
-		return durationNanos;
+		return this.durationNanos;
 	}
 
 	public long timeMillis() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.resource.configurer;
 
 import org.ballcat.springsecurity.configuer.SpringSecurityConfigurerCustomizer;
@@ -43,9 +44,9 @@ public class BasicOauth2ResourceServerConfigurerCustomizer implements SpringSecu
 	public void customize(HttpSecurity httpSecurity) throws Exception {
 		// 开启 OAuth2 资源服务
 		httpSecurity.oauth2ResourceServer()
-			.authenticationEntryPoint(authenticationEntryPoint)
+			.authenticationEntryPoint(this.authenticationEntryPoint)
 			// bearToken 解析器
-			.bearerTokenResolver(bearerTokenResolver)
+			.bearerTokenResolver(this.bearerTokenResolver)
 			// 不透明令牌，
 			.opaqueToken();
 	}

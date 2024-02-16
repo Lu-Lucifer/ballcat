@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.core.thread;
 
 import java.util.concurrent.TimeUnit;
@@ -38,11 +39,11 @@ public abstract class AbstractTimer extends AbstractThreadContextComponent {
 	 * 线程被中断触发.
 	 */
 	protected void shutdown() {
-		log.warn("{} 类 线程: {} 被中断!", getClass().getSimpleName(), getId());
+		this.log.warn("{} 类 线程: {} 被中断!", getClass().getSimpleName(), getId());
 	}
 
 	protected void error(Exception e) {
-		log.error("{} 类 线程: {} 出现异常!", getClass().getSimpleName(), getId(), e);
+		this.log.error("{} 类 线程: {} 出现异常!", getClass().getSimpleName(), getId(), e);
 	}
 
 	@Override

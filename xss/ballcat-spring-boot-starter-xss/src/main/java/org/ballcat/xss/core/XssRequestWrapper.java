@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.xss.core;
 
-import org.ballcat.xss.cleaner.XssCleaner;
-import lombok.extern.slf4j.Slf4j;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import lombok.extern.slf4j.Slf4j;
+import org.ballcat.xss.cleaner.XssCleaner;
 
 /**
  * Request包装类: 用于 XSS 过滤
@@ -45,7 +47,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
 		for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
 			String[] values = entry.getValue();
 			for (int i = 0; i < values.length; i++) {
-				values[i] = xssCleaner.clean(values[i]);
+				values[i] = this.xssCleaner.clean(values[i]);
 			}
 			map.put(entry.getKey(), values);
 		}
@@ -61,7 +63,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
 		int count = values.length;
 		String[] encodedValues = new String[count];
 		for (int i = 0; i < count; i++) {
-			encodedValues[i] = xssCleaner.clean(values[i]);
+			encodedValues[i] = this.xssCleaner.clean(values[i]);
 		}
 		return encodedValues;
 	}
@@ -72,14 +74,14 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
 		if (value == null) {
 			return null;
 		}
-		return xssCleaner.clean(value);
+		return this.xssCleaner.clean(value);
 	}
 
 	@Override
 	public Object getAttribute(String name) {
 		Object value = super.getAttribute(name);
 		if (value instanceof String) {
-			xssCleaner.clean((String) value);
+			this.xssCleaner.clean((String) value);
 		}
 		return value;
 	}
@@ -90,7 +92,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
 		if (value == null) {
 			return null;
 		}
-		return xssCleaner.clean(value);
+		return this.xssCleaner.clean(value);
 	}
 
 	@Override
@@ -99,7 +101,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
 		if (value == null) {
 			return null;
 		}
-		return xssCleaner.clean(value);
+		return this.xssCleaner.clean(value);
 	}
 
 }

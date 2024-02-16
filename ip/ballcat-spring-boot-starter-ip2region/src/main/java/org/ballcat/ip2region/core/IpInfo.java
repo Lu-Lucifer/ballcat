@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.ip2region.core;
 
-import lombok.Data;
-import org.springframework.util.StringUtils;
+package org.ballcat.ip2region.core;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import lombok.Data;
+import org.springframework.util.StringUtils;
 
 /**
  * IP信息
@@ -92,10 +93,10 @@ public class IpInfo implements Serializable {
 	 */
 	public String getAddress(String delimiter) {
 		Set<String> regionSet = new LinkedHashSet<>();
-		regionSet.add(country);
-		regionSet.add(province);
-		regionSet.add(city);
-		regionSet.add(area);
+		regionSet.add(this.country);
+		regionSet.add(this.province);
+		regionSet.add(this.city);
+		regionSet.add(this.area);
 		regionSet.removeIf(Objects::isNull);
 		return StringUtils.collectionToDelimitedString(regionSet, delimiter);
 	}
@@ -115,11 +116,11 @@ public class IpInfo implements Serializable {
 	 */
 	public String getAddressAndIsp(String delimiter) {
 		Set<String> regionSet = new LinkedHashSet<>();
-		regionSet.add(country);
-		regionSet.add(province);
-		regionSet.add(city);
-		regionSet.add(area);
-		regionSet.add(isp);
+		regionSet.add(this.country);
+		regionSet.add(this.province);
+		regionSet.add(this.city);
+		regionSet.add(this.area);
+		regionSet.add(this.isp);
 		regionSet.removeIf(Objects::isNull);
 		return StringUtils.collectionToDelimitedString(regionSet, delimiter);
 	}

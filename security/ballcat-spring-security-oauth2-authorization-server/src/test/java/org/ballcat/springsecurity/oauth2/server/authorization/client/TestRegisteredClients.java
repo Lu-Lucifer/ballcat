@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.client;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 /**
  * @author Anoop Garlapati
  * @author Hccake
  */
-public class TestRegisteredClients {
+public final class TestRegisteredClients {
+
+	private TestRegisteredClients() {
+	}
 
 	public static RegisteredClient.Builder registeredClient() {
 		return RegisteredClient.withId("registration-1")

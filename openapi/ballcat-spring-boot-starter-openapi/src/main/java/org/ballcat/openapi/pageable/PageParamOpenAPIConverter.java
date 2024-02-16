@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.openapi.pageable;
 
+import java.util.Iterator;
+
 import com.fasterxml.jackson.databind.JavaType;
-import org.ballcat.common.model.domain.PageParam;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverter;
 import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.commons.lang3.StringUtils;
+import org.ballcat.common.model.domain.PageParam;
 import org.springdoc.core.providers.ObjectMapperProvider;
-
-import java.util.Iterator;
 
 /**
  * The PageParam Type models converter.
@@ -65,7 +66,7 @@ public class PageParamOpenAPIConverter implements ModelConverter {
 	 */
 	@Override
 	public Schema resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
-		JavaType javaType = springDocObjectMapper.jsonMapper().constructType(type.getType());
+		JavaType javaType = this.springDocObjectMapper.jsonMapper().constructType(type.getType());
 		if (javaType != null) {
 			Class<?> cls = javaType.getRawClass();
 			if (PAGE_PARAM_TO_REPLACE.equals(cls.getCanonicalName())) {

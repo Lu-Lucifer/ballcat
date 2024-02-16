@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.ballcat.redis.RedisHelper;
 import org.ballcat.redis.config.CacheProperties;
 import org.ballcat.redis.config.CachePropertiesHolder;
@@ -26,7 +28,6 @@ import org.ballcat.redis.serialize.CacheSerializer;
 import org.ballcat.redis.serialize.JacksonSerializer;
 import org.ballcat.redis.serialize.PrefixJdkRedisSerializer;
 import org.ballcat.redis.serialize.PrefixStringRedisSerializer;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -91,7 +92,7 @@ public class BallcatRedisAutoConfiguration {
 	@ConditionalOnMissingBean
 	public StringRedisTemplate stringRedisTemplate(IRedisPrefixConverter redisPrefixConverter) {
 		StringRedisTemplate template = new StringRedisTemplate();
-		template.setConnectionFactory(redisConnectionFactory);
+		template.setConnectionFactory(this.redisConnectionFactory);
 		template.setKeySerializer(new PrefixStringRedisSerializer(redisPrefixConverter));
 		return template;
 	}
@@ -101,7 +102,7 @@ public class BallcatRedisAutoConfiguration {
 	@ConditionalOnMissingBean(name = "redisTemplate")
 	public RedisTemplate<Object, Object> redisTemplate(IRedisPrefixConverter redisPrefixConverter) {
 		RedisTemplate<Object, Object> template = new RedisTemplate<>();
-		template.setConnectionFactory(redisConnectionFactory);
+		template.setConnectionFactory(this.redisConnectionFactory);
 		template.setKeySerializer(new PrefixJdkRedisSerializer(redisPrefixConverter));
 		return template;
 	}

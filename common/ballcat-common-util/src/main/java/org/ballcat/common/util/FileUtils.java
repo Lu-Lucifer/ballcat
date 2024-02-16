@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.util;
 
-import lombok.experimental.UtilityClass;
+package org.ballcat.common.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,25 +33,27 @@ import java.util.List;
 /**
  * @author lingting 2021/4/16 14:33
  */
-@UtilityClass
-public class FileUtils {
+public final class FileUtils {
+
+	private FileUtils() {
+	}
 
 	/**
 	 * 系统的临时文件夹
 	 */
-	private File tempDir = SystemUtils.tmpDirBallcat();
+	private static File tempDir = SystemUtils.tmpDirBallcat();
 
 	/**
 	 * 更新临时文件路径
 	 */
-	public void updateTmpDir(String dirName) {
+	public static void updateTmpDir(String dirName) {
 		tempDir = new File(SystemUtils.tmpDir(), dirName);
 	}
 
 	/**
 	 * 获取临时文件, 不会创建文件
 	 */
-	public File getTemplateFile(String name) throws IOException {
+	public static File getTemplateFile(String name) throws IOException {
 		if (!tempDir.exists()) {
 			tempDir.mkdirs();
 		}
@@ -70,7 +71,7 @@ public class FileUtils {
 	/**
 	 * 根据网络路径获取文件输入流
 	 */
-	public InputStream getInputStreamByUrlPath(String path) throws IOException {
+	public static InputStream getInputStreamByUrlPath(String path) throws IOException {
 		// 从文件链接里获取文件流
 		URL url = new URL(path);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -86,7 +87,7 @@ public class FileUtils {
 	 * @param recursive 是否递归
 	 * @return java.util.List<java.lang.String>
 	 */
-	public List<String> scanFile(String path, boolean recursive) {
+	public static List<String> scanFile(String path, boolean recursive) {
 		List<String> list = new ArrayList<>();
 		File file = new File(path);
 		if (!file.exists()) {
@@ -124,7 +125,7 @@ public class FileUtils {
 	 * @param dir 文件夹.
 	 * @throws IOException 创建失败时抛出
 	 */
-	public void createDir(File dir) throws IOException {
+	public static void createDir(File dir) throws IOException {
 		if (dir.exists()) {
 			return;
 		}
@@ -139,7 +140,7 @@ public class FileUtils {
 	 * @param file 文件.
 	 * @throws IOException 创建失败时抛出
 	 */
-	public void createFile(File file) throws IOException {
+	public static void createFile(File file) throws IOException {
 		if (file.exists()) {
 			return;
 		}
@@ -156,7 +157,7 @@ public class FileUtils {
 	/**
 	 * 创建临时文件
 	 */
-	public File createTemp() throws IOException {
+	public static File createTemp() throws IOException {
 		return createTemp("ballcat");
 	}
 
@@ -165,7 +166,7 @@ public class FileUtils {
 	 * @param trait 文件特征
 	 * @return 临时文件对象
 	 */
-	public File createTemp(String trait) throws IOException {
+	public static File createTemp(String trait) throws IOException {
 		return createTemp(trait, tempDir);
 	}
 
@@ -175,7 +176,7 @@ public class FileUtils {
 	 * @param dir 文件存放位置
 	 * @return 临时文件对象
 	 */
-	public File createTemp(String trait, File dir) throws IOException {
+	public static File createTemp(String trait, File dir) throws IOException {
 		try {
 			createDir(dir);
 		}
@@ -186,7 +187,7 @@ public class FileUtils {
 		return File.createTempFile(trait, "tmp", dir);
 	}
 
-	public File createTemp(InputStream in) throws IOException {
+	public static File createTemp(InputStream in) throws IOException {
 		File file = createTemp();
 
 		try (FileOutputStream out = new FileOutputStream(file)) {
@@ -204,7 +205,7 @@ public class FileUtils {
 	 * @param options 其他文件复制选项 {@link StandardCopyOption}
 	 * @return 目标文件地址
 	 */
-	public Path copy(File source, File target, boolean override, CopyOption... options) throws IOException {
+	public static Path copy(File source, File target, boolean override, CopyOption... options) throws IOException {
 		List<CopyOption> list = new ArrayList<>();
 		if (override) {
 			list.add(StandardCopyOption.REPLACE_EXISTING);
@@ -217,7 +218,7 @@ public class FileUtils {
 		return Files.copy(source.toPath(), target.toPath(), list.toArray(new CopyOption[0]));
 	}
 
-	public boolean delete(File file) {
+	public static boolean delete(File file) {
 		try {
 			Files.delete(file.toPath());
 			return true;
@@ -232,7 +233,7 @@ public class FileUtils {
 	 * @param filename 文件名
 	 * @return 扩展名
 	 */
-	public String getExtension(String filename) {
+	public static String getExtension(String filename) {
 		if (filename == null) {
 			return null;
 		}
@@ -248,7 +249,7 @@ public class FileUtils {
 	 * @param filename 文件名
 	 * @return 文件名
 	 */
-	public String getBaseName(String filename) {
+	public static String getBaseName(String filename) {
 		if (filename == null) {
 			return null;
 		}

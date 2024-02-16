@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.i18n;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.ResourceUtils;
+package org.ballcat.i18n;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.ResourceUtils;
 
 /**
  * 通配符支持的 ResourceBundleMessageSource，方便读取多个 jar 包中的资源文件.
@@ -45,10 +46,11 @@ public class WildcardReloadableResourceBundleMessageSource extends ReloadableRes
 
 	private final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-	private static final Pattern pattern = Pattern.compile(".*_([a-z]{2}(_[A-Z]{2})?(_[A-Z]+)?)\\.properties$");
+	private static final Pattern LOCALE_PROPERTIES_FILE_NAME_PATTERN = Pattern
+		.compile(".*_([a-z]{2}(_[A-Z]{2})?(_[A-Z]+)?)\\.properties$");
 
 	public WildcardReloadableResourceBundleMessageSource() {
-		super.setResourceLoader(resolver);
+		super.setResourceLoader(this.resolver);
 	}
 
 	/**
@@ -69,10 +71,11 @@ public class WildcardReloadableResourceBundleMessageSource extends ReloadableRes
 		if (containsWildcard(basename)) {
 			filenames.remove(basename);
 			try {
-				Resource[] resources = resolver.getResources(basename + PROPERTIES_SUFFIX);
+				Resource[] resources = this.resolver.getResources(basename + PROPERTIES_SUFFIX);
 				for (Resource resource : resources) {
 					String resourceUriStr = resource.getURI().toString();
-					if (!pattern.matcher(resourceUriStr).matches()) {
+					// 根据通配符匹配到的多个 basename 对应的文件添加到文件列表末尾，作为兜底匹配
+					if (!LOCALE_PROPERTIES_FILE_NAME_PATTERN.matcher(resourceUriStr).matches()) {
 						String sourcePath = resourceUriStr.replace(PROPERTIES_SUFFIX, "");
 						filenames.add(sourcePath);
 					}
@@ -96,7 +99,7 @@ public class WildcardReloadableResourceBundleMessageSource extends ReloadableRes
 		List<String> matchFilenames = super.calculateFilenamesForLocale(basename, locale);
 		for (String matchFilename : matchFilenames) {
 			try {
-				Resource[] resources = resolver.getResources(matchFilename + PROPERTIES_SUFFIX);
+				Resource[] resources = this.resolver.getResources(matchFilename + PROPERTIES_SUFFIX);
 				for (Resource resource : resources) {
 					String sourcePath = resource.getURI().toString().replace(PROPERTIES_SUFFIX, "");
 					fileNames.add(sourcePath);

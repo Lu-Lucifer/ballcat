@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mybatisplus.conditions.query;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.baomidou.mybatisplus.core.conditions.SharedString;
 import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import org.ballcat.mybatisplus.alias.TableAliasHelper;
 import org.ballcat.mybatisplus.alias.TableAlias;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.ballcat.mybatisplus.alias.TableAliasHelper;
 
 /**
  * 生成可携带表别名的查询条件 当前实体必须被配置表列名注解
@@ -67,10 +68,10 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 	 * @return String allAliasSqlSelect
 	 */
 	public String getAllAliasSqlSelect() {
-		if (allAliasSqlSelect == null) {
-			allAliasSqlSelect = TableAliasHelper.tableAliasSelectSql(getEntityClass());
+		if (this.allAliasSqlSelect == null) {
+			this.allAliasSqlSelect = TableAliasHelper.tableAliasSelectSql(getEntityClass());
 		}
-		return allAliasSqlSelect;
+		return this.allAliasSqlSelect;
 	}
 
 	/**
@@ -81,9 +82,9 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 	 */
 	@Override
 	protected LambdaAliasQueryWrapperX<T> instance() {
-		return new LambdaAliasQueryWrapperX<>(getEntity(), getEntityClass(), null, paramNameSeq, paramNameValuePairs,
-				new MergeSegments(), this.paramAlias, SharedString.emptyString(), SharedString.emptyString(),
-				SharedString.emptyString());
+		return new LambdaAliasQueryWrapperX<>(getEntity(), getEntityClass(), null, this.paramNameSeq,
+				this.paramNameValuePairs, new MergeSegments(), this.paramAlias, SharedString.emptyString(),
+				SharedString.emptyString(), SharedString.emptyString());
 	}
 
 	/**
@@ -99,7 +100,7 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 			return columnFunction.apply(null);
 		}
 		String columnName = super.columnToString(column, true);
-		return tableAlias == null ? columnName : tableAlias + "." + columnName;
+		return this.tableAlias == null ? columnName : this.tableAlias + "." + columnName;
 	}
 
 }

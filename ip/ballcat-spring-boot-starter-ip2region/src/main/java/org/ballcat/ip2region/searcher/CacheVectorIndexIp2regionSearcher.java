@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.ip2region.searcher;
 
 import org.ballcat.autoconfigure.ip2region.Ip2regionProperties;
@@ -44,7 +45,7 @@ public class CacheVectorIndexIp2regionSearcher extends Ip2regionSearcherTemplate
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		Resource resource = resourceLoader.getResource(properties.getFileLocation());
+		Resource resource = this.resourceLoader.getResource(this.properties.getFileLocation());
 		String dbPath = resource.getFile().getPath();
 		this.searcher = Searcher.newWithVectorIndex(dbPath, Searcher.loadVectorIndexFromFile(dbPath));
 	}

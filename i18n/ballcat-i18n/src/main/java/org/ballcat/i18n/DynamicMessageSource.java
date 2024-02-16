@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.i18n;
+
+import java.text.MessageFormat;
+import java.util.Locale;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.AbstractMessageSource;
 import org.springframework.lang.Nullable;
-
-import java.text.MessageFormat;
-import java.util.Locale;
 
 /**
  * 动态获取的 MessageSource，比如从数据库 或者 redis 中获取 message 信息
@@ -37,7 +38,7 @@ public class DynamicMessageSource extends AbstractMessageSource {
 	@Override
 	@Nullable
 	protected MessageFormat resolveCode(String code, Locale locale) {
-		I18nMessage i18nMessage = i18nMessageProvider.getI18nMessage(code, locale);
+		I18nMessage i18nMessage = this.i18nMessageProvider.getI18nMessage(code, locale);
 		if (i18nMessage != null) {
 			return createMessageFormat(i18nMessage.getMessage(), locale);
 		}

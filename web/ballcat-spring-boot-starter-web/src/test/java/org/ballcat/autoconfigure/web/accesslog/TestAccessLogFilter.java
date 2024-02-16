@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.web.accesslog;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.Getter;
 import org.ballcat.web.accesslog.AbstractAccessLogFilter;
 import org.ballcat.web.accesslog.AccessLogRecordOptions;
 import org.ballcat.web.accesslog.AccessLogRule;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 @Getter
 public class TestAccessLogFilter extends AbstractAccessLogFilter {
@@ -37,7 +39,7 @@ public class TestAccessLogFilter extends AbstractAccessLogFilter {
 	protected void beforeRequest(HttpServletRequest request, AccessLogRecordOptions recordOptions) {
 		this.httpInfo = new HttpInfo();
 		if (recordOptions.isIncludeQueryString()) {
-			httpInfo.setQueryString(request.getQueryString());
+			this.httpInfo.setQueryString(request.getQueryString());
 		}
 	}
 
@@ -47,14 +49,14 @@ public class TestAccessLogFilter extends AbstractAccessLogFilter {
 		if (recordOptions.isIncludeRequestBody()) {
 			String payload = getRequestBody(request);
 			if (payload != null) {
-				httpInfo.setRequestBody(payload);
+				this.httpInfo.setRequestBody(payload);
 			}
 		}
 
 		if (recordOptions.isIncludeResponseBody()) {
 			String payload = getResponseBody(response);
 			if (payload != null) {
-				httpInfo.setResponseBody(payload);
+				this.httpInfo.setResponseBody(payload);
 			}
 		}
 	}

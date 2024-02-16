@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.web.accesslog;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.Setter;
@@ -21,10 +26,6 @@ import org.ballcat.web.accesslog.AbstractAccessLogFilter;
 import org.ballcat.web.accesslog.AccessLogRecordOptions;
 import org.ballcat.web.accesslog.AccessLogRule;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 访问日志配置
@@ -73,11 +74,11 @@ public class AccessLogProperties {
 	private List<Rule> rules = Collections.emptyList();
 
 	public AccessLogRecordOptions getDefaultAccessLogRecordOptions() {
-		return convertToAccessLogRecordOptions(defaultRecordOptions);
+		return convertToAccessLogRecordOptions(this.defaultRecordOptions);
 	}
 
 	public List<AccessLogRule> getAccessLogRules() {
-		return rules.stream().map(AccessLogProperties::convertToAccessLogRule).collect(Collectors.toList());
+		return this.rules.stream().map(AccessLogProperties::convertToAccessLogRule).collect(Collectors.toList());
 	}
 
 	private static AccessLogRecordOptions convertToAccessLogRecordOptions(RecordOptions recordOptions) {

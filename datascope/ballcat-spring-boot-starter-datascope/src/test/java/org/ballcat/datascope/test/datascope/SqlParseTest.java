@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,62 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.datascope.test.datascope;
 
-import org.ballcat.datascope.DataScope;
-import org.ballcat.datascope.handler.DataPermissionHandler;
-import org.ballcat.datascope.handler.DefaultDataPermissionHandler;
-import org.ballcat.datascope.processor.DataScopeSqlProcessor;
-import org.ballcat.datascope.util.SqlParseUtils;
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.schema.Column;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package org.ballcat.datascope.test.datascope;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.schema.Column;
+import org.ballcat.datascope.DataScope;
+import org.ballcat.datascope.handler.DataPermissionHandler;
+import org.ballcat.datascope.handler.DefaultDataPermissionHandler;
+import org.ballcat.datascope.processor.DataScopeSqlProcessor;
+import org.ballcat.datascope.util.SqlParseUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 /**
  * @author hccake
  */
 class SqlParseTest {
 
-	static class TenantDataScope implements DataScope {
-
-		final String columnName = "tenant_id";
-
-		private static final Set<String> TABLE_NAMES = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-		static {
-			TABLE_NAMES.addAll(Arrays.asList("entity", "entity1", "entity2", "entity3", "t1", "t2"));
-		}
-
-		@Override
-		public String getResource() {
-			return "tenant";
-		}
-
-		@Override
-		public boolean includes(String tableName) {
-			return TABLE_NAMES.contains(tableName);
-		}
-
-		@Override
-		public Expression getExpression(String tableName, Alias tableAlias) {
-			Column column = SqlParseUtils.getAliasColumn(tableName, tableAlias, columnName);
-			return new EqualsTo(column, new LongValue("1"));
-		}
-
-	}
-
 	DataScope tenantDataScope = new TenantDataScope();
 
 	DataPermissionHandler dataPermissionHandler = new DefaultDataPermissionHandler(
-			Collections.singletonList(tenantDataScope));
+			Collections.singletonList(this.tenantDataScope));
 
 	DataScopeSqlProcessor dataScopeSqlProcessor = new DataScopeSqlProcessor();
 
@@ -376,14 +350,41 @@ class SqlParseTest {
 		String sql = "SELECT\n" + "r.id, r.name, r.code, r.type, r.scope_type, r.scope_resources\n" + "FROM\n"
 				+ "sys_user_role ur\n" + "left join\n" + "sys_role r\n" + "on r.code = ur.role_code\n"
 				+ "WHERE ur.user_id = ?\n" + "and r.deleted = 0";
-		Assertions
-			.assertDoesNotThrow(() -> dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()));
+		Assertions.assertDoesNotThrow(
+				() -> this.dataScopeSqlProcessor.parserSingle(sql, this.dataPermissionHandler.dataScopes()));
 
 	}
 
 	void assertSql(String sql, String targetSql) {
-		String parsedSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes());
+		String parsedSql = this.dataScopeSqlProcessor.parserSingle(sql, this.dataPermissionHandler.dataScopes());
 		Assertions.assertEquals(targetSql, parsedSql);
+	}
+
+	static class TenantDataScope implements DataScope {
+
+		final String columnName = "tenant_id";
+
+		private static final Set<String> TABLE_NAMES = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		static {
+			TABLE_NAMES.addAll(Arrays.asList("entity", "entity1", "entity2", "entity3", "t1", "t2"));
+		}
+
+		@Override
+		public String getResource() {
+			return "tenant";
+		}
+
+		@Override
+		public boolean includes(String tableName) {
+			return TABLE_NAMES.contains(tableName);
+		}
+
+		@Override
+		public Expression getExpression(String tableName, Alias tableAlias) {
+			Column column = SqlParseUtils.getAliasColumn(tableName, tableAlias, this.columnName);
+			return new EqualsTo(column, new LongValue("1"));
+		}
+
 	}
 
 }

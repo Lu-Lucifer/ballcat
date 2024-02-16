@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.idempotent;
+
+import java.util.concurrent.TimeUnit;
 
 import org.ballcat.idempotent.key.store.IdempotentKeyStore;
 import org.ballcat.idempotent.key.store.InMemoryIdempotentKeyStore;
@@ -21,8 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * 测试幂等装配
@@ -38,8 +39,8 @@ class IdempotentTest {
 
 	@Test
 	void test() {
-		Assertions.assertInstanceOf(InMemoryIdempotentKeyStore.class, idempotentKeyStore);
-		idempotentKeyStore.saveIfAbsent("test", 1, TimeUnit.SECONDS);
+		Assertions.assertInstanceOf(InMemoryIdempotentKeyStore.class, this.idempotentKeyStore);
+		this.idempotentKeyStore.saveIfAbsent("test", 1, TimeUnit.SECONDS);
 	}
 
 }

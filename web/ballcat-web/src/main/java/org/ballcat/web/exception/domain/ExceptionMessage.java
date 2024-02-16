@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.web.exception.domain;
 
 import lombok.Getter;
@@ -88,14 +89,15 @@ public class ExceptionMessage {
 	 * 数量自增
 	 */
 	public ExceptionMessage increment() {
-		number++;
+		this.number++;
 		return this;
 	}
 
 	@Override
 	public String toString() {
-		return "服务名称：" + applicationName + "\nip：" + ip + "\nhostname：" + hostname + "\n机器地址：" + mac + "\n触发时间：" + time
-				+ "\n请求地址：" + requestUri + "\n线程id：" + threadId + "\n数量：" + number + "\n堆栈：" + stack;
+		return "服务名称：" + this.applicationName + "\nip：" + this.ip + "\nhostname：" + this.hostname + "\n机器地址：" + this.mac
+				+ "\n触发时间：" + this.time + "\n请求地址：" + this.requestUri + "\n线程id：" + this.threadId + "\n数量："
+				+ this.number + "\n堆栈：" + this.stack;
 	}
 
 }

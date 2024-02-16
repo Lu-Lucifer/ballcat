@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis;
+
+import java.io.IOException;
 
 import org.ballcat.redis.lock.DistributedLock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-
-import java.io.IOException;
 
 /**
  * @author huyuanzhi 2021/11/16
@@ -33,7 +34,7 @@ class DistributeLockTest {
 	@Test
 	void testSuccess() {
 		String value = DistributedLock.<String>instance()
-			.action(lockKey, () -> "value")
+			.action(this.lockKey, () -> "value")
 			.onSuccess(ret -> ret + "Success")
 			.lock();
 		Assertions.assertEquals("valueSuccess", value);
@@ -42,7 +43,7 @@ class DistributeLockTest {
 	@Test
 	void testHandleException() {
 		String value = DistributedLock.<String>instance()
-			.action(lockKey, this::throwIOException)
+			.action(this.lockKey, this::throwIOException)
 			.onSuccess(ret -> ret + ret)
 			.onException(e -> System.out.println("发生异常了"))
 			.lock();
@@ -52,7 +53,7 @@ class DistributeLockTest {
 	@Test
 	void testThrowException() {
 		Assertions.assertThrows(IOException.class,
-				() -> DistributedLock.<String>instance().action(lockKey, this::throwIOException).lock());
+				() -> DistributedLock.<String>instance().action(this.lockKey, this::throwIOException).lock());
 	}
 
 	String throwIOException() throws IOException {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.moudle;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.codec.ByteArrayCodec;
@@ -28,11 +34,6 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnection;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.util.StringUtils;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 抽象的 Redis module 操作类 实现方式基于 org.springframework.data.redis.connection.lettuce
@@ -68,13 +69,14 @@ public abstract class AbstractRedisModuleHelper {
 
 		List<byte[]> extraArgs = Arrays.stream(args)
 			.filter(StringUtils::hasLength)
-			.map(arg -> valueSerializer.serialize(arg))
+			.map(arg -> this.valueSerializer.serialize(arg))
 			.collect(Collectors.toList());
 
-		CommandArgs<byte[], byte[]> commandArgs = new CommandArgs<>(codec).addKey(keySerializer.serialize(key))
+		CommandArgs<byte[], byte[]> commandArgs = new CommandArgs<>(this.codec)
+			.addKey(this.keySerializer.serialize(key))
 			.addValues(extraArgs);
 
-		try (LettuceConnection connection = (LettuceConnection) connectionFactory.getConnection()) {
+		try (LettuceConnection connection = (LettuceConnection) this.connectionFactory.getConnection()) {
 			RedisFuture<T> future = connection.getNativeConnection().dispatch(type, output, commandArgs);
 			return Optional.ofNullable(future.get());
 		}

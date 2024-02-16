@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.web.accesslog;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.List;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ballcat.common.core.constant.MDCConstants;
@@ -29,15 +40,6 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import org.springframework.web.util.ServletRequestPathUtils;
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.util.WebUtils;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.util.List;
 
 /**
  * @author Hccake 2019/10/15 21:53
@@ -135,7 +137,7 @@ public abstract class AbstractAccessLogFilter extends OncePerRequestFilter imple
 			beforeRequest(requestToUse, recordOptions);
 		}
 		catch (Exception e) {
-			logger.error("[Access Log] process before request error", e);
+			this.logger.error("[Access Log] process before request error", e);
 		}
 
 		try {
@@ -167,7 +169,7 @@ public abstract class AbstractAccessLogFilter extends OncePerRequestFilter imple
 				afterRequest(requestToUse, responseToUse, executionTime, myThrowable, recordOptions);
 			}
 			catch (Exception e) {
-				logger.error("[Access Log] process after request error, handler: %s", e);
+				this.logger.error("[Access Log] process after request error, handler: %s", e);
 			}
 
 			// 重新写入数据到响应信息中
@@ -216,19 +218,19 @@ public abstract class AbstractAccessLogFilter extends OncePerRequestFilter imple
 	}
 
 	protected AccessLogRecordOptions getRecordOptions(HttpServletRequest request) {
-		if (CollectionUtils.isEmpty(logRules)) {
-			return defaultRecordOptions;
+		if (CollectionUtils.isEmpty(this.logRules)) {
+			return this.defaultRecordOptions;
 		}
 
 		String lookupPathForRequest = URL_PATH_HELPER.getLookupPathForRequest(request);
 
-		for (AccessLogRule logRule : logRules) {
+		for (AccessLogRule logRule : this.logRules) {
 			if (ANT_PATH_MATCHER.match(logRule.getUrlPattern(), lookupPathForRequest)) {
 				return logRule.getOptions();
 			}
 		}
 
-		return defaultRecordOptions;
+		return this.defaultRecordOptions;
 	}
 
 	public void setMaxBodyLength(int maxBodyLength) {

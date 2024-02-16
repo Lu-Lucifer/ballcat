@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.core.thread;
 
-import org.ballcat.common.util.LocalDateTimeUtils;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+package org.ballcat.common.core.thread;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.ballcat.common.util.LocalDateTimeUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author lingting 2023-04-22 11:18
@@ -41,13 +42,13 @@ class AbstractDynamicTimerTest {
 
 	@BeforeEach
 	void before() {
-		timer = new DynamicTimer();
-		timer.onApplicationStart();
+		this.timer = new DynamicTimer();
+		this.timer.onApplicationStart();
 	}
 
 	@AfterEach
 	void after() {
-		timer.onApplicationStop();
+		this.timer.onApplicationStop();
 	}
 
 	@Test
@@ -57,19 +58,19 @@ class AbstractDynamicTimerTest {
 		Action a2 = new Action("2", now.plusSeconds(2));
 		Action a4 = new Action("4", now.plusSeconds(4));
 
-		timer.put(a1);
-		timer.put(a2);
-		timer.put(a4);
+		this.timer.put(a1);
+		this.timer.put(a2);
+		this.timer.put(a4);
 
 		TimeUnit.MILLISECONDS.sleep(1050);
-		Assertions.assertEquals(1, timer.getProcessedCount());
+		Assertions.assertEquals(1, this.timer.getProcessedCount());
 
 		TimeUnit.SECONDS.sleep(1);
-		Assertions.assertEquals(2, timer.getProcessedCount());
+		Assertions.assertEquals(2, this.timer.getProcessedCount());
 
-		timer.put(a2);
+		this.timer.put(a2);
 		TimeUnit.MILLISECONDS.sleep(2050);
-		Assertions.assertEquals(4, timer.getProcessedCount());
+		Assertions.assertEquals(4, this.timer.getProcessedCount());
 	}
 
 	@Data

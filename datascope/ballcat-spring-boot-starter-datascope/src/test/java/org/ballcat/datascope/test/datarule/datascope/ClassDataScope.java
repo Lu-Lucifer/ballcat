@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.datascope.test.datarule.datascope;
 
-import org.ballcat.datascope.DataScope;
-import org.ballcat.datascope.test.datarule.user.LoginUser;
-import org.ballcat.datascope.test.datarule.user.LoginUserHolder;
-import org.ballcat.datascope.test.datarule.user.UserRoleType;
-import org.ballcat.datascope.util.CollectionUtils;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -28,12 +30,11 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import org.ballcat.datascope.DataScope;
+import org.ballcat.datascope.test.datarule.user.LoginUser;
+import org.ballcat.datascope.test.datarule.user.LoginUserHolder;
+import org.ballcat.datascope.test.datarule.user.UserRoleType;
+import org.ballcat.datascope.util.CollectionUtils;
 
 /**
  * 班级维度的数据权限控制
@@ -49,7 +50,7 @@ public class ClassDataScope implements DataScope {
 	private final Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 	public ClassDataScope() {
-		tableNames.addAll(Arrays.asList("h2student", "h2teacher"));
+		this.tableNames.addAll(Arrays.asList("h2student", "h2teacher"));
 	}
 
 	@Override
@@ -60,7 +61,7 @@ public class ClassDataScope implements DataScope {
 	@Override
 	public boolean includes(String tableName) {
 		// 使用 new TreeSet<>(String.CASE_INSENSITIVE_ORDER) 的形式判断，可忽略表名大小写
-		return tableNames.contains(tableName);
+		return this.tableNames.contains(tableName);
 	}
 
 	@Override
@@ -84,7 +85,7 @@ public class ClassDataScope implements DataScope {
 			.stream()
 			.map(StringValue::new)
 			.collect(Collectors.toList());
-		Column column = new Column(tableAlias == null ? columnId : tableAlias.getName() + "." + columnId);
+		Column column = new Column(tableAlias == null ? this.columnId : tableAlias.getName() + "." + this.columnId);
 		ExpressionList expressionList = new ExpressionList();
 		expressionList.setExpressions(list);
 		return new InExpression(column, expressionList);

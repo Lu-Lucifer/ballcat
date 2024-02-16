@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.datascope.interceptor;
 
+import java.lang.reflect.Method;
+
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.ballcat.datascope.annotation.DataPermission;
 import org.ballcat.datascope.handler.DataPermissionRule;
 import org.ballcat.datascope.holder.DataPermissionRuleHolder;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-
-import java.lang.reflect.Method;
 
 /**
  * DataPermission注解的拦截器，在执行方法前将当前方法的对应注解压栈，执行后弹出注解

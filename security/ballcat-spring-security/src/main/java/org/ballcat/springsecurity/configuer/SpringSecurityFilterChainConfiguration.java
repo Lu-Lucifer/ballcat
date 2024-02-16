@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.configuer;
+
+import java.util.Collections;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.ballcat.springsecurity.properties.SpringSecurityProperties;
@@ -25,9 +29,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * spring security filter chain 的默认配置类，用户可以通过自定义 SecurityFilterChain 覆盖其默认注册行为, 也可以通过注册
@@ -51,16 +52,16 @@ public class SpringSecurityFilterChainConfiguration {
 		httpSecurity.csrf().disable();
 
 		// 允许嵌入iframe
-		if (!springSecurityProperties.isIframeDeny()) {
+		if (!this.springSecurityProperties.isIframeDeny()) {
 			httpSecurity.headers().frameOptions().disable();
 		}
 
 		// 使用无状态登录时，需要配合自定义的 SecurityContextRepository
-		SessionCreationPolicy sessionCreationPolicy = springSecurityProperties.getSessionCreationPolicy();
+		SessionCreationPolicy sessionCreationPolicy = this.springSecurityProperties.getSessionCreationPolicy();
 		httpSecurity.sessionManagement().sessionCreationPolicy(sessionCreationPolicy);
 
 		// 自定义处理
-		List<SpringSecurityConfigurerCustomizer> configurerCustomizers = configurerCustomizersProvider
+		List<SpringSecurityConfigurerCustomizer> configurerCustomizers = this.configurerCustomizersProvider
 			.getIfAvailable(Collections::emptyList);
 		for (SpringSecurityConfigurerCustomizer configurerCustomizer : configurerCustomizers) {
 			configurerCustomizer.customize(httpSecurity);

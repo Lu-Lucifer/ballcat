@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mybatisplus.alias;
 
-import org.ballcat.mybatisplus.conditions.query.LambdaAliasQueryWrapperX;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.lang.annotation.*;
+import org.ballcat.mybatisplus.conditions.query.LambdaAliasQueryWrapperX;
 
 /**
  * 表别名注解，注解在 entity 上，便于构建带别名的查询条件或者查询列

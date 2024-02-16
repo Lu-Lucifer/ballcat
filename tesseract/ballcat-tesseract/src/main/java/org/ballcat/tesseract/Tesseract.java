@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.tesseract;
 
-import org.ballcat.tesseract.enums.TesseractLang;
+import java.util.List;
+import java.util.function.Consumer;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
-import java.util.function.Consumer;
+import org.ballcat.tesseract.enums.TesseractLang;
 
 /**
  * <p>
@@ -49,7 +50,7 @@ public class Tesseract {
 	 * @param path 例: <code>C:\Program Files\Tesseract-OCR\tesseract.exe</code>
 	 */
 	public void setTesseractPath(String path) {
-		tesseractPath = path;
+		this.tesseractPath = path;
 	}
 
 	/**
@@ -58,7 +59,8 @@ public class Tesseract {
 	 * @return a {@link java.util.List} object
 	 */
 	public List<String> run(Consumer<TesseractCommand.TesseractCommandBuilder> builderConsumer) {
-		final TesseractCommand.TesseractCommandBuilder builder = TesseractCommand.builder().tesseract(tesseractPath);
+		final TesseractCommand.TesseractCommandBuilder builder = TesseractCommand.builder()
+			.tesseract(this.tesseractPath);
 		builderConsumer.accept(builder);
 		return builder.build().run();
 	}

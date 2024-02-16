@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.resource.properties;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 资源服务器的配置文件，用于配置 token 鉴定方式。由于目前 ballcat 授权服务器使用 不透明令牌，所以这里也暂时不做 jwt令牌支持的扩展
@@ -34,9 +32,9 @@ import java.util.List;
 public class OAuth2ResourceServerProperties {
 
 	/**
-	 * 共享存储的token，这种情况下，利用 tokenStore 可以直接获取 token 信息
+	 * 资源服务器是否和授权服务器共享 token 存储，共享时资源服务器可以直接从 tokenStore 中获取 token 信息
 	 */
-	private boolean sharedStoredToken = true;
+	private boolean sharedStoredToken = false;
 
 	/**
 	 * 当 sharedStoredToken 为 false 时生效。 主要用于配置远程端点

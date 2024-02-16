@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.kafka.stream.core;
+
+import java.time.Duration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -23,8 +26,6 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.PunctuationType;
 import org.apache.kafka.streams.processor.To;
 import org.ballcat.kafka.stream.util.ProcessorContextUtil;
-
-import java.time.Duration;
 
 /**
  * kafka 顶级 processor 类
@@ -54,7 +55,7 @@ public abstract class AbstractProcessor<K, V> implements Kafka, Processor<K, V> 
 	 * 用于构筑 Punctuator
 	 */
 	public void schedule(Duration interval, PunctuationType type, AbstractPunctuator callback) {
-		context.schedule(interval, type, callback);
+		this.context.schedule(interval, type, callback);
 	}
 
 	/**
@@ -71,7 +72,7 @@ public abstract class AbstractProcessor<K, V> implements Kafka, Processor<K, V> 
 	 * @param childName 目标名称
 	 */
 	public void forward(K key, V value, String childName) {
-		context.forward(key, value, To.child(childName));
+		this.context.forward(key, value, To.child(childName));
 	}
 
 	/**
@@ -81,15 +82,15 @@ public abstract class AbstractProcessor<K, V> implements Kafka, Processor<K, V> 
 	 * @param to 目标
 	 */
 	public void forward(K key, V value, To to) {
-		context.forward(key, value, to);
+		this.context.forward(key, value, to);
 	}
 
 	public void startLog(K key, V value) {
-		log.debug("收到消息 {}  key: {} value: {}", ProcessorContextUtil.toLogString(context), key, value);
+		log.debug("收到消息 {}  key: {} value: {}", ProcessorContextUtil.toLogString(this.context), key, value);
 	}
 
 	public void errLog(Throwable e) {
-		log.error("processor 操作数据出错 " + ProcessorContextUtil.toLogString(context), e);
+		log.error("processor 操作数据出错 " + ProcessorContextUtil.toLogString(this.context), e);
 	}
 
 	@Override
@@ -97,7 +98,7 @@ public abstract class AbstractProcessor<K, V> implements Kafka, Processor<K, V> 
 		// 由于测试中存在 处理过程报错，整个 topology 停止运行，所以直接捕获异常
 		try {
 			startLog(key, value);
-			process(context, key, value);
+			process(this.context, key, value);
 		}
 		catch (Exception e) {
 			errLog(e);

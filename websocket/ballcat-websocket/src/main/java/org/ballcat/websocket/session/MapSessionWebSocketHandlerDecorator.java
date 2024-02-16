@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.websocket.session;
 
 import org.ballcat.websocket.handler.ConcurrentWebSocketSessionOptions;
@@ -48,13 +49,13 @@ public class MapSessionWebSocketHandlerDecorator extends WebSocketHandlerDecorat
 	@Override
 	public void afterConnectionEstablished(WebSocketSession wsSession) {
 		// 包装一层，防止并发发送出现问题
-		if (Boolean.TRUE.equals(concurrentWebSocketSessionOptions.isEnable())) {
+		if (Boolean.TRUE.equals(this.concurrentWebSocketSessionOptions.isEnable())) {
 			wsSession = new ConcurrentWebSocketSessionDecorator(wsSession,
-					concurrentWebSocketSessionOptions.getSendTimeLimit(),
-					concurrentWebSocketSessionOptions.getBufferSizeLimit(),
-					concurrentWebSocketSessionOptions.getOverflowStrategy());
+					this.concurrentWebSocketSessionOptions.getSendTimeLimit(),
+					this.concurrentWebSocketSessionOptions.getBufferSizeLimit(),
+					this.concurrentWebSocketSessionOptions.getOverflowStrategy());
 		}
-		webSocketSessionStore.addSession(wsSession);
+		this.webSocketSessionStore.addSession(wsSession);
 	}
 
 	/**
@@ -64,7 +65,7 @@ public class MapSessionWebSocketHandlerDecorator extends WebSocketHandlerDecorat
 	 */
 	@Override
 	public void afterConnectionClosed(WebSocketSession wsSession, CloseStatus closeStatus) throws Exception {
-		webSocketSessionStore.removeSession(wsSession);
+		this.webSocketSessionStore.removeSession(wsSession);
 	}
 
 }

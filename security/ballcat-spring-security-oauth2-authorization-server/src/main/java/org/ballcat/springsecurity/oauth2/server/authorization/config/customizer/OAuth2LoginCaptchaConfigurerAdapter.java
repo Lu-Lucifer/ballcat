@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.config.customizer;
 
 import org.ballcat.security.captcha.CaptchaValidator;
@@ -55,7 +56,7 @@ public class OAuth2LoginCaptchaConfigurerAdapter implements OAuth2AuthorizationS
 				HttpMethod.POST.name());
 
 		// 验证码，必须在 OAuth2ClientAuthenticationFilter 过滤器之后，方便获取当前客户端
-		httpSecurity.addFilterAfter(new LoginCaptchaFilter(requestMatcher, captchaValidator),
+		httpSecurity.addFilterAfter(new LoginCaptchaFilter(requestMatcher, this.captchaValidator),
 				OAuth2ClientAuthenticationFilter.class);
 	}
 

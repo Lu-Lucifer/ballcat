@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.grpc.interceptor;
 
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import org.ballcat.common.core.constant.MDCConstants;
 import org.ballcat.grpc.constant.GrpcConstants;
 import org.bson.types.ObjectId;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.StringUtils;
-
-import static org.ballcat.common.core.constant.MDCConstants.TRACE_ID_KEY;
 
 /**
  * 在服务器端，按照拦截器注册的顺序从后到前执行，先执行后面的拦截器，再执行前面的拦截器。
@@ -50,22 +50,22 @@ public class TraceIdInterceptor implements ServerInterceptor {
 			ServerCallHandler<S, R> next) {
 		String traceId = null;
 
-		if (headers.containsKey(headerTraceId)) {
-			traceId = headers.get(headerTraceId);
+		if (headers.containsKey(this.headerTraceId)) {
+			traceId = headers.get(this.headerTraceId);
 		}
 
 		if (!StringUtils.hasText(traceId)) {
 			traceId = traceId();
 		}
 
-		MDC.put(TRACE_ID_KEY, traceId);
+		MDC.put(MDCConstants.TRACE_ID_KEY, traceId);
 		try {
 			// 返回traceId
-			headers.put(headerTraceId, traceId);
+			headers.put(this.headerTraceId, traceId);
 			return next.startCall(call, headers);
 		}
 		finally {
-			MDC.remove(TRACE_ID_KEY);
+			MDC.remove(MDCConstants.TRACE_ID_KEY);
 		}
 	}
 

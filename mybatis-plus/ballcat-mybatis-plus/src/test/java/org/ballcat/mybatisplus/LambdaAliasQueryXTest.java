@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mybatisplus;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
-import org.ballcat.mybatisplus.conditions.query.LambdaQueryWrapperX;
-import org.ballcat.mybatisplus.conditions.query.ColumnFunction;
-import org.ballcat.mybatisplus.toolkit.WrappersX;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.ballcat.mybatisplus.conditions.query.ColumnFunction;
+import org.ballcat.mybatisplus.conditions.query.LambdaQueryWrapperX;
+import org.ballcat.mybatisplus.toolkit.WrappersX;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

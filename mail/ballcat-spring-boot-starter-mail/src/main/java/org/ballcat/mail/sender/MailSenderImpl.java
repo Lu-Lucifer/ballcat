@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mail.sender;
 
+import java.io.File;
+import java.time.LocalDateTime;
+
+import javax.mail.MessagingException;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.mail.event.MailSendEvent;
 import org.ballcat.mail.model.MailDetails;
 import org.ballcat.mail.model.MailSendInfo;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.util.StringUtils;
-
-import javax.mail.MessagingException;
-import java.io.File;
-import java.time.LocalDateTime;
 
 /**
  * @author Hccake 2020/2/27 17:06
@@ -71,7 +73,7 @@ public class MailSenderImpl implements MailSender {
 		}
 		finally {
 			// 发布邮件发送事件
-			eventPublisher.publishEvent(new MailSendEvent(mailSendInfo));
+			this.eventPublisher.publishEvent(new MailSendEvent(mailSendInfo));
 		}
 		return mailSendInfo;
 	}
@@ -82,8 +84,8 @@ public class MailSenderImpl implements MailSender {
 	 */
 	private void sendMimeMail(MailDetails mailDetails) throws MessagingException {
 		// true表示支持复杂类型
-		MimeMessageHelper messageHelper = new MimeMessageHelper(mailSender.createMimeMessage(), true);
-		String from = StringUtils.hasText(mailDetails.getFrom()) ? mailDetails.getFrom() : defaultFrom;
+		MimeMessageHelper messageHelper = new MimeMessageHelper(this.mailSender.createMimeMessage(), true);
+		String from = StringUtils.hasText(mailDetails.getFrom()) ? mailDetails.getFrom() : this.defaultFrom;
 		messageHelper.setFrom(from);
 		messageHelper.setSubject(mailDetails.getSubject());
 		if (mailDetails.getTo() != null && mailDetails.getTo().length > 0) {
@@ -104,7 +106,7 @@ public class MailSenderImpl implements MailSender {
 			}
 		}
 
-		mailSender.send(messageHelper.getMimeMessage());
+		this.mailSender.send(messageHelper.getMimeMessage());
 		log.info("发送邮件成功：[{}]", mailDetails);
 	}
 

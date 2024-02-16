@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.oss;
+
+import java.net.URI;
 
 import org.ballcat.oss.prefix.DefaultObjectKeyPrefixConverter;
 import org.ballcat.oss.prefix.ObjectKeyPrefixConverter;
@@ -30,8 +33,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
-
-import java.net.URI;
 
 /**
  * oss 自动配置类

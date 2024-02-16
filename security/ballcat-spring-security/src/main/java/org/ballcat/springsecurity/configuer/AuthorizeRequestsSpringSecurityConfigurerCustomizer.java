@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.configuer;
 
 import org.ballcat.springsecurity.properties.SpringSecurityProperties;
@@ -41,7 +42,7 @@ public class AuthorizeRequestsSpringSecurityConfigurerCustomizer implements Spri
 		// 拦截 url 配置
 		httpSecurity.requestMatcher(AnyRequestMatcher.INSTANCE)
 			.authorizeRequests()
-			.antMatchers(springSecurityProperties.getIgnoreUrls().toArray(new String[0]))
+			.antMatchers(this.springSecurityProperties.getIgnoreUrls().toArray(new String[0]))
 			.permitAll()
 			.anyRequest()
 			.authenticated();

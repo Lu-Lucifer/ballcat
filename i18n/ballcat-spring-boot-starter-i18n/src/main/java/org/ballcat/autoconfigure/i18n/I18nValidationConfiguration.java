@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.i18n;
+
+import javax.validation.MessageInterpolator;
+import javax.validation.Validator;
+import javax.validation.executable.ExecutableValidator;
 
 import org.ballcat.common.core.validation.EmptyCurlyToDefaultMessageInterpolator;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,10 +35,6 @@ import org.springframework.context.annotation.Role;
 import org.springframework.core.Ordered;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator;
-
-import javax.validation.MessageInterpolator;
-import javax.validation.Validator;
-import javax.validation.executable.ExecutableValidator;
 
 /**
  * 支持国际化的校验配置，order 为最高优先级，用于覆盖 starter-web 中的配置

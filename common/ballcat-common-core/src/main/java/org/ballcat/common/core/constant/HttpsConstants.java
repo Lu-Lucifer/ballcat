@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.core.constant;
 
-import org.ballcat.common.core.https.CompatibleSSLFactory;
-import org.ballcat.common.core.https.SSLSocketFactoryInitException;
-import lombok.experimental.UtilityClass;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+
+import org.ballcat.common.core.https.CompatibleSSLFactory;
+import org.ballcat.common.core.https.SSLSocketFactoryInitException;
 
 /**
  * @author lingting
  */
-@UtilityClass
 @SuppressWarnings("java:S4830")
-public class HttpsConstants {
+public final class HttpsConstants {
+
+	private HttpsConstants() {
+	}
 
 	public static final String SSL = "SSL";
 

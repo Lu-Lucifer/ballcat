@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.web.pageable;
 
-import org.ballcat.common.constant.Symbol;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.common.constant.Symbol;
 import org.ballcat.common.model.domain.PageParam;
 import org.ballcat.common.model.domain.PageableConstants;
 import org.springframework.core.MethodParameter;
@@ -33,14 +41,6 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import javax.servlet.http.HttpServletRequest;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.ballcat.common.model.domain.PageableConstants.*;
 
 /**
  * @author hccake
@@ -65,8 +65,8 @@ public abstract class PageParamArgumentResolverSupport {
 	private int maxPageSize = PageableConstants.DEFAULT_MAX_PAGE_SIZE;
 
 	protected PageParam getPageParam(MethodParameter parameter, HttpServletRequest request) {
-		String pageParameterValue = request.getParameter(pageParameterName);
-		String sizeParameterValue = request.getParameter(sizeParameterName);
+		String pageParameterValue = request.getParameter(this.pageParameterName);
+		String sizeParameterValue = request.getParameter(this.sizeParameterName);
 
 		PageParam pageParam;
 		try {
@@ -86,9 +86,9 @@ public abstract class PageParamArgumentResolverSupport {
 		// ========== 排序处理 ===========
 		Map<String, String[]> parameterMap = request.getParameterMap();
 		// sort 可以传多个，所以同时支持 sort 和 sort[]
-		String[] sort = parameterMap.get(sortParameterName);
+		String[] sort = parameterMap.get(this.sortParameterName);
 		if (ObjectUtils.isEmpty(sort)) {
-			sort = parameterMap.get(sortParameterName + "[]");
+			sort = parameterMap.get(this.sortParameterName + "[]");
 		}
 
 		List<PageParam.Sort> sorts;
@@ -220,8 +220,8 @@ public abstract class PageParamArgumentResolverSupport {
 			BindingResult bindingResult = binder.getBindingResult();
 
 			long size = pageParam.getSize();
-			if (size > maxPageSize) {
-				bindingResult.addError(new ObjectError("size", "分页条数不能大于" + maxPageSize));
+			if (size > this.maxPageSize) {
+				bindingResult.addError(new ObjectError("size", "分页条数不能大于" + this.maxPageSize));
 			}
 
 			if (bindingResult.hasErrors() && isBindExceptionRequired(binder, parameter)) {

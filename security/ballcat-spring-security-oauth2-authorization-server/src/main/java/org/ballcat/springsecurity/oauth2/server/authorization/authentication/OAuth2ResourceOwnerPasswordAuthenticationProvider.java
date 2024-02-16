@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.authentication;
+
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,8 +29,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.util.Assert;
-
-import java.util.Map;
 
 /**
  * @author Hccake
@@ -79,7 +80,7 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider
 				username, password);
 		log.debug("got usernamePasswordAuthenticationToken={}", usernamePasswordAuthenticationToken);
 
-		return daoAuthenticationProvider.authenticate(usernamePasswordAuthenticationToken);
+		return this.daoAuthenticationProvider.authenticate(usernamePasswordAuthenticationToken);
 	}
 
 }

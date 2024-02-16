@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.redis.serialize;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
+package org.ballcat.redis.serialize;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author Hccake 2019/9/9 11:07
@@ -38,7 +39,7 @@ public class JacksonSerializer implements CacheSerializer {
 	 */
 	@Override
 	public Object deserialize(String cacheData, Type type) throws IOException {
-		return objectMapper.readValue(cacheData, CacheSerializer.getJavaType(type));
+		return this.objectMapper.readValue(cacheData, CacheSerializer.getJavaType(type));
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class JacksonSerializer implements CacheSerializer {
 	 */
 	@Override
 	public String serialize(Object cacheData) throws IOException {
-		return objectMapper.writeValueAsString(cacheData);
+		return this.objectMapper.writeValueAsString(cacheData);
 	}
 
 }

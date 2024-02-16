@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.token;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.ballcat.springsecurity.oauth2.constant.TokenAttributeNameConstants;
 import org.ballcat.springsecurity.oauth2.constant.UserInfoFiledNameConstants;
@@ -23,9 +27,6 @@ import org.springframework.security.oauth2.server.authorization.authentication.O
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsSet;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 自定义 OAuth2TokenCustomizer，处理 BallCat 提供的 User 属性存储，以便在自省时返回对应信息

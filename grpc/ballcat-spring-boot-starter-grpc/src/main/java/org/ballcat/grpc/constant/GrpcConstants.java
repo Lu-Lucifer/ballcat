@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.grpc.constant;
 
-import lombok.experimental.UtilityClass;
 import org.springframework.core.Ordered;
 
 /**
  * @author lingting 2023-04-17 10:24
  */
-@UtilityClass
-public class GrpcConstants {
+public final class GrpcConstants {
+
+	private GrpcConstants() {
+	}
 
 	public static final int ORDER_TRACE_ID = Ordered.HIGHEST_PRECEDENCE;
 

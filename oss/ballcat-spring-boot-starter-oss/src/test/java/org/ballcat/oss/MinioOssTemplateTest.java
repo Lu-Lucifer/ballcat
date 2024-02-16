@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.oss;
 
-import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.util.ResourceUtils;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.transfer.s3.model.FileUpload;
+package org.ballcat.oss;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,6 +24,19 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.util.ResourceUtils;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.model.Bucket;
+import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.transfer.s3.model.FileUpload;
 
 /**
  * MINIO OSS测试工具
@@ -59,7 +64,7 @@ class MinioOssTemplateTest extends AbstractOssTemplateTest {
 	@Test
 	void createBucket() {
 		String bucket = UUID.randomUUID().toString();
-		CreateBucketResponse bucketResponse = ossTemplate.createBucket(bucket);
+		CreateBucketResponse bucketResponse = this.ossTemplate.createBucket(bucket);
 		Assertions.assertTrue(bucketResponse.location().endsWith(bucket));
 		deleteBucket(bucket);
 	}
@@ -71,7 +76,7 @@ class MinioOssTemplateTest extends AbstractOssTemplateTest {
 	void listBuckets() {
 		String bucket = UUID.randomUUID().toString();
 		createBucket(bucket);
-		List<Bucket> newBuckets = ossTemplate.listBuckets().buckets();
+		List<Bucket> newBuckets = this.ossTemplate.listBuckets().buckets();
 		List<String> bucketNames = newBuckets.stream().map(Bucket::name).collect(Collectors.toList());
 		Assertions.assertTrue(bucketNames.contains(bucket));
 		deleteBucket(bucket);
@@ -82,31 +87,31 @@ class MinioOssTemplateTest extends AbstractOssTemplateTest {
 	 */
 	@Test
 	void deleteBucket() {
-		ossTemplate.deleteBucket(TEST_BUCKET_NAME);
+		this.ossTemplate.deleteBucket(TEST_BUCKET_NAME);
 	}
 
 	@Test
 	void getObjectPresignedUrl() {
-		String objectPresignedUrl = ossTemplate.getObjectPresignedUrl(ossTemplate.getOssProperties().getBucket(),
-				TEST_OBJECT_NAME, Duration.ofDays(1));
+		String objectPresignedUrl = this.ossTemplate.getObjectPresignedUrl(
+				this.ossTemplate.getOssProperties().getBucket(), TEST_OBJECT_NAME, Duration.ofDays(1));
 		System.out.println(objectPresignedUrl);
 	}
 
 	@Test
 	void getUrl() {
-		String url = ossTemplate.getURL(ossTemplate.getOssProperties().getBucket(), TEST_OBJECT_NAME);
+		String url = this.ossTemplate.getURL(this.ossTemplate.getOssProperties().getBucket(), TEST_OBJECT_NAME);
 		System.out.println(url);
 	}
 
 	@Test
 	void getUrlWithCustomPrefix() {
-		URL url = ossTemplate.getS3Client()
+		URL url = this.ossTemplate.getS3Client()
 			.utilities()
 			.getUrl(GetUrlRequest.builder()
-				.bucket(ossTemplate.getOssProperties().getBucket())
+				.bucket(this.ossTemplate.getOssProperties().getBucket())
 				.key(TEST_OBJECT_NAME)
-				.endpoint(URI.create(ossTemplate.getOssProperties().getEndpoint() + "/测试/"))
-				.region(Region.of(ossTemplate.getOssProperties().getRegion()))
+				.endpoint(URI.create(this.ossTemplate.getOssProperties().getEndpoint() + "/测试/"))
+				.region(Region.of(this.ossTemplate.getOssProperties().getRegion()))
 				.build());
 
 		System.out.println(url);
@@ -118,8 +123,8 @@ class MinioOssTemplateTest extends AbstractOssTemplateTest {
 	@Test
 	void listObjects() {
 		// 使用上传时自己构建的的对象名字查询
-		List<S3Object> s3ObjectsWithUploadKey = ossTemplate.listObjects(ossTemplate.getOssProperties().getBucket(),
-				TEST_OBJECT_NAME);
+		List<S3Object> s3ObjectsWithUploadKey = this.ossTemplate
+			.listObjects(this.ossTemplate.getOssProperties().getBucket(), TEST_OBJECT_NAME);
 		Assertions.assertEquals(1, s3ObjectsWithUploadKey.size());
 		Assertions.assertEquals(TEST_OBJECT_NAME, s3ObjectsWithUploadKey.get(0).key());
 	}
@@ -129,8 +134,9 @@ class MinioOssTemplateTest extends AbstractOssTemplateTest {
 	 */
 	@Test
 	void putObject() throws IOException {
-		PutObjectResponse putObjectResponse = ossTemplate.putObject(ossTemplate.getOssProperties().getBucket(),
-				TEST_OBJECT_NAME, ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "test.txt"));
+		PutObjectResponse putObjectResponse = this.ossTemplate.putObject(
+				this.ossTemplate.getOssProperties().getBucket(), TEST_OBJECT_NAME,
+				ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "test.txt"));
 		System.out.println(putObjectResponse);
 
 	}
@@ -140,25 +146,25 @@ class MinioOssTemplateTest extends AbstractOssTemplateTest {
 		String bucket = UUID.randomUUID().toString();
 		String key = UUID.randomUUID().toString();
 		createBucket(bucket);
-		FileUpload fileUpload = ossTemplate.uploadFile(key,
+		FileUpload fileUpload = this.ossTemplate.uploadFile(key,
 				ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "test.txt"));
 		fileUpload.completionFuture().join();
-		List<S3Object> s3Objects = ossTemplate.listObjects(key);
+		List<S3Object> s3Objects = this.ossTemplate.listObjects(key);
 		Assertions.assertEquals(1, s3Objects.size());
 		S3Object s3Object = s3Objects.get(0);
 		Assertions.assertEquals(key, s3Object.key());
 		Assertions.assertEquals(13, s3Object.size());
-		ossTemplate.deleteObject(key);
+		this.ossTemplate.deleteObject(key);
 		deleteBucket(bucket);
 	}
 
 	@Test
 	void testBean() {
-		if (objectKeyPrefixConverter.match()) {
-			Assertions.assertInstanceOf(ObjectWithGlobalKeyPrefixOssTemplate.class, ossTemplate);
+		if (this.objectKeyPrefixConverter.match()) {
+			Assertions.assertInstanceOf(ObjectWithGlobalKeyPrefixOssTemplate.class, this.ossTemplate);
 		}
 		else {
-			Assertions.assertInstanceOf(DefaultOssTemplate.class, ossTemplate);
+			Assertions.assertInstanceOf(DefaultOssTemplate.class, this.ossTemplate);
 		}
 	}
 

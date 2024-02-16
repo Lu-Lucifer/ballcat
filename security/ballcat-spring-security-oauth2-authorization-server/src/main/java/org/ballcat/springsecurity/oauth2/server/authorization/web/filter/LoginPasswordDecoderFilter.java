@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.web.filter;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.common.core.request.wrapper.ModifyParameterRequestWrapper;
 import org.ballcat.common.model.result.R;
 import org.ballcat.common.model.result.SystemResultCode;
+import org.ballcat.common.util.JsonUtils;
 import org.ballcat.springsecurity.oauth2.ScopeNames;
 import org.ballcat.springsecurity.util.PasswordUtils;
-import org.ballcat.common.util.JsonUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -33,14 +43,6 @@ import org.springframework.security.oauth2.server.authorization.authentication.O
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.ballcat.springsecurity.oauth2.server.authorization.authentication.OAuth2AuthenticationProviderUtils.getAuthenticatedClientElseThrowInvalidClient;
 
@@ -67,7 +69,7 @@ public class LoginPasswordDecoderFilter extends OncePerRequestFilter {
 		}
 
 		// 未配置密码密钥时，直接跳过
-		if (passwordSecretKey == null) {
+		if (this.passwordSecretKey == null) {
 			log.warn("passwordSecretKey not configured, skip password decoder");
 			filterChain.doFilter(request, response);
 			return;
@@ -96,12 +98,12 @@ public class LoginPasswordDecoderFilter extends OncePerRequestFilter {
 		String passwordAes = request.getParameter(OAuth2ParameterNames.PASSWORD);
 
 		try {
-			String password = PasswordUtils.decodeAES(passwordAes, passwordSecretKey);
+			String password = PasswordUtils.decodeAES(passwordAes, this.passwordSecretKey);
 			parameterMap.put(OAuth2ParameterNames.PASSWORD, new String[] { password });
 		}
 		catch (Exception e) {
 			log.error("[doFilterInternal] password decode aes error，passwordAes: {}，passwordSecretKey: {}", passwordAes,
-					passwordSecretKey, e);
+					this.passwordSecretKey, e);
 			response.setHeader("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			R<String> r = R.failed(SystemResultCode.UNAUTHORIZED, "用户名或密码错误！");

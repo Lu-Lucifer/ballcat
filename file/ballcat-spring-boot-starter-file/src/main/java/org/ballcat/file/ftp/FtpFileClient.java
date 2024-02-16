@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.file.ftp;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.Collections;
 
 import org.ballcat.file.FileProperties.FtpProperties;
 import org.ballcat.file.core.AbstractFileClient;
@@ -22,10 +31,6 @@ import org.ballcat.file.ftp.support.FtpHelper;
 import org.ballcat.file.ftp.support.SftpHelper;
 import org.ballcat.file.ftp.support.StandardFtpHelper;
 import org.springframework.util.StringUtils;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.util.Collections;
 
 /**
  * @author lingting 2021/10/17 20:11
@@ -39,12 +44,12 @@ public class FtpFileClient extends AbstractFileClient {
 	public FtpFileClient(FtpProperties properties) throws IOException {
 		final FtpMode mode = properties.getMode();
 		if (properties.isSftp()) {
-			client = new SftpHelper();
+			this.client = new SftpHelper();
 		}
 		else {
-			client = new StandardFtpHelper();
+			this.client = new StandardFtpHelper();
 		}
-		client.loginFtpServer(properties.getUsername(), properties.getPassword(), properties.getIp(),
+		this.client.loginFtpServer(properties.getUsername(), properties.getPassword(), properties.getIp(),
 				properties.getPort(), null, mode);
 
 		if (!StringUtils.hasText(properties.getPath())) {
@@ -64,7 +69,7 @@ public class FtpFileClient extends AbstractFileClient {
 	@Override
 	public String upload(InputStream stream, String relativePath) throws IOException {
 		final String path = getWholePath(relativePath);
-		try (OutputStream outputStream = client.getOutputStream(path)) {
+		try (OutputStream outputStream = this.client.getOutputStream(path)) {
 			copy(stream, outputStream);
 		}
 		catch (IOException e) {
@@ -85,7 +90,7 @@ public class FtpFileClient extends AbstractFileClient {
 		// 临时文件 .tmp后缀
 		File tmpFile = Files.createTempFile("", null).toFile();
 		try (FileOutputStream outputStream = new FileOutputStream(tmpFile);
-				InputStream inputStream = client.getInputStream(path)) {
+				InputStream inputStream = this.client.getInputStream(path)) {
 			copy(inputStream, outputStream);
 		}
 		// JVM退出时删除临时文件
@@ -101,8 +106,8 @@ public class FtpFileClient extends AbstractFileClient {
 	@Override
 	public boolean delete(String relativePath) throws IOException {
 		final String path = getWholePath(relativePath);
-		client.deleteFiles(Collections.singleton(path));
-		return !client.isFileExist(path);
+		this.client.deleteFiles(Collections.singleton(path));
+		return !this.client.isFileExist(path);
 	}
 
 	/**

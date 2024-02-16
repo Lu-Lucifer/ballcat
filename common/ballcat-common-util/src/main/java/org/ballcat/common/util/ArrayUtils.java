@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.util;
 
-import lombok.experimental.UtilityClass;
+package org.ballcat.common.util;
 
 import java.util.Objects;
 
 /**
  * @author lingting
  */
-@UtilityClass
-public class ArrayUtils {
+public final class ArrayUtils {
 
-	public final int NOT_FOUNT = -1;
+	private ArrayUtils() {
+	}
 
-	public <T> boolean isEmpty(T[] array) {
+	public static final int NOT_FOUNT = -1;
+
+	public static <T> boolean isEmpty(T[] array) {
 		return array == null || array.length == 0;
 	}
 
-	public <T> int indexOf(T[] array, T val) {
+	public static <T> int indexOf(T[] array, T val) {
 		if (!isEmpty(array)) {
 			for (int i = 0; i < array.length; i++) {
 				T t = array[i];
@@ -43,7 +44,7 @@ public class ArrayUtils {
 		return NOT_FOUNT;
 	}
 
-	public <T> boolean contains(T[] array, T val) {
+	public static <T> boolean contains(T[] array, T val) {
 		return indexOf(array, val) > NOT_FOUNT;
 	}
 

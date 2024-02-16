@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.configuer;
 
 import lombok.RequiredArgsConstructor;
@@ -46,18 +47,18 @@ public class FormLoginSpringSecurityConfigurerCustomizer implements SpringSecuri
 	@Override
 	public void customize(HttpSecurity httpSecurity) throws Exception {
 		// 表单登录
-		SpringSecurityProperties.FormLogin formLogin = springSecurityProperties.getFormLogin();
+		SpringSecurityProperties.FormLogin formLogin = this.springSecurityProperties.getFormLogin();
 		if (formLogin.isEnabled()) {
 
 			FormLoginConfigurer<HttpSecurity> formLoginConfigurer = httpSecurity.formLogin();
 
-			if (formLoginSuccessHandler != null) {
-				formLoginConfigurer.successHandler(formLoginSuccessHandler);
+			if (this.formLoginSuccessHandler != null) {
+				formLoginConfigurer.successHandler(this.formLoginSuccessHandler);
 			}
 
-			if (authenticationEntryPoint != null) {
+			if (this.authenticationEntryPoint != null) {
 				AuthenticationEntryPointFailureHandler authenticationFailureHandler = new AuthenticationEntryPointFailureHandler(
-						authenticationEntryPoint);
+						this.authenticationEntryPoint);
 				formLoginConfigurer.failureHandler(authenticationFailureHandler);
 				httpSecurity.setSharedObject(AuthenticationFailureHandler.class, authenticationFailureHandler);
 			}
@@ -76,8 +77,8 @@ public class FormLoginSpringSecurityConfigurerCustomizer implements SpringSecuri
 
 			// 登出
 			LogoutConfigurer<HttpSecurity> logout = httpSecurity.logout();
-			if (logoutSuccessHandler != null) {
-				logout.logoutSuccessHandler(logoutSuccessHandler);
+			if (this.logoutSuccessHandler != null) {
+				logout.logoutSuccessHandler(this.logoutSuccessHandler);
 			}
 		}
 	}

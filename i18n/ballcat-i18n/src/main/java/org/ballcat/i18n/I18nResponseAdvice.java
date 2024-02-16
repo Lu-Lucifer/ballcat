@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.i18n;
+
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -34,13 +42,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * 利用 ResponseBodyAdvice 对返回结果进行国际化处理
@@ -78,7 +79,7 @@ public class I18nResponseAdvice implements ResponseBodyAdvice<Object> {
 		if (fallbackLanguageTag != null) {
 			String[] arr = fallbackLanguageTag.split("-");
 			Assert.isTrue(arr.length == 2, "error fallbackLanguageTag!");
-			fallbackLocale = new Locale(arr[0], arr[1]);
+			this.fallbackLocale = new Locale(arr[0], arr[1]);
 		}
 
 		this.useCodeAsDefaultMessage = i18nOptions.isUseCodeAsDefaultMessage();
@@ -161,7 +162,7 @@ public class I18nResponseAdvice implements ResponseBodyAdvice<Object> {
 
 				// 把当前 field 的值更新为国际化后的属性
 				Locale locale = LocaleContextHolder.getLocale();
-				String message = codeToMessage(code, locale, (String) fieldValue, fallbackLocale);
+				String message = codeToMessage(code, locale, (String) fieldValue, this.fallbackLocale);
 				ReflectionUtils.setField(field, source, message);
 			}
 			else if (fieldValue instanceof Collection) {
@@ -226,7 +227,7 @@ public class I18nResponseAdvice implements ResponseBodyAdvice<Object> {
 		String message;
 
 		try {
-			message = messageSource.getMessage(code, null, locale);
+			message = this.messageSource.getMessage(code, null, locale);
 			return message;
 		}
 		catch (NoSuchMessageException e) {
@@ -236,7 +237,7 @@ public class I18nResponseAdvice implements ResponseBodyAdvice<Object> {
 		// 当配置了回退语言时，尝试回退
 		if (fallbackLocale != null && locale != fallbackLocale) {
 			try {
-				message = messageSource.getMessage(code, null, fallbackLocale);
+				message = this.messageSource.getMessage(code, null, fallbackLocale);
 				return message;
 			}
 			catch (NoSuchMessageException e) {
@@ -245,7 +246,7 @@ public class I18nResponseAdvice implements ResponseBodyAdvice<Object> {
 			}
 		}
 
-		if (useCodeAsDefaultMessage) {
+		if (this.useCodeAsDefaultMessage) {
 			return code;
 		}
 		else {

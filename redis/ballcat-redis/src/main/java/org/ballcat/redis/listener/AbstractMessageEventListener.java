@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.listener;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 import org.ballcat.common.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 /**
  * redis消息监听处理器
@@ -32,6 +33,7 @@ import java.lang.reflect.Type;
 public abstract class AbstractMessageEventListener<T> implements MessageEventListener {
 
 	@Autowired
+	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 	protected StringRedisTemplate stringRedisTemplate;
 
 	protected final Class<T> clz;
@@ -40,19 +42,19 @@ public abstract class AbstractMessageEventListener<T> implements MessageEventLis
 	protected AbstractMessageEventListener() {
 		Type superClass = getClass().getGenericSuperclass();
 		ParameterizedType type = (ParameterizedType) superClass;
-		clz = (Class<T>) type.getActualTypeArguments()[0];
+		this.clz = (Class<T>) type.getActualTypeArguments()[0];
 	}
 
 	@Override
 	public void onMessage(Message message, byte[] pattern) {
 		byte[] channelBytes = message.getChannel();
-		RedisSerializer<String> stringSerializer = stringRedisTemplate.getStringSerializer();
+		RedisSerializer<String> stringSerializer = this.stringRedisTemplate.getStringSerializer();
 		String channelTopic = stringSerializer.deserialize(channelBytes);
 		String topic = topic().getTopic();
 		if (topic.equals(channelTopic)) {
 			byte[] bodyBytes = message.getBody();
 			String body = stringSerializer.deserialize(bodyBytes);
-			T decodeMessage = JsonUtils.toObj(body, clz);
+			T decodeMessage = JsonUtils.toObj(body, this.clz);
 			handleMessage(decodeMessage);
 		}
 	}

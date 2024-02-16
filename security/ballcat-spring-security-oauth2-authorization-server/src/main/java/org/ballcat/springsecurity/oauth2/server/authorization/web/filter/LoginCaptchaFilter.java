@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.web.filter;
+
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.ballcat.common.model.result.R;
@@ -33,12 +41,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 import static org.ballcat.springsecurity.oauth2.server.authorization.authentication.OAuth2AuthenticationProviderUtils.getAuthenticatedClientElseThrowInvalidClient;
 
@@ -80,7 +82,7 @@ public class LoginCaptchaFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		CaptchaValidateResult captchaValidateResult = captchaValidator.validate(request);
+		CaptchaValidateResult captchaValidateResult = this.captchaValidator.validate(request);
 		if (captchaValidateResult.isSuccess()) {
 			filterChain.doFilter(request, response);
 		}

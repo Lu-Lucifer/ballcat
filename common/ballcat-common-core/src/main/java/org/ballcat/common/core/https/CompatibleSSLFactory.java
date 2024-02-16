@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.core.https;
 
-import org.ballcat.common.core.constant.HttpsConstants;
-import org.ballcat.common.util.ArrayUtils;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -30,6 +23,15 @@ import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+
+import org.ballcat.common.core.constant.HttpsConstants;
+import org.ballcat.common.util.ArrayUtils;
 
 /**
  * 用于兼容 android 使用
@@ -57,52 +59,52 @@ public class CompatibleSSLFactory extends SSLSocketFactory {
 
 	@Override
 	public String[] getDefaultCipherSuites() {
-		return factory.getDefaultCipherSuites();
+		return this.factory.getDefaultCipherSuites();
 	}
 
 	@Override
 	public String[] getSupportedCipherSuites() {
-		return factory.getSupportedCipherSuites();
+		return this.factory.getSupportedCipherSuites();
 	}
 
 	@Override
 	public Socket createSocket() throws IOException {
-		return enabledProtocols(factory.createSocket());
+		return enabledProtocols(this.factory.createSocket());
 	}
 
 	@Override
 	public Socket createSocket(Socket socket, InputStream inputStream, boolean b) throws IOException {
-		return enabledProtocols(factory.createSocket(socket, inputStream, b));
+		return enabledProtocols(this.factory.createSocket(socket, inputStream, b));
 	}
 
 	@Override
 	public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
-		return enabledProtocols(factory.createSocket(socket, s, i, b));
+		return enabledProtocols(this.factory.createSocket(socket, s, i, b));
 	}
 
 	@Override
 	public Socket createSocket(String s, int i) throws IOException {
-		return enabledProtocols(factory.createSocket(s, i));
+		return enabledProtocols(this.factory.createSocket(s, i));
 	}
 
 	@Override
 	public Socket createSocket(String s, int i, InetAddress inetAddress, int i1) throws IOException {
-		return enabledProtocols(factory.createSocket(s, i, inetAddress, i1));
+		return enabledProtocols(this.factory.createSocket(s, i, inetAddress, i1));
 	}
 
 	@Override
 	public Socket createSocket(InetAddress inetAddress, int i) throws IOException {
-		return enabledProtocols(factory.createSocket(inetAddress, i));
+		return enabledProtocols(this.factory.createSocket(inetAddress, i));
 	}
 
 	@Override
 	public Socket createSocket(InetAddress inetAddress, int i, InetAddress inetAddress1, int i1) throws IOException {
-		return enabledProtocols(factory.createSocket(inetAddress, i, inetAddress1, i1));
+		return enabledProtocols(this.factory.createSocket(inetAddress, i, inetAddress1, i1));
 	}
 
 	private Socket enabledProtocols(Socket socket) {
-		if (!ArrayUtils.isEmpty(protocols) && socket instanceof SSLSocket) {
-			((SSLSocket) socket).setEnabledProtocols(protocols);
+		if (!ArrayUtils.isEmpty(this.protocols) && socket instanceof SSLSocket) {
+			((SSLSocket) socket).setEnabledProtocols(this.protocols);
 		}
 		return socket;
 	}

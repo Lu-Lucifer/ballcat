@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.moudle.bloom;
 
 import java.util.ArrayList;
@@ -43,8 +44,8 @@ public class BloomInsertOptions {
 	 * @return InsertOptions
 	 */
 	public BloomInsertOptions capacity(final long capacity) {
-		options.add(BloomInsertKeywordEnum.CAPACITY.name());
-		options.add(String.valueOf(capacity));
+		this.options.add(BloomInsertKeywordEnum.CAPACITY.name());
+		this.options.add(String.valueOf(capacity));
 		return this;
 	}
 
@@ -55,8 +56,8 @@ public class BloomInsertOptions {
 	 * @return InsertOptions
 	 */
 	public BloomInsertOptions error(final double errorRate) {
-		options.add(BloomInsertKeywordEnum.ERROR.name());
-		options.add(String.valueOf(errorRate));
+		this.options.add(BloomInsertKeywordEnum.ERROR.name());
+		this.options.add(String.valueOf(errorRate));
 		return this;
 	}
 
@@ -67,12 +68,12 @@ public class BloomInsertOptions {
 	 * @return InsertOptions
 	 */
 	public BloomInsertOptions nocreate() {
-		options.add(BloomInsertKeywordEnum.NOCREATE.name());
+		this.options.add(BloomInsertKeywordEnum.NOCREATE.name());
 		return this;
 	}
 
 	public Collection<String> getOptions() {
-		return Collections.unmodifiableCollection(options);
+		return Collections.unmodifiableCollection(this.options);
 	}
 
 }

@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.security.authorization;
 
-import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.core.MethodClassKey;
-import org.springframework.lang.NonNull;
+package org.ballcat.security.authorization;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.core.MethodClassKey;
+import org.springframework.lang.NonNull;
 
 /**
  * For internal use only, as this contract is likely to change

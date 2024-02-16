@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.websocket.config;
 
+import lombok.RequiredArgsConstructor;
 import org.ballcat.autoconfigure.websocket.WebSocketProperties;
 import org.ballcat.websocket.handler.CustomWebSocketHandler;
 import org.ballcat.websocket.handler.PlanTextMessageHandler;
@@ -22,7 +24,6 @@ import org.ballcat.websocket.session.DefaultWebSocketSessionStore;
 import org.ballcat.websocket.session.MapSessionWebSocketHandlerDecorator;
 import org.ballcat.websocket.session.SessionKeyGenerator;
 import org.ballcat.websocket.session.WebSocketSessionStore;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -53,9 +54,9 @@ public class WebSocketHandlerConfig {
 	public WebSocketHandler webSocketHandler(WebSocketSessionStore webSocketSessionStore,
 			@Autowired(required = false) PlanTextMessageHandler planTextMessageHandler) {
 		CustomWebSocketHandler customWebSocketHandler = new CustomWebSocketHandler(planTextMessageHandler);
-		if (webSocketProperties.isMapSession()) {
+		if (this.webSocketProperties.isMapSession()) {
 			return new MapSessionWebSocketHandlerDecorator(customWebSocketHandler, webSocketSessionStore,
-					webSocketProperties.getConcurrent());
+					this.webSocketProperties.getConcurrent());
 		}
 		return customWebSocketHandler;
 	}

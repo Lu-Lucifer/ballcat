@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.springsecurity.oauth2.userdetails;
 
-import org.springframework.lang.NonNull;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+package org.ballcat.springsecurity.oauth2.userdetails;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,6 +23,11 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.lang.NonNull;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 
 /**
  * OAuth2 Client 实体封装对象
@@ -45,7 +46,7 @@ public class ClientPrincipal implements OAuth2AuthenticatedPrincipal, Serializab
 
 	@NonNull
 	public Set<String> getScope() {
-		return scope;
+		return this.scope;
 	}
 
 	public void setScope(Collection<String> scope) {
@@ -54,17 +55,17 @@ public class ClientPrincipal implements OAuth2AuthenticatedPrincipal, Serializab
 
 	@Override
 	public Map<String, Object> getAttributes() {
-		return attributes;
+		return this.attributes;
 	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return authorities;
+		return this.authorities;
 	}
 
 	@Override
 	public String getName() {
-		return clientId;
+		return this.clientId;
 	}
 
 	public ClientPrincipal(String clientId, Map<String, Object> attributes,

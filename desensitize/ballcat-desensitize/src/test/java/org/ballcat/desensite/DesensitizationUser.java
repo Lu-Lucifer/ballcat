@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.desensite;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.ballcat.desensite.custom.CustomerDesensitize;
+import org.ballcat.desensitize.enums.RegexDesensitizationTypeEnum;
+import org.ballcat.desensitize.enums.SlideDesensitizationTypeEnum;
 import org.ballcat.desensitize.json.annotation.JsonRegexDesensitize;
 import org.ballcat.desensitize.json.annotation.JsonSimpleDesensitize;
 import org.ballcat.desensitize.json.annotation.JsonSlideDesensitize;
-import org.ballcat.desensitize.enums.RegexDesensitizationTypeEnum;
-import org.ballcat.desensitize.enums.SlideDesensitizationTypeEnum;
-import lombok.Data;
-import lombok.experimental.Accessors;
 
 /**
  * @author Hccake 2021/1/23

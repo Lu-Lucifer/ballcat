@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mybatisplus.service.impl;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
-import com.baomidou.mybatisplus.core.toolkit.*;
+import com.baomidou.mybatisplus.core.toolkit.Assert;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.baomidou.mybatisplus.core.toolkit.ReflectionKit;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.logging.Log;
@@ -28,13 +40,6 @@ import org.ballcat.mybatisplus.mapper.ExtendMapper;
 import org.ballcat.mybatisplus.service.ExtendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiConsumer;
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
@@ -50,18 +55,19 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 	protected Log log = LogFactory.getLog(getClass());
 
 	@Autowired
+	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 	protected M baseMapper;
 
 	@Override
 	public M getBaseMapper() {
-		return baseMapper;
+		return this.baseMapper;
 	}
 
 	protected Class<T> entityClass = currentModelClass();
 
 	@Override
 	public Class<T> getEntityClass() {
-		return entityClass;
+		return this.entityClass;
 	}
 
 	protected Class<M> mapperClass = currentMapperClass();
@@ -105,7 +111,7 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 	 * @since 3.4.0
 	 */
 	protected String getSqlStatement(SqlMethod sqlMethod) {
-		return SqlHelper.getSqlStatement(mapperClass, sqlMethod);
+		return SqlHelper.getSqlStatement(this.mapperClass, sqlMethod);
 	}
 
 	/**
@@ -131,7 +137,7 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public boolean saveOrUpdateBatch(Collection<T> entityList, int batchSize) {
-		TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+		TableInfo tableInfo = TableInfoHelper.getTableInfo(this.entityClass);
 		Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!");
 		String keyProperty = tableInfo.getKeyProperty();
 		Assert.notEmpty(keyProperty, "error: can not execute. because can not find column for id from entity!");
@@ -195,9 +201,9 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 
 	@Override
 	public boolean removeById(Serializable id, boolean useFill) {
-		TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+		TableInfo tableInfo = TableInfoHelper.getTableInfo(this.entityClass);
 		if (useFill && tableInfo.isWithLogicDelete()) {
-			if (entityClass.isAssignableFrom(id.getClass())) {
+			if (this.entityClass.isAssignableFrom(id.getClass())) {
 				return SqlHelper.retBool(getBaseMapper().deleteById(id));
 			}
 			T instance = tableInfo.newInstance();
@@ -210,7 +216,7 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean removeBatchByIds(Collection<?> list, int batchSize) {
-		TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+		TableInfo tableInfo = TableInfoHelper.getTableInfo(this.entityClass);
 		return removeBatchByIds(list, batchSize, tableInfo.isWithLogicDelete() && tableInfo.isWithUpdateFill());
 	}
 
@@ -218,10 +224,10 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 	@Transactional(rollbackFor = Exception.class)
 	public boolean removeBatchByIds(Collection<?> list, int batchSize, boolean useFill) {
 		String sqlStatement = getSqlStatement(SqlMethod.DELETE_BY_ID);
-		TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+		TableInfo tableInfo = TableInfoHelper.getTableInfo(this.entityClass);
 		return executeBatch(list, batchSize, (sqlSession, e) -> {
 			if (useFill && tableInfo.isWithLogicDelete()) {
-				if (entityClass.isAssignableFrom(e.getClass())) {
+				if (this.entityClass.isAssignableFrom(e.getClass())) {
 					sqlSession.update(sqlStatement, e);
 				}
 				else {
@@ -255,13 +261,13 @@ public class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendSe
 		List<T> subList = new ArrayList<>(batch);
 		for (T t : list) {
 			if (subList.size() >= batch) {
-				baseMapper.insertBatchSomeColumn(subList);
+				this.baseMapper.insertBatchSomeColumn(subList);
 				subList = new ArrayList<>(batch);
 			}
 			subList.add(t);
 		}
 		if (CollectionUtils.isEmpty(subList)) {
-			baseMapper.insertBatchSomeColumn(subList);
+			this.baseMapper.insertBatchSomeColumn(subList);
 		}
 		return true;
 	}

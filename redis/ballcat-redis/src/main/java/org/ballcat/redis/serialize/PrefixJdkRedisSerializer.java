@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.serialize;
 
-import org.ballcat.redis.prefix.IRedisPrefixConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.redis.prefix.IRedisPrefixConverter;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 
 /**
@@ -35,14 +36,14 @@ public class PrefixJdkRedisSerializer extends JdkSerializationRedisSerializer {
 
 	@Override
 	public Object deserialize(byte[] bytes) {
-		byte[] unwrap = redisPrefixConverter.unwrap(bytes);
+		byte[] unwrap = this.redisPrefixConverter.unwrap(bytes);
 		return super.deserialize(unwrap);
 	}
 
 	@Override
 	public byte[] serialize(Object object) {
 		byte[] originBytes = super.serialize(object);
-		return redisPrefixConverter.wrap(originBytes);
+		return this.redisPrefixConverter.wrap(originBytes);
 	}
 
 }

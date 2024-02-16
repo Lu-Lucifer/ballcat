@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.core.validation.validator;
 
-import org.ballcat.common.core.validation.constraints.OneOfInts;
+package org.ballcat.common.core.validation.validator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
+import org.ballcat.common.core.validation.constraints.OneOfInts;
 
 /**
  * 枚举值 Validator
@@ -33,16 +34,16 @@ public class EnumValueValidatorOfInt implements ConstraintValidator<OneOfInts, I
 
 	@Override
 	public void initialize(OneOfInts constraintAnnotation) {
-		ints = constraintAnnotation.value();
-		allowNull = constraintAnnotation.allowNull();
+		this.ints = constraintAnnotation.value();
+		this.allowNull = constraintAnnotation.allowNull();
 	}
 
 	@Override
 	public boolean isValid(Integer value, ConstraintValidatorContext context) {
 		if (value == null) {
-			return allowNull;
+			return this.allowNull;
 		}
-		for (int anInt : ints) {
+		for (int anInt : this.ints) {
 			if (anInt == value) {
 				return true;
 			}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.desensitize;
+
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.ballcat.desensitize.handler.DesensitizationHandler;
 import org.ballcat.desensitize.handler.RegexDesensitizationHandler;
 import org.ballcat.desensitize.handler.SimpleDesensitizationHandler;
 import org.ballcat.desensitize.handler.SlideDesensitizationHandler;
-
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 脱敏处理器持有者
@@ -41,16 +42,16 @@ public final class DesensitizationHandlerHolder {
 	private final Map<Class<? extends DesensitizationHandler>, DesensitizationHandler> desensitizationHandlerMap;
 
 	private DesensitizationHandlerHolder() {
-		desensitizationHandlerMap = new ConcurrentHashMap<>(16);
+		this.desensitizationHandlerMap = new ConcurrentHashMap<>(16);
 		// 滑动脱敏处理器
-		desensitizationHandlerMap.put(SlideDesensitizationHandler.class, new SlideDesensitizationHandler());
+		this.desensitizationHandlerMap.put(SlideDesensitizationHandler.class, new SlideDesensitizationHandler());
 		// 正则脱敏处理器
-		desensitizationHandlerMap.put(RegexDesensitizationHandler.class, new RegexDesensitizationHandler());
+		this.desensitizationHandlerMap.put(RegexDesensitizationHandler.class, new RegexDesensitizationHandler());
 		// SPI 加载所有的 Simple脱敏类型处理
 		ServiceLoader<SimpleDesensitizationHandler> loadedDrivers = ServiceLoader
 			.load(SimpleDesensitizationHandler.class);
 		for (SimpleDesensitizationHandler desensitizationHandler : loadedDrivers) {
-			desensitizationHandlerMap.put(desensitizationHandler.getClass(), desensitizationHandler);
+			this.desensitizationHandlerMap.put(desensitizationHandler.getClass(), desensitizationHandler);
 		}
 	}
 

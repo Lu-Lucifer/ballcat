@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.datascope.holder;
 
-import org.ballcat.datascope.handler.DataPermissionRule;
-import org.ballcat.datascope.annotation.DataPermission;
+package org.ballcat.datascope.holder;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import org.ballcat.datascope.annotation.DataPermission;
+import org.ballcat.datascope.handler.DataPermissionRule;
 
 /**
  * 数据权限规则的持有者，使用栈存储调用链中的数据权限规则

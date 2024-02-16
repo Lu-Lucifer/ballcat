@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.datascope.util;
 
-import lombok.experimental.UtilityClass;
+package org.ballcat.datascope.util;
 
 import java.util.Collection;
 
@@ -24,15 +23,17 @@ import java.util.Collection;
  *
  * @author hccake
  */
-@UtilityClass
 public final class CollectionUtils {
+
+	private CollectionUtils() {
+	}
 
 	/**
 	 * 校验集合是否为空
 	 * @param collection 集合
 	 * @return boolean
 	 */
-	public boolean isEmpty(Collection<?> collection) {
+	public static boolean isEmpty(Collection<?> collection) {
 		return collection == null || collection.isEmpty();
 	}
 
@@ -41,7 +42,7 @@ public final class CollectionUtils {
 	 * @param collection 集合
 	 * @return boolean
 	 */
-	public boolean isNotEmpty(Collection<?> collection) {
+	public static boolean isNotEmpty(Collection<?> collection) {
 		return !isEmpty(collection);
 	}
 

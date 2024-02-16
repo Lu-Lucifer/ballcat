@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.pay.wx.domain;
 
-import lombok.Setter;
-import lombok.SneakyThrows;
-import okhttp3.*;
-import org.ballcat.pay.wx.enums.RequestSuffix;
-import org.ballcat.pay.wx.utils.WxPayUtil;
+import java.io.IOException;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.util.Map;
+
+import lombok.Setter;
+import lombok.SneakyThrows;
+import okhttp3.Call;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import org.ballcat.pay.wx.enums.RequestSuffix;
+import org.ballcat.pay.wx.utils.WxPayUtil;
 
 /**
  * 微信域名管理
@@ -64,7 +72,7 @@ public class DefaultWxDomain implements WxDomain {
 		final String url = getUrl(rs.getSuffix());
 		RequestBody requestBody = RequestBody.create(WxPayUtil.mapToXml(params), MediaType.parse("text/xml"));
 		Request request = new Request.Builder().url(url).post(requestBody).build();
-		Call call = client.newCall(request);
+		Call call = this.client.newCall(request);
 		try (Response response = call.execute()) {
 			ResponseBody responseBody = response.body();
 			if (responseBody == null) {
@@ -87,7 +95,7 @@ public class DefaultWxDomain implements WxDomain {
 			suffix = suffix.substring(1);
 		}
 
-		if (sandbox) {
+		if (this.sandbox) {
 			return getDomain() + "sandboxnew/pay/" + suffix;
 		}
 		return getDomain() + "pay/" + suffix;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.resource.introspection;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.ballcat.springsecurity.oauth2.constant.TokenAttributeNameConstants;
 import org.ballcat.springsecurity.oauth2.constant.UserAttributeNameConstants;
@@ -24,7 +38,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -41,12 +60,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * copy from {@link SpringOpaqueTokenIntrospector}，重写了 OAuth2AuthenticatedPrincipal
@@ -244,7 +257,7 @@ public class BallcatRemoteOpaqueTokenIntrospector implements OpaqueTokenIntrospe
 			if (v instanceof Boolean) {
 				return v;
 			}
-			logger.warn("自定端点返回的 {} 属性解析异常, 值为: {},", TokenAttributeNameConstants.IS_CLIENT, v);
+			this.logger.warn("自定端点返回的 {} 属性解析异常, 值为: {},", TokenAttributeNameConstants.IS_CLIENT, v);
 			return false;
 		});
 

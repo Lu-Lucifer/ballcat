@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.web.accesslog;
 
-import lombok.extern.slf4j.Slf4j;
-import org.ballcat.common.util.IpUtils;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.util.UrlPathHelper;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+import org.ballcat.common.util.IpUtils;
 
 /**
  * 默认的访问日志过滤器，使用 log 输出

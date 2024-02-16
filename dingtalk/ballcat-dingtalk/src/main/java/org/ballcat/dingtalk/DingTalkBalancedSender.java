@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.dingtalk;
 
+import java.util.Collection;
+
+import lombok.SneakyThrows;
 import org.ballcat.common.queue.WaitQueue;
 import org.ballcat.dingtalk.message.DingTalkMessage;
-import lombok.SneakyThrows;
-
-import java.util.Collection;
 
 /**
  * 订单负载均衡消息发送
@@ -32,19 +33,19 @@ public class DingTalkBalancedSender {
 
 	public DingTalkBalancedSender add(DingTalkSender... senders) {
 		for (DingTalkSender sender : senders) {
-			queue.add(sender);
+			this.queue.add(sender);
 		}
 		return this;
 	}
 
 	public DingTalkBalancedSender addAll(Collection<DingTalkSender> collection) {
-		queue.addAll(collection);
+		this.queue.addAll(collection);
 		return this;
 	}
 
 	@SneakyThrows
 	protected DingTalkSender sender() {
-		return queue.poll();
+		return this.queue.poll();
 	}
 
 	public void send(DingTalkMessage message) {
@@ -53,7 +54,7 @@ public class DingTalkBalancedSender {
 			sender.sendMessage(message);
 		}
 		finally {
-			queue.add(sender);
+			this.queue.add(sender);
 		}
 	}
 

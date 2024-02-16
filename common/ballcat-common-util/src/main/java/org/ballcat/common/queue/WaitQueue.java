@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.queue;
 
 import java.util.Collection;
@@ -37,7 +38,7 @@ public class WaitQueue<V> {
 	}
 
 	public V get() {
-		return queue.poll();
+		return this.queue.poll();
 	}
 
 	public V poll() throws InterruptedException {
@@ -47,18 +48,18 @@ public class WaitQueue<V> {
 	public V poll(long timeout, TimeUnit unit) throws InterruptedException {
 		V v;
 		do {
-			v = queue.poll(timeout, unit);
+			v = this.queue.poll(timeout, unit);
 		}
 		while (v == null);
 		return v;
 	}
 
 	public void clear() {
-		queue.clear();
+		this.queue.clear();
 	}
 
 	public void add(V seat) {
-		queue.add(seat);
+		this.queue.add(seat);
 	}
 
 	public void addAll(Collection<V> accounts) {

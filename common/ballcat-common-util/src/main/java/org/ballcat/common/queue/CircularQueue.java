@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.queue;
 
-import org.ballcat.common.lock.JavaReentrantLock;
-import org.springframework.util.CollectionUtils;
+package org.ballcat.common.queue;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import org.ballcat.common.lock.JavaReentrantLock;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 循环队列
@@ -37,25 +38,25 @@ public class CircularQueue<T> {
 	private Iterator<T> iterator;
 
 	public CircularQueue<T> add(T t) throws InterruptedException {
-		lock.runByInterruptibly(() -> source.add(t));
+		this.lock.runByInterruptibly(() -> this.source.add(t));
 		return this;
 	}
 
 	public CircularQueue<T> addAll(Collection<T> collection) throws InterruptedException {
-		lock.runByInterruptibly(() -> source.addAll(collection));
+		this.lock.runByInterruptibly(() -> this.source.addAll(collection));
 		return this;
 	}
 
 	public T pool() throws InterruptedException {
-		return lock.getByInterruptibly(() -> {
-			if (CollectionUtils.isEmpty(source)) {
+		return this.lock.getByInterruptibly(() -> {
+			if (CollectionUtils.isEmpty(this.source)) {
 				return null;
 			}
-			if (iterator == null || !iterator.hasNext()) {
-				iterator = source.iterator();
+			if (this.iterator == null || !this.iterator.hasNext()) {
+				this.iterator = this.source.iterator();
 			}
 
-			return iterator.next();
+			return this.iterator.next();
 		});
 	}
 

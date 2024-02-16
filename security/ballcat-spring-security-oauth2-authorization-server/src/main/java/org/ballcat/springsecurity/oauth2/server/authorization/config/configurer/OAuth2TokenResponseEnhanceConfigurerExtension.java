@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.config.configurer;
+
+import java.io.IOException;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.ballcat.springsecurity.oauth2.server.authorization.web.authentication.OAuth2TokenResponseEnhancer;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -28,13 +37,6 @@ import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.util.CollectionUtils;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 /**
  * OAuth2 Token 响应增强配置
@@ -95,7 +97,7 @@ public class OAuth2TokenResponseEnhanceConfigurerExtension implements OAuth2Auth
 		if (refreshToken != null) {
 			builder.refreshToken(refreshToken.getTokenValue());
 		}
-		Map<String, Object> additionalParameters = oauth2TokenResponseEnhancer.enhance(accessTokenAuthentication);
+		Map<String, Object> additionalParameters = this.oauth2TokenResponseEnhancer.enhance(accessTokenAuthentication);
 		if (!CollectionUtils.isEmpty(additionalParameters)) {
 			builder.additionalParameters(additionalParameters);
 		}
@@ -103,7 +105,7 @@ public class OAuth2TokenResponseEnhanceConfigurerExtension implements OAuth2Auth
 		ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
 
 		// 添加 cookie, 配合无状态登录使用
-		if (setAccessTokenCookie) {
+		if (this.setAccessTokenCookie) {
 			setCookie(request, response, OAuth2TokenType.ACCESS_TOKEN.getValue(), accessToken.getTokenValue(), 86400);
 		}
 

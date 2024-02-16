@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.kafka.stream.store;
 
-import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.state.KeyValueIterator;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.bson.types.ObjectId;
+package org.ballcat.kafka.stream.store;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,12 +22,17 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.state.KeyValueIterator;
+import org.apache.kafka.streams.state.KeyValueStore;
+import org.bson.types.ObjectId;
+
 /**
  * 使用 {@link KeyValueStore} 为具体实现的kafka数据缓存方法
  *
  * @author lingting 2020/6/22 10:24
  */
-public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K, V>> {
+public final class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K, V>> {
 
 	private KeyValueStore<K, V> store;
 
@@ -56,7 +57,7 @@ public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K,
 	}
 
 	public KeyValueIterator<K, V> all() {
-		return store.all();
+		return this.store.all();
 	}
 
 	public void forEachRemaining(Consumer<? super KeyValue<K, V>> action) {
@@ -80,16 +81,16 @@ public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K,
 	 * @return 生成的key
 	 */
 	public K getKey() {
-		return supplier.get();
+		return this.supplier.get();
 	}
 
 	public void put(V v) {
-		pushValue(v, store);
+		pushValue(v, this.store);
 	}
 
 	public void put(K k, V v) {
 		if (check(v)) {
-			forkPush(k, v, store);
+			forkPush(k, v, this.store);
 		}
 	}
 
@@ -120,7 +121,7 @@ public class KafkaKeyValueStore<K, V> implements KafkaWindow<V, KeyValueStore<K,
 	}
 
 	public V delete(K key) {
-		return store.delete(key);
+		return this.store.delete(key);
 	}
 
 }

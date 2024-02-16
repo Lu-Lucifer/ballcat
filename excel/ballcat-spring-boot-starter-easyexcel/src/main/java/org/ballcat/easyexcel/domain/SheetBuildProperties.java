@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.domain;
 
+import lombok.Data;
 import org.ballcat.easyexcel.annotation.Sheet;
 import org.ballcat.easyexcel.head.HeadGenerator;
-import lombok.Data;
 
 /**
  * Sheet Build Properties
@@ -62,7 +63,7 @@ public class SheetBuildProperties {
 
 	public SheetBuildProperties(int index) {
 		this.sheetNo = index;
-		this.sheetName = "sheet" + (sheetNo + 1);
+		this.sheetName = "sheet" + (this.sheetNo + 1);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.openapi;
+
+import java.util.List;
+import java.util.Map;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
@@ -26,9 +30,6 @@ import io.swagger.v3.oas.models.tags.Tag;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.*;
 
 /**
  * @author Hccake 2019/11/1 19:37
@@ -95,11 +96,6 @@ public class OpenApiProperties {
 	private Map<String, Object> extensions = null;
 
 	/**
-	 * 跨域配置
-	 */
-	private CorsConfig corsConfig;
-
-	/**
 	 * <p>
 	 * 文档的基础属性信息
 	 * </p>
@@ -147,64 +143,6 @@ public class OpenApiProperties {
 		 * 扩展属性
 		 */
 		private Map<String, Object> extensions = null;
-
-	}
-
-	/**
-	 * <p>
-	 * 跨域配置，用于文档聚合.
-	 * </p>
-	 *
-	 * @see CorsConfiguration
-	 */
-	@Data
-	public static class CorsConfig {
-
-		/**
-		 * 开启 Cors 跨域配置
-		 */
-		private boolean enabled = false;
-
-		/**
-		 * 跨域对应的 url 匹配规则
-		 */
-		private String urlPattern = "/**";
-
-		/**
-		 * 允许跨域的源
-		 */
-		private List<String> allowedOrigins;
-
-		/**
-		 * 允许跨域来源的匹配规则
-		 */
-		private List<String> allowedOriginPatterns;
-
-		/**
-		 * 允许跨域的方法列表
-		 */
-		private List<String> allowedMethods = new ArrayList<>(Collections.singletonList(CorsConfiguration.ALL));
-
-		/**
-		 * 允许跨域的头信息
-		 */
-		private List<String> allowedHeaders = new ArrayList<>(Collections.singletonList(CorsConfiguration.ALL));
-
-		/**
-		 * 额外允许跨域请求方获取的 response header 信息
-		 */
-		private List<String> exposedHeaders = new ArrayList<>(Collections.singletonList("traceId"));
-
-		/**
-		 * 是否允许跨域发送 Cookie
-		 */
-		private Boolean allowCredentials = true;
-
-		/**
-		 * CORS 配置缓存时间，用于控制浏览器端是否发起 Option 预检请求。 若配置此参数，在第一次获取到 CORS
-		 * 的配置信息后，在过期时间内，浏览器将直接发出请求，跳过 option 预检
-		 */
-		private Long maxAge;
 
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.datascope.holder;
 
-import org.ballcat.datascope.DataScope;
+package org.ballcat.datascope.holder;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.ballcat.datascope.DataScope;
 
 /**
  * 该类用于存储，不需数据权限处理的 mappedStatementId 集合

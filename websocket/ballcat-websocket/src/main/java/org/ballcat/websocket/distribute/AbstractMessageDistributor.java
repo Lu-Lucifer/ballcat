@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.websocket.distribute;
+
+import java.util.Collection;
 
 import lombok.extern.slf4j.Slf4j;
 import org.ballcat.websocket.WebSocketMessageSender;
 import org.ballcat.websocket.session.WebSocketSessionStore;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.socket.WebSocketSession;
-
-import java.util.Collection;
 
 /**
  * @author hccake
@@ -47,7 +48,7 @@ public abstract class AbstractMessageDistributor implements MessageDistributor {
 		// 获取待发送的 sessionKeys
 		Collection<Object> sessionKeys;
 		if (needBroadcast != null && needBroadcast) {
-			sessionKeys = webSocketSessionStore.getSessionKeys();
+			sessionKeys = this.webSocketSessionStore.getSessionKeys();
 		}
 		else {
 			sessionKeys = messageDO.getSessionKeys();
@@ -61,7 +62,7 @@ public abstract class AbstractMessageDistributor implements MessageDistributor {
 		Boolean onlyOneClientInSameKey = messageDO.getOnlyOneClientInSameKey();
 
 		for (Object sessionKey : sessionKeys) {
-			Collection<WebSocketSession> sessions = webSocketSessionStore.getSessions(sessionKey);
+			Collection<WebSocketSession> sessions = this.webSocketSessionStore.getSessions(sessionKey);
 			if (!CollectionUtils.isEmpty(sessions)) {
 				// 相同 sessionKey 的客户端只推送一次操作
 				if (onlyOneClientInSameKey != null && onlyOneClientInSameKey) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.web;
+
+import java.security.GeneralSecurityException;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.ballcat.springsecurity.util.PasswordUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import javax.servlet.http.HttpServletRequest;
-import java.security.GeneralSecurityException;
 
 /**
  * 允许前后端交互时使用 AES 加密的传输密码的用户密码认证过滤器
@@ -51,13 +53,13 @@ public class UsernameAesPasswordAuthenticationFilter extends UsernamePasswordAut
 	@Override
 	protected String obtainPassword(HttpServletRequest request) {
 		String requestPassword = request.getParameter(getPasswordParameter());
-		if (passwordSecretKey == null) {
+		if (this.passwordSecretKey == null) {
 			return requestPassword;
 		}
 
 		// 先进行 AES 解密
 		try {
-			return PasswordUtils.decodeAES(requestPassword, passwordSecretKey);
+			return PasswordUtils.decodeAES(requestPassword, this.passwordSecretKey);
 		}
 		catch (GeneralSecurityException e) {
 			throw new IllegalArgumentException("error parameter", e);

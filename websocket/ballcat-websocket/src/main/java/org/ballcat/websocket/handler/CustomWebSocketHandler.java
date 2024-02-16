@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.websocket.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.websocket.exception.ErrorJsonMessageException;
 import org.ballcat.websocket.holder.JsonMessageHandlerHolder;
 import org.ballcat.websocket.message.JsonWebSocketMessage;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -66,8 +67,8 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		catch (ErrorJsonMessageException ex) {
 			log.debug("消息载荷 [{}] 回退使用 PlanTextMessageHandler，原因：{}", payload, ex.getMessage());
 			// fallback 使用普通文本处理
-			if (planTextMessageHandler != null) {
-				planTextMessageHandler.handle(session, payload);
+			if (this.planTextMessageHandler != null) {
+				this.planTextMessageHandler.handle(session, payload);
 			}
 			else {
 				log.error("[handleTextMessage] 普通文本消息（{}）没有对应的消息处理器", payload);

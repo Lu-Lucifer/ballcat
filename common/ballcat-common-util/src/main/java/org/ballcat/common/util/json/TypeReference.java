@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.util.json;
 
 import java.lang.reflect.ParameterizedType;
@@ -31,11 +32,11 @@ public abstract class TypeReference<T> implements Comparable<TypeReference<T>> {
 			throw new IllegalArgumentException(
 					"Internal error: TypeReference constructed without actual type information");
 		}
-		type = ((ParameterizedType) superClass).getActualTypeArguments()[0];
+		this.type = ((ParameterizedType) superClass).getActualTypeArguments()[0];
 	}
 
 	public Type getType() {
-		return type;
+		return this.type;
 	}
 
 	@Override

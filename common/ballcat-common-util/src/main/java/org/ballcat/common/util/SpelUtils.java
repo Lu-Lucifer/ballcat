@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.util;
 
-import lombok.experimental.UtilityClass;
+import java.lang.reflect.Method;
+import java.util.List;
+
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -23,25 +26,24 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
 /**
  * @author Hccake 2019/9/3 10:29
  */
-@UtilityClass
 @SuppressWarnings("SpellCheckingInspection")
 public final class SpelUtils {
+
+	private SpelUtils() {
+	}
 
 	/**
 	 * SpEL 解析器
 	 */
-	public final ExpressionParser PARSER = new SpelExpressionParser();
+	public static final ExpressionParser PARSER = new SpelExpressionParser();
 
 	/**
 	 * 方法参数获取
 	 */
-	public final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new LocalVariableTableParameterNameDiscoverer();
+	public static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new LocalVariableTableParameterNameDiscoverer();
 
 	/**
 	 * 支持 #p0 参数索引的表达式解析
@@ -51,7 +53,7 @@ public final class SpelUtils {
 	 * @param args 方法入参
 	 * @return 解析后的字符串
 	 */
-	public String parseValueToString(Object rootObject, Method method, Object[] args, String spelExpression) {
+	public static String parseValueToString(Object rootObject, Method method, Object[] args, String spelExpression) {
 		StandardEvaluationContext context = getSpelContext(rootObject, method, args);
 		return parseValueToString(context, spelExpression);
 	}
@@ -63,7 +65,7 @@ public final class SpelUtils {
 	 * @param args 方法实际入参
 	 * @return StandardEvaluationContext spel 上下文
 	 */
-	public StandardEvaluationContext getSpelContext(Object rootObject, Method method, Object[] args) {
+	public static StandardEvaluationContext getSpelContext(Object rootObject, Method method, Object[] args) {
 		// spel 上下文
 		StandardEvaluationContext context = new MethodBasedEvaluationContext(rootObject, method, args,
 				PARAMETER_NAME_DISCOVERER);
@@ -84,7 +86,7 @@ public final class SpelUtils {
 	 * @param spelExpression spel 表达式
 	 * @return String 解析后的字符串
 	 */
-	public String parseValueToString(StandardEvaluationContext context, String spelExpression) {
+	public static String parseValueToString(StandardEvaluationContext context, String spelExpression) {
 		return PARSER.parseExpression(spelExpression).getValue(context, String.class);
 	}
 
@@ -94,7 +96,7 @@ public final class SpelUtils {
 	 * @param spelExpression spel 表达式
 	 * @return 解析后的 List<String>
 	 */
-	public List<String> parseValueToStringList(StandardEvaluationContext context, String spelExpression) {
+	public static List<String> parseValueToStringList(StandardEvaluationContext context, String spelExpression) {
 		return PARSER.parseExpression(spelExpression).getValue(context, List.class);
 	}
 

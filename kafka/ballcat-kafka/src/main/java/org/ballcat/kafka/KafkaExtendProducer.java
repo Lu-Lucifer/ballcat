@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.kafka;
 
 import java.util.concurrent.Future;
+
 import lombok.Getter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -66,7 +68,7 @@ public class KafkaExtendProducer<K, V> {
 	}
 
 	public Future<RecordMetadata> send(ProducerRecord<K, V> record, Callback callback) {
-		return producer.send(record, callback);
+		return this.producer.send(record, callback);
 	}
 
 	public Future<RecordMetadata> send(String topic, Integer partition, Long timestamp, K key, V value,

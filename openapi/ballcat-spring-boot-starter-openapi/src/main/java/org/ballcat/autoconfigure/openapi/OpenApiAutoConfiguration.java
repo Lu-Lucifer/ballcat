@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.openapi;
 
-import org.ballcat.common.model.domain.PageableConstants;
-import org.ballcat.autoconfigure.web.pageable.PageableProperties;
-import org.ballcat.common.model.domain.PageParam;
-import org.ballcat.openapi.pageable.PageParamOpenAPIConverter;
-import org.ballcat.openapi.pageable.PageableRequestClassCreator;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import lombok.RequiredArgsConstructor;
+import org.ballcat.autoconfigure.web.pageable.PageableProperties;
+import org.ballcat.common.model.domain.PageParam;
+import org.ballcat.common.model.domain.PageableConstants;
+import org.ballcat.openapi.pageable.PageParamOpenAPIConverter;
+import org.ballcat.openapi.pageable.PageableRequestClassCreator;
 import org.springdoc.core.SpringDocConfiguration;
 import org.springdoc.core.SpringDocUtils;
 import org.springdoc.core.providers.ObjectMapperProvider;
@@ -32,16 +37,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * OpenAPI 的自动配置类
@@ -66,18 +62,18 @@ public class OpenApiAutoConfiguration {
 		OpenAPI openAPI = new OpenAPI();
 
 		// 文档基本信息
-		OpenApiProperties.InfoProperties infoProperties = openApiProperties.getInfo();
+		OpenApiProperties.InfoProperties infoProperties = this.openApiProperties.getInfo();
 		Info info = convertInfo(infoProperties);
 		openAPI.info(info);
 
 		// 扩展文档信息
-		openAPI.externalDocs(openApiProperties.getExternalDocs());
-		openAPI.servers(openApiProperties.getServers());
-		openAPI.security(openApiProperties.getSecurity());
-		openAPI.tags(openApiProperties.getTags());
-		openAPI.paths(openApiProperties.getPaths());
-		openAPI.components(openApiProperties.getComponents());
-		openAPI.extensions(openApiProperties.getExtensions());
+		openAPI.externalDocs(this.openApiProperties.getExternalDocs());
+		openAPI.servers(this.openApiProperties.getServers());
+		openAPI.security(this.openApiProperties.getSecurity());
+		openAPI.tags(this.openApiProperties.getTags());
+		openAPI.paths(this.openApiProperties.getPaths());
+		openAPI.components(this.openApiProperties.getComponents());
+		openAPI.extensions(this.openApiProperties.getExtensions());
 
 		return openAPI;
 	}
@@ -93,37 +89,6 @@ public class OpenApiAutoConfiguration {
 		info.setVersion(infoProperties.getVersion());
 		info.setExtensions(infoProperties.getExtensions());
 		return info;
-	}
-
-	/**
-	 * 允许聚合者对提供者的文档进行跨域访问 解决聚合文档导致的跨域问题
-	 * @return FilterRegistrationBean
-	 */
-	@Bean
-	@ConditionalOnProperty(prefix = OpenApiProperties.PREFIX + ".cors-config", name = "enabled", havingValue = "true")
-	public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
-		// 获取 CORS 配置
-		OpenApiProperties.CorsConfig corsConfig = openApiProperties.getCorsConfig();
-
-		// 转换 CORS 配置
-		CorsConfiguration corsConfiguration = new CorsConfiguration();
-		corsConfiguration.setAllowedOrigins(corsConfig.getAllowedOrigins());
-		corsConfiguration.setAllowedOriginPatterns(corsConfig.getAllowedOriginPatterns());
-		corsConfiguration.setAllowedMethods(corsConfig.getAllowedMethods());
-		corsConfiguration.setAllowedHeaders(corsConfig.getAllowedHeaders());
-		corsConfiguration.setExposedHeaders(corsConfig.getExposedHeaders());
-		corsConfiguration.setAllowCredentials(corsConfig.getAllowCredentials());
-		corsConfiguration.setMaxAge(corsConfig.getMaxAge());
-
-		// 注册 CORS 配置与资源的映射关系
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration(corsConfig.getUrlPattern(), corsConfiguration);
-
-		// 注册 CORS 过滤器，设置最高优先级
-		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-		bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-
-		return bean;
 	}
 
 	/**
@@ -146,17 +111,17 @@ public class OpenApiAutoConfiguration {
 
 			Map<String, String> map = new HashMap<>();
 
-			String page = pageableProperties.getPageParameterName();
+			String page = this.pageableProperties.getPageParameterName();
 			if (!PageableConstants.DEFAULT_PAGE_PARAMETER.equals(page)) {
 				map.put(PageableConstants.DEFAULT_PAGE_PARAMETER, page);
 			}
 
-			String size = pageableProperties.getSizeParameterName();
+			String size = this.pageableProperties.getSizeParameterName();
 			if (!PageableConstants.DEFAULT_SIZE_PARAMETER.equals(size)) {
 				map.put(PageableConstants.DEFAULT_SIZE_PARAMETER, size);
 			}
 
-			String sort = pageableProperties.getSortParameterName();
+			String sort = this.pageableProperties.getSortParameterName();
 			if (!PageableConstants.DEFAULT_SORT_PARAMETER.equals(sort)) {
 				map.put(PageableConstants.DEFAULT_SORT_PARAMETER, sort);
 			}

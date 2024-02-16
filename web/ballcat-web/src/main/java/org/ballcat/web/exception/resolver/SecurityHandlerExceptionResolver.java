@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.web.exception.resolver;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.common.core.exception.handler.GlobalExceptionHandler;
 import org.ballcat.common.model.result.R;
 import org.ballcat.common.model.result.SystemResultCode;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -50,7 +51,7 @@ public class SecurityHandlerExceptionResolver {
 		String msg = SpringSecurityMessageSource.getAccessor()
 			.getMessage("AbstractAccessDecisionManager.accessDenied", e.getMessage());
 		log.error("拒绝授权异常信息 ex={}", msg);
-		globalExceptionHandler.handle(e);
+		this.globalExceptionHandler.handle(e);
 		return R.failed(SystemResultCode.FORBIDDEN, e.getLocalizedMessage());
 	}
 

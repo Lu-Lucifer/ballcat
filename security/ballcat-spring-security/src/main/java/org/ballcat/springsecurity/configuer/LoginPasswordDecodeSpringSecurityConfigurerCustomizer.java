@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.configuer;
 
 import org.ballcat.springsecurity.properties.SpringSecurityProperties;
@@ -50,7 +51,7 @@ public class LoginPasswordDecodeSpringSecurityConfigurerCustomizer
 
 	@Override
 	public void customize(HttpSecurity httpSecurity) throws Exception {
-		SpringSecurityProperties.FormLogin formLogin = springSecurityProperties.getFormLogin();
+		SpringSecurityProperties.FormLogin formLogin = this.springSecurityProperties.getFormLogin();
 
 		String loginProcessingUrl = formLogin.getLoginProcessingUrl();
 		if (loginProcessingUrl == null) {
@@ -64,9 +65,9 @@ public class LoginPasswordDecodeSpringSecurityConfigurerCustomizer
 		AntPathRequestMatcher requestMatcher = new AntPathRequestMatcher(loginProcessingUrl, HttpMethod.POST.name());
 
 		// 创建过滤器
-		LoginPasswordDecoderFilter filter = new LoginPasswordDecoderFilter(requestMatcher, passwordSecretKey);
-		if (messageSource != null) {
-			filter.setMessageSource(messageSource);
+		LoginPasswordDecoderFilter filter = new LoginPasswordDecoderFilter(requestMatcher, this.passwordSecretKey);
+		if (this.messageSource != null) {
+			filter.setMessageSource(this.messageSource);
 		}
 		AuthenticationFailureHandler failureHandler = httpSecurity.getSharedObject(AuthenticationFailureHandler.class);
 		if (failureHandler != null) {

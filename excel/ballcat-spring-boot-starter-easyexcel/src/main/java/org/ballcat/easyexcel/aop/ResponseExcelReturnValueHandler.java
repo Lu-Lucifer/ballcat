@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.aop;
 
-import org.ballcat.easyexcel.annotation.ResponseExcel;
-import org.ballcat.easyexcel.handler.SheetWriteHandler;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.easyexcel.annotation.ResponseExcel;
+import org.ballcat.easyexcel.handler.SheetWriteHandler;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * 处理@ResponseExcel 返回值
@@ -66,7 +68,7 @@ public class ResponseExcelReturnValueHandler implements HandlerMethodReturnValue
 		Assert.state(responseExcel != null, "No @ResponseExcel");
 		mavContainer.setRequestHandled(true);
 
-		sheetWriteHandlerList.stream()
+		this.sheetWriteHandlerList.stream()
 			.filter(handler -> handler.support(o))
 			.findFirst()
 			.ifPresent(handler -> handler.export(o, response, responseExcel));

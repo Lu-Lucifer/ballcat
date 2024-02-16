@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.dingtalk.message;
 
-import org.ballcat.common.markdown.MarkdownBuilder;
-import org.ballcat.dingtalk.DingTalkParams;
-import org.ballcat.dingtalk.enums.ActionBtnOrientationEnum;
-import org.ballcat.dingtalk.enums.MessageTypeEnum;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.ballcat.common.markdown.MarkdownBuilder;
+import org.ballcat.dingtalk.DingTalkParams;
+import org.ballcat.dingtalk.enums.ActionBtnOrientationEnum;
+import org.ballcat.dingtalk.enums.MessageTypeEnum;
 
 /**
  * 跳转 ActionCard类型
@@ -68,7 +69,7 @@ public class DingTalkActionCardMessage extends AbstractDingTalkMessage {
 	 * 添加按钮
 	 */
 	public DingTalkActionCardMessage addButton(String title, String url) {
-		buttons.add(new Button(title, url));
+		this.buttons.add(new Button(title, url));
 		return this;
 	}
 
@@ -79,16 +80,16 @@ public class DingTalkActionCardMessage extends AbstractDingTalkMessage {
 
 	@Override
 	public DingTalkParams put(DingTalkParams params) {
-		DingTalkParams.ActionCard card = new DingTalkParams.ActionCard().setTitle(title)
-			.setText(text.build())
-			.setBtnOrientation(orientation.getVal());
+		DingTalkParams.ActionCard card = new DingTalkParams.ActionCard().setTitle(this.title)
+			.setText(this.text.build())
+			.setBtnOrientation(this.orientation.getVal());
 
 		// 当 单按钮的 文本和链接都不为空时
-		if (buttons.isEmpty()) {
-			card.setSingleTitle(singleTitle).setSingleUrl(singleUrl);
+		if (this.buttons.isEmpty()) {
+			card.setSingleTitle(this.singleTitle).setSingleUrl(this.singleUrl);
 		}
 		else {
-			card.setButtons(buttons);
+			card.setButtons(this.buttons);
 		}
 		return params.setActionCard(card);
 	}

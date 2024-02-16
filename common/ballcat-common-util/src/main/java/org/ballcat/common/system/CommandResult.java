@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.system;
 
-import org.ballcat.common.util.StreamUtils;
-import lombok.Getter;
-import org.springframework.util.StringUtils;
+package org.ballcat.common.system;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +23,10 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
+
+import lombok.Getter;
+import org.ballcat.common.util.StreamUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @author lingting 2022/6/25 12:01
@@ -60,48 +61,48 @@ public class CommandResult {
 	}
 
 	public File stdOut() {
-		return stdOut;
+		return this.stdOut;
 	}
 
 	public File stdErr() {
-		return stdErr;
+		return this.stdErr;
 	}
 
 	public String stdOutStr() throws IOException {
-		if (!StringUtils.hasText(strOutput)) {
-			try (FileInputStream output = new FileInputStream(stdOut)) {
-				strOutput = StreamUtils.toString(output, StreamUtils.DEFAULT_SIZE, charset);
+		if (!StringUtils.hasText(this.strOutput)) {
+			try (FileInputStream output = new FileInputStream(this.stdOut)) {
+				this.strOutput = StreamUtils.toString(output, StreamUtils.DEFAULT_SIZE, this.charset);
 			}
 		}
-		return strOutput;
+		return this.strOutput;
 	}
 
 	public String stdErrStr() throws IOException {
-		if (!StringUtils.hasText(strError)) {
-			try (FileInputStream error = new FileInputStream(stdErr)) {
-				strError = StreamUtils.toString(error, StreamUtils.DEFAULT_SIZE, charset);
+		if (!StringUtils.hasText(this.strError)) {
+			try (FileInputStream error = new FileInputStream(this.stdErr)) {
+				this.strError = StreamUtils.toString(error, StreamUtils.DEFAULT_SIZE, this.charset);
 			}
 		}
-		return strError;
+		return this.strError;
 	}
 
 	public InputStream stdOutStream() throws IOException {
-		return Files.newInputStream(stdOut.toPath());
+		return Files.newInputStream(this.stdOut.toPath());
 	}
 
 	public InputStream stdErrStream() throws IOException {
-		return Files.newInputStream(stdErr.toPath());
+		return Files.newInputStream(this.stdErr.toPath());
 	}
 
 	public void clean() {
 		try {
-			Files.delete(stdOut.toPath());
+			Files.delete(this.stdOut.toPath());
 		}
 		catch (Exception e) {
 			//
 		}
 		try {
-			Files.delete(stdErr.toPath());
+			Files.delete(this.stdErr.toPath());
 		}
 		catch (Exception e) {
 			//

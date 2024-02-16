@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.kafka.stream.extend;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ballcat.kafka.stream.core.AbstractPunctuator;
-import org.ballcat.kafka.stream.exception.NotAllowedException;
-import org.ballcat.kafka.stream.store.KafkaKeyValueStore;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueIterator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
+import org.ballcat.kafka.stream.core.AbstractPunctuator;
+import org.ballcat.kafka.stream.exception.NotAllowedException;
+import org.ballcat.kafka.stream.store.KafkaKeyValueStore;
 
 /**
  * kafka 扩展类 自动注入 指定类型 指定名称的 store Value 数据的类型 Values 存放数据的对象类型
@@ -58,7 +59,7 @@ public abstract class AbstractKeyValueStorePunctuator<K, V, R> extends AbstractP
 	public AbstractKeyValueStorePunctuator<K, V, R> init(ProcessorContext context, String storeName,
 			BiFunction<K, V, R> signHandle) {
 		super.init(context);
-		store = getStore(storeName);
+		this.store = getStore(storeName);
 		this.signHandle = signHandle;
 		return this;
 	}
@@ -72,7 +73,7 @@ public abstract class AbstractKeyValueStorePunctuator<K, V, R> extends AbstractP
 
 	@Override
 	public void handle(long timestamp) {
-		KeyValueIterator<K, V> iterator = store.all();
+		KeyValueIterator<K, V> iterator = this.store.all();
 		List<R> list = new ArrayList<>();
 
 		while (iterator.hasNext()) {
@@ -81,8 +82,8 @@ public abstract class AbstractKeyValueStorePunctuator<K, V, R> extends AbstractP
 				list.clear();
 			}
 			KeyValue<K, V> kv = iterator.next();
-			list.add(signHandle.apply(kv.key, kv.value));
-			store.delete(kv.key);
+			list.add(this.signHandle.apply(kv.key, kv.value));
+			this.store.delete(kv.key);
 		}
 		runHandle(timestamp, list);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.log.operation.aspect;
 
-import org.ballcat.log.operation.annotation.OperationLogging;
-import org.ballcat.log.operation.handler.OperationLogHandler;
+import java.lang.reflect.Method;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.ballcat.log.operation.annotation.OperationLogging;
+import org.ballcat.log.operation.handler.OperationLogHandler;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.Assert;
-
-import java.lang.reflect.Method;
 
 /**
  * 操作日志切面类
@@ -56,7 +57,7 @@ public class OperationLogAspect<T> {
 		// 获取操作日志 DTO
 		Assert.notNull(operationLogging, "operationLogging annotation must not be null!");
 
-		T operationLog = operationLogHandler.buildLog(operationLogging, joinPoint);
+		T operationLog = this.operationLogHandler.buildLog(operationLogging, joinPoint);
 
 		Throwable throwable = null;
 		Object result = null;
@@ -82,10 +83,10 @@ public class OperationLogAspect<T> {
 			// 结束时间
 			long executionTime = System.currentTimeMillis() - startTime;
 			// 记录执行信息
-			operationLogHandler.recordExecutionInfo(operationLog, joinPoint, executionTime, throwable, isSaveResult,
-					result);
+			this.operationLogHandler.recordExecutionInfo(operationLog, joinPoint, executionTime, throwable,
+					isSaveResult, result);
 			// 处理操作日志
-			operationLogHandler.handleLog(operationLog);
+			this.operationLogHandler.handleLog(operationLog);
 		}
 		catch (Exception e) {
 			log.error("记录操作日志异常：{}", operationLog);

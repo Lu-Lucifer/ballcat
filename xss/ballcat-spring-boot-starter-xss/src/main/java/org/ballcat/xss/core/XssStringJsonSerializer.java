@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.xss.core;
+
+import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.ballcat.xss.cleaner.XssCleaner;
-
-import java.io.IOException;
 
 /**
  * XSS过滤 jackson 序列化器
@@ -46,7 +47,7 @@ public class XssStringJsonSerializer extends JsonSerializer<String> {
 		if (value != null) {
 			// 开启 Xss 才进行处理
 			if (XssStateHolder.enabled()) {
-				value = xssCleaner.clean(value);
+				value = this.xssCleaner.clean(value);
 			}
 			jsonGenerator.writeString(value);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.web.filter;
+
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.ballcat.security.captcha.CaptchaValidateResult;
@@ -28,12 +36,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author Hccake
@@ -59,13 +61,13 @@ public class LoginCaptchaFilter extends OncePerRequestFilter implements MessageS
 			return;
 		}
 
-		CaptchaValidateResult captchaValidateResult = captchaValidator.validate(request);
+		CaptchaValidateResult captchaValidateResult = this.captchaValidator.validate(request);
 		if (captchaValidateResult.isSuccess()) {
 			filterChain.doFilter(request, response);
 		}
 		else {
-			logger.error("Captcha verification failed, captchaValidateResult: " + captchaValidateResult);
-			failureHandler.onAuthenticationFailure(request, response, new InvalidCaptchaException(this.messages
+			this.logger.error("Captcha verification failed, captchaValidateResult: " + captchaValidateResult);
+			this.failureHandler.onAuthenticationFailure(request, response, new InvalidCaptchaException(this.messages
 				.getMessage("LoginCaptchaFilter.captchaVerificationFailed", "Captcha verification failed")));
 		}
 	}

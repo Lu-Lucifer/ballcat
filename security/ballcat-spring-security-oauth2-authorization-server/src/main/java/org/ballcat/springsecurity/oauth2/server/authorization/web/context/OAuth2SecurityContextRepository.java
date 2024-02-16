@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.web.context;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.ballcat.springsecurity.oauth2.server.authorization.web.CookieBearerTokenResolver;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,9 +31,6 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.security.web.context.HttpRequestResponseHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.util.StringUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * OAuth2 下使用的 SecurityContextRepository，从 bearerTokenResolver 中解析对应的 access_token, 然后利用
@@ -61,7 +62,7 @@ public class OAuth2SecurityContextRepository implements SecurityContextRepositor
 		if (!StringUtils.hasText(bearerToken)) {
 			return SecurityContextHolder.createEmptyContext();
 		}
-		OAuth2Authorization oAuth2Authorization = authorizationService.findByToken(bearerToken,
+		OAuth2Authorization oAuth2Authorization = this.authorizationService.findByToken(bearerToken,
 				OAuth2TokenType.ACCESS_TOKEN);
 		if (oAuth2Authorization == null) {
 			return SecurityContextHolder.createEmptyContext();

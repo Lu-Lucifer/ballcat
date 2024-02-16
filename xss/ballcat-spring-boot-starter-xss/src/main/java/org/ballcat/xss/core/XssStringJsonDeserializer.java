@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.xss.core;
+
+import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
-import org.ballcat.xss.cleaner.XssCleaner;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
+import org.ballcat.xss.cleaner.XssCleaner;
 
 /**
  * XSS过滤 jackson 反序列化器
@@ -62,7 +63,7 @@ public class XssStringJsonDeserializer extends StringDeserializer {
 		}
 		// 29-Jun-2020, tatu: New! "Scalar from Object" (mostly for XML)
 		if (t == JsonToken.START_OBJECT) {
-			return ctxt.extractScalarFromObject(p, this, _valueClass);
+			return ctxt.extractScalarFromObject(p, this, this._valueClass);
 		}
 		// allow coercions for other scalar types
 		// 17-Jan-2018, tatu: Related to [databind#1853] avoid FIELD_NAME by ensuring it's
@@ -71,14 +72,14 @@ public class XssStringJsonDeserializer extends StringDeserializer {
 			String text = p.getValueAsString();
 			return getCleanText(text);
 		}
-		return (String) ctxt.handleUnexpectedToken(_valueClass, p);
+		return (String) ctxt.handleUnexpectedToken(this._valueClass, p);
 	}
 
 	private String getCleanText(String text) {
 		if (text == null) {
 			return null;
 		}
-		return XssStateHolder.enabled() ? xssCleaner.clean(text) : text;
+		return XssStateHolder.enabled() ? this.xssCleaner.clean(text) : text;
 	}
 
 }

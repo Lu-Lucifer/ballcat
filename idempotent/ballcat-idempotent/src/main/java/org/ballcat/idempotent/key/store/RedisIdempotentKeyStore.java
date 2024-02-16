@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.idempotent.key.store;
+
+import java.util.concurrent.TimeUnit;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * 基于 Redis 的幂等Key的存储器
@@ -31,11 +32,12 @@ import java.util.concurrent.TimeUnit;
 public class RedisIdempotentKeyStore implements IdempotentKeyStore {
 
 	@Autowired
+	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 	private StringRedisTemplate stringRedisTemplate;
 
 	@Override
 	public boolean saveIfAbsent(String key, long duration, TimeUnit timeUnit) {
-		ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
+		ValueOperations<String, String> opsForValue = this.stringRedisTemplate.opsForValue();
 		Boolean saveSuccess = opsForValue.setIfAbsent(key, String.valueOf(System.currentTimeMillis()), duration,
 				timeUnit);
 		return saveSuccess != null && saveSuccess;
@@ -43,7 +45,7 @@ public class RedisIdempotentKeyStore implements IdempotentKeyStore {
 
 	@Override
 	public void remove(String key) {
-		stringRedisTemplate.delete(key);
+		this.stringRedisTemplate.delete(key);
 	}
 
 }

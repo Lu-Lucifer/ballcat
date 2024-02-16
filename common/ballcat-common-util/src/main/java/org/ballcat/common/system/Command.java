@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.system;
 
-import org.ballcat.common.exception.CommandTimeoutException;
-import org.ballcat.common.util.FileUtils;
-import org.ballcat.common.util.SystemUtils;
-import org.springframework.util.StringUtils;
+package org.ballcat.common.system;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,10 +24,15 @@ import java.time.LocalDateTime;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
+import org.ballcat.common.exception.CommandTimeoutException;
+import org.ballcat.common.util.FileUtils;
+import org.ballcat.common.util.SystemUtils;
+import org.springframework.util.StringUtils;
+
 /**
  * @author lingting 2022/6/25 11:55
  */
-public class Command {
+public final class Command {
 
 	public static final String NEXT_LINE = SystemUtils.lineSeparator();
 
@@ -70,9 +71,9 @@ public class Command {
 		this.stdErr = FileUtils.createTemp();
 
 		// 重定向标准输出和标准错误到文件, 避免写入到缓冲区然后占满导致 waitFor 死锁
-		ProcessBuilder builder = new ProcessBuilder(cmdArray).redirectError(stdErr).redirectOutput(stdOut);
+		ProcessBuilder builder = new ProcessBuilder(cmdArray).redirectError(this.stdErr).redirectOutput(this.stdOut);
 		this.process = builder.start();
-		this.stdIn = process.getOutputStream();
+		this.stdIn = this.process.getOutputStream();
 		this.nextLine = nextLine;
 		this.exit = exit;
 		this.charset = charset;
@@ -100,8 +101,8 @@ public class Command {
 	}
 
 	public Command write(String str) throws IOException {
-		stdIn.write(str.getBytes(charset));
-		stdIn.flush();
+		this.stdIn.write(str.getBytes(this.charset));
+		this.stdIn.flush();
 		return this;
 	}
 
@@ -109,14 +110,14 @@ public class Command {
 	 * 换到下一行
 	 */
 	public Command line() throws IOException {
-		return write(nextLine);
+		return write(this.nextLine);
 	}
 
 	/**
 	 * 写入通道退出指令
 	 */
 	public Command exit() throws IOException {
-		write(exit);
+		write(this.exit);
 		return line();
 	}
 
@@ -143,8 +144,8 @@ public class Command {
 	 * </p>
 	 */
 	public CommandResult result() throws InterruptedException {
-		process.waitFor();
-		return CommandResult.of(stdOut, stdErr, startTime, LocalDateTime.now(), charset);
+		this.process.waitFor();
+		return CommandResult.of(this.stdOut, this.stdErr, this.startTime, LocalDateTime.now(), this.charset);
 	}
 
 	/**
@@ -161,16 +162,16 @@ public class Command {
 	 * @return live.lingting.tools.system.CommandResult
 	 */
 	public CommandResult result(long millis) throws InterruptedException, CommandTimeoutException {
-		if (process.waitFor(millis, TimeUnit.MILLISECONDS)) {
+		if (this.process.waitFor(millis, TimeUnit.MILLISECONDS)) {
 			return result();
 		}
 		// 超时. 强行杀死子线程
-		process.destroyForcibly();
+		this.process.destroyForcibly();
 		throw new CommandTimeoutException();
 	}
 
 	public void close() {
-		process.destroy();
+		this.process.destroy();
 	}
 
 }

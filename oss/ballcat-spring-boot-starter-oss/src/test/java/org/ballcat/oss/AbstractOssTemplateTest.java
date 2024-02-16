@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.oss;
 
-import org.ballcat.oss.OssAutoConfiguration;
-import org.ballcat.oss.OssTemplate;
 import org.ballcat.oss.prefix.ObjectKeyPrefixConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,11 +35,11 @@ public abstract class AbstractOssTemplateTest {
 	protected ObjectKeyPrefixConverter objectKeyPrefixConverter;
 
 	protected void createBucket(String bucket) {
-		ossTemplate.createBucket(bucket);
+		this.ossTemplate.createBucket(bucket);
 	}
 
 	protected void deleteBucket(String bucket) {
-		ossTemplate.deleteBucket(bucket);
+		this.ossTemplate.deleteBucket(bucket);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.kafka;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.Deserializer;
+package org.ballcat.kafka;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +23,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 
-import static org.ballcat.kafka.KafkaConstants.BOOTSTRAP_SERVERS_DELIMITER;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.Deserializer;
 
 /**
  * 消费者 具体的配置请参考 {@link ConsumerConfig} 这里只提供一些常用配置
@@ -65,12 +64,12 @@ public class KafkaConsumerBuilder {
 	 * 添加 kafka 路径 host:port
 	 */
 	public KafkaConsumerBuilder addBootstrapServers(String uri) {
-		bootstrapServers.add(uri);
+		this.bootstrapServers.add(uri);
 		return this;
 	}
 
 	public KafkaConsumerBuilder addAllBootstrapServers(Collection<String> uris) {
-		bootstrapServers.addAll(uris);
+		this.bootstrapServers.addAll(uris);
 		return this;
 	}
 
@@ -78,7 +77,7 @@ public class KafkaConsumerBuilder {
 	 * 添加配置
 	 */
 	public KafkaConsumerBuilder put(Object key, Object val) {
-		properties.put(key, val);
+		this.properties.put(key, val);
 		return this;
 	}
 
@@ -98,7 +97,7 @@ public class KafkaConsumerBuilder {
 	}
 
 	public KafkaConsumerBuilder addTopic(String topic) {
-		topics.add(topic);
+		this.topics.add(topic);
 		return this;
 	}
 
@@ -109,7 +108,7 @@ public class KafkaConsumerBuilder {
 
 	public <K, V> KafkaConsumer<K, V> build(Function<Properties, KafkaConsumer<K, V>> function) {
 		KafkaConsumer<K, V> consumer = function.apply(getProperties());
-		consumer.subscribe(topics);
+		consumer.subscribe(this.topics);
 		return consumer;
 	}
 
@@ -123,18 +122,18 @@ public class KafkaConsumerBuilder {
 
 	public Set<String> getBootstrapServers() {
 		getProperties();
-		return bootstrapServers;
+		return this.bootstrapServers;
 	}
 
 	public Properties getProperties() {
-		String nowServes = properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "");
+		String nowServes = this.properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "");
 		if (nowServes.length() > 0) {
 			// 仅在存在配置时才插入
-			bootstrapServers.addAll(Arrays.asList(nowServes.split(BOOTSTRAP_SERVERS_DELIMITER)));
+			this.bootstrapServers.addAll(Arrays.asList(nowServes.split(KafkaConstants.BOOTSTRAP_SERVERS_DELIMITER)));
 		}
-		properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-				String.join(BOOTSTRAP_SERVERS_DELIMITER, bootstrapServers));
-		return properties;
+		this.properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+				String.join(KafkaConstants.BOOTSTRAP_SERVERS_DELIMITER, this.bootstrapServers));
+		return this.properties;
 	}
 
 }

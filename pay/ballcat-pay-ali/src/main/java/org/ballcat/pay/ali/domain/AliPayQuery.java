@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.pay.ali.domain;
 
+import java.math.BigDecimal;
+
 import com.alipay.api.response.AlipayTradeQueryResponse;
-import org.ballcat.pay.ali.enums.TradeStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.ballcat.pay.ali.constants.AliPayConstant;
-
-import java.math.BigDecimal;
+import org.ballcat.pay.ali.enums.TradeStatus;
 
 /**
  * 简化查询结果

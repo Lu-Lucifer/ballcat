@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.security.access.expression;
+
+import java.lang.reflect.Method;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.ballcat.security.authorization.SecurityChecker;
@@ -30,8 +33,6 @@ import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-
-import java.lang.reflect.Method;
 
 /**
  * 默认的鉴权表达式处理器

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.grpc;
 
-import org.ballcat.common.core.compose.ContextComponent;
-import org.ballcat.common.thread.ThreadPool;
 import io.grpc.Server;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.common.core.compose.ContextComponent;
+import org.ballcat.common.thread.ThreadPool;
 
 /**
+ * @deprecated use ballcat-spring-boot-starter-grpc-server
  * @author lingting 2023-04-14 17:38
  */
 @Slf4j
+@Deprecated
 public class GrpcServer implements ContextComponent {
 
 	private static final ThreadPool THREAD_POOL = ThreadPool.instance();
@@ -38,12 +41,12 @@ public class GrpcServer implements ContextComponent {
 	@Override
 	@SneakyThrows
 	public void onApplicationStart() {
-		server.start();
-		log.debug("grpc服务启动. 端口: {}", server.getPort());
+		this.server.start();
+		log.debug("grpc服务启动. 端口: {}", this.server.getPort());
 		THREAD_POOL.execute(() -> {
 			Thread.currentThread().setName("GrpcServer");
 			try {
-				server.awaitTermination();
+				this.server.awaitTermination();
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -58,7 +61,7 @@ public class GrpcServer implements ContextComponent {
 	@Override
 	public void onApplicationStop() {
 		log.warn("grpc服务开始关闭");
-		server.shutdownNow();
+		this.server.shutdownNow();
 		log.warn("grpc服务关闭");
 	}
 

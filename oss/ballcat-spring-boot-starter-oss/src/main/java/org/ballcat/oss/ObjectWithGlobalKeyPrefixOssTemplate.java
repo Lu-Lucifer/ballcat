@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.oss;
 
-import org.ballcat.oss.prefix.ObjectKeyPrefixConverter;
-import lombok.Getter;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
-import software.amazon.awssdk.transfer.s3.model.FileUpload;
+package org.ballcat.oss;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +24,30 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import lombok.Getter;
+import org.ballcat.oss.prefix.ObjectKeyPrefixConverter;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.model.FileUpload;
 
 /**
  * OSS操作模板[对象key带全局前缀]
@@ -65,20 +77,20 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	@Override
 	public List<S3Object> listObjects(String bucket, String prefix, Integer maxKeys) {
 		// 构造API_ListObjects请求
-		List<S3Object> contents = s3Client
+		List<S3Object> contents = this.s3Client
 			.listObjects(ListObjectsRequest.builder()
 				.bucket(bucket)
 				.maxKeys(maxKeys)
-				.prefix(objectKeyPrefixConverter.wrap(prefix))
+				.prefix(this.objectKeyPrefixConverter.wrap(prefix))
 				.build())
 			.contents();
-		return objectKeyPrefixConverter.match() ? contents.stream()
+		return this.objectKeyPrefixConverter.match() ? contents.stream()
 			.map(ele -> S3Object.builder()
 				.checksumAlgorithm(ele.checksumAlgorithm())
 				.checksumAlgorithmWithStrings(ele.checksumAlgorithmAsStrings())
 				.eTag(ele.eTag())
 				.lastModified(ele.lastModified())
-				.key(objectKeyPrefixConverter.unwrap(ele.key()))
+				.key(this.objectKeyPrefixConverter.unwrap(ele.key()))
 				.owner(ele.owner())
 				.size(ele.size())
 				.storageClass(ele.storageClass())
@@ -102,7 +114,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	@Override
 	public PutObjectResponse putObject(String bucket, String key, File file)
 			throws AwsServiceException, SdkClientException, S3Exception, IOException {
-		return super.putObject(bucket, objectKeyPrefixConverter.wrap(key), file);
+		return super.putObject(bucket, this.objectKeyPrefixConverter.wrap(key), file);
 	}
 
 	/**
@@ -120,7 +132,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	@Override
 	public PutObjectResponse putObject(String bucket, String key, Path sourcePath)
 			throws AwsServiceException, SdkClientException, S3Exception {
-		return super.putObject(bucket, objectKeyPrefixConverter.wrap(key), sourcePath);
+		return super.putObject(bucket, this.objectKeyPrefixConverter.wrap(key), sourcePath);
 	}
 
 	/**
@@ -139,7 +151,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	@Override
 	public PutObjectResponse putObject(String bucket, String key, InputStream inputStream, long contentLength)
 			throws AwsServiceException, SdkClientException, S3Exception {
-		return super.putObject(bucket, objectKeyPrefixConverter.wrap(key), inputStream, contentLength);
+		return super.putObject(bucket, this.objectKeyPrefixConverter.wrap(key), inputStream, contentLength);
 	}
 
 	/**
@@ -160,7 +172,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 			return super.putObject(PutObjectRequest.builder()
 				.acl(putObjectRequest.acl())
 				.contentType(putObjectRequest.contentType())
-				.key(objectKeyPrefixConverter.wrap(putObjectRequest.key()))
+				.key(this.objectKeyPrefixConverter.wrap(putObjectRequest.key()))
 				.bucket(putObjectRequest.bucket())
 				.contentLength(putObjectRequest.contentLength())
 				.cacheControl(putObjectRequest.cacheControl())
@@ -212,7 +224,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	 */
 	@Override
 	public DeleteObjectResponse deleteObject(String bucket, String key) {
-		return super.deleteObject(bucket, objectKeyPrefixConverter.wrap(key));
+		return super.deleteObject(bucket, this.objectKeyPrefixConverter.wrap(key));
 	}
 
 	/**
@@ -229,7 +241,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	@Override
 	public DeleteObjectsResponse deleteObjects(String bucket, Set<String> keys) {
 		return super.deleteObjects(bucket,
-				keys.stream().map(objectKeyPrefixConverter::wrap).collect(Collectors.toSet()));
+				keys.stream().map(this.objectKeyPrefixConverter::wrap).collect(Collectors.toSet()));
 	}
 
 	/**
@@ -248,7 +260,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 		if (StringUtils.hasText(deleteObjectRequest.key())) {
 			return super.deleteObject(DeleteObjectRequest.builder()
 				.bucket(deleteObjectRequest.bucket())
-				.key(objectKeyPrefixConverter.wrap(deleteObjectRequest.key()))
+				.key(this.objectKeyPrefixConverter.wrap(deleteObjectRequest.key()))
 				.bypassGovernanceRetention(deleteObjectRequest.bypassGovernanceRetention())
 				.expectedBucketOwner(deleteObjectRequest.expectedBucketOwner())
 				.mfa(deleteObjectRequest.mfa())
@@ -278,7 +290,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 			List<ObjectIdentifier> toDelete = deleteObjectsRequest.delete()
 				.objects()
 				.stream()
-				.map(e -> ObjectIdentifier.builder().key(objectKeyPrefixConverter.wrap(e.key())).build())
+				.map(e -> ObjectIdentifier.builder().key(this.objectKeyPrefixConverter.wrap(e.key())).build())
 				.collect(Collectors.toList());
 			return super.deleteObjects(DeleteObjectsRequest.builder()
 				.bucket(deleteObjectsRequest.bucket())
@@ -309,8 +321,8 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	@Override
 	public CopyObjectResponse copyObject(String bucket, String sourceKey, String destinationBucket,
 			String destinationKey) {
-		return super.copyObject(bucket, objectKeyPrefixConverter.wrap(sourceKey), destinationBucket,
-				objectKeyPrefixConverter.wrap(destinationKey));
+		return super.copyObject(bucket, this.objectKeyPrefixConverter.wrap(sourceKey), destinationBucket,
+				this.objectKeyPrefixConverter.wrap(destinationKey));
 	}
 
 	/**
@@ -321,7 +333,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	 */
 	@Override
 	public String getURL(String bucket, String key) {
-		return super.getURL(bucket, objectKeyPrefixConverter.wrap(key));
+		return super.getURL(bucket, this.objectKeyPrefixConverter.wrap(key));
 	}
 
 	/**
@@ -335,7 +347,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	 */
 	@Override
 	public String getObjectPresignedUrl(String bucket, String key, Duration duration) {
-		return super.getObjectPresignedUrl(bucket, objectKeyPrefixConverter.wrap(key), duration);
+		return super.getObjectPresignedUrl(bucket, this.objectKeyPrefixConverter.wrap(key), duration);
 	}
 
 	/**
@@ -349,7 +361,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	 */
 	@Override
 	public String putObjectPresignedUrl(String bucket, String key, Duration duration) {
-		return super.putObjectPresignedUrl(bucket, objectKeyPrefixConverter.wrap(key), duration);
+		return super.putObjectPresignedUrl(bucket, this.objectKeyPrefixConverter.wrap(key), duration);
 	}
 
 	/**
@@ -376,7 +388,7 @@ public class ObjectWithGlobalKeyPrefixOssTemplate extends DefaultOssTemplate {
 	 */
 	@Override
 	public FileUpload uploadFile(String bucket, String key, File file) {
-		return super.uploadFile(bucket, objectKeyPrefixConverter.wrap(key), file);
+		return super.uploadFile(bucket, this.objectKeyPrefixConverter.wrap(key), file);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.util;
 
+import java.lang.reflect.Type;
+
+import lombok.Getter;
 import org.ballcat.common.util.json.FastjsonJsonToolAdapter;
 import org.ballcat.common.util.json.GsonJsonToolAdapter;
 import org.ballcat.common.util.json.HuToolJsonToolAdapter;
 import org.ballcat.common.util.json.JacksonJsonToolAdapter;
 import org.ballcat.common.util.json.JsonTool;
 import org.ballcat.common.util.json.TypeReference;
-import lombok.Getter;
-
-import java.lang.reflect.Type;
 
 /**
  * @author lingting 2021/2/25 20:38

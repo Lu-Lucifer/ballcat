@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.core;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.ballcat.redis.RedisHelper;
 import org.ballcat.redis.config.CachePropertiesHolder;
 import org.ballcat.redis.core.annotation.CacheDel;
@@ -28,11 +42,6 @@ import org.ballcat.redis.operation.CachePutOps;
 import org.ballcat.redis.operation.CachedOps;
 import org.ballcat.redis.operation.function.VoidMethod;
 import org.ballcat.redis.serialize.CacheSerializer;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -41,14 +50,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * 为保证缓存更新无异常，该切面优先级必须高于事务切面
@@ -82,8 +83,8 @@ public class CacheStringAspect {
 		MethodSignature signature = (MethodSignature) point.getSignature();
 		Method method = signature.getMethod();
 
-		if (log.isTraceEnabled()) {
-			log.trace("=======The string cache aop is executed! method : {}", method.getName());
+		if (this.log.isTraceEnabled()) {
+			this.log.trace("=======The string cache aop is executed! method : {}", method.getName());
 		}
 
 		// 根据方法的参数 以及当前类对象获得 keyGenerator
@@ -91,7 +92,7 @@ public class CacheStringAspect {
 		Object[] arguments = point.getArgs();
 		KeyGenerator keyGenerator = new KeyGenerator(target, method, arguments);
 
-		ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+		ValueOperations<String, String> valueOperations = this.redisTemplate.opsForValue();
 
 		// 缓存处理
 		Cached cachedAnnotation = AnnotationUtils.getAnnotation(method, Cached.class);
@@ -175,7 +176,7 @@ public class CacheStringAspect {
 			return null;
 		}
 		else if (cacheData != null) {
-			return cacheSerializer.deserialize(cacheData, dataClazz);
+			return this.cacheSerializer.deserialize(cacheData, dataClazz);
 		}
 
 		// 2.==========如果缓存为空 则需查询数据库并更新===============
@@ -185,7 +186,8 @@ public class CacheStringAspect {
 				// 从数据库查询数据
 				Object dbValue = ops.joinPoint().proceed();
 				// 如果数据库中没数据，填充一个String，防止缓存击穿
-				cacheValue = dbValue == null ? CachePropertiesHolder.nullValue() : cacheSerializer.serialize(dbValue);
+				cacheValue = dbValue == null ? CachePropertiesHolder.nullValue()
+						: this.cacheSerializer.serialize(dbValue);
 				// 设置缓存
 				ops.cachePut().accept(cacheValue);
 			}
@@ -195,7 +197,7 @@ public class CacheStringAspect {
 		if (cacheData == null || ops.nullValue(cacheData)) {
 			return null;
 		}
-		return cacheSerializer.deserialize(cacheData, dataClazz);
+		return this.cacheSerializer.deserialize(cacheData, dataClazz);
 	}
 
 	/**
@@ -207,7 +209,7 @@ public class CacheStringAspect {
 		Object data = ops.joinPoint().proceed();
 
 		// 将返回值放置入缓存中
-		String cacheData = data == null ? CachePropertiesHolder.nullValue() : cacheSerializer.serialize(data);
+		String cacheData = data == null ? CachePropertiesHolder.nullValue() : this.cacheSerializer.serialize(data);
 		ops.cachePut().accept(cacheData);
 
 		return data;
@@ -253,7 +255,7 @@ public class CacheStringAspect {
 			cacheDel = () -> {
 				Cursor<String> scan = RedisHelper.scan(cacheDelAnnotation.key().concat("*"));
 				while (scan.hasNext()) {
-					redisTemplate.delete(scan.next());
+					this.redisTemplate.delete(scan.next());
 				}
 				if (!scan.isClosed()) {
 					scan.close();
@@ -263,12 +265,12 @@ public class CacheStringAspect {
 		else {
 			if (cacheDelAnnotation.multiDel()) {
 				Collection<String> keys = keyGenerator.getKeys(cacheDelAnnotation.key(), cacheDelAnnotation.keyJoint());
-				cacheDel = () -> redisTemplate.delete(keys);
+				cacheDel = () -> this.redisTemplate.delete(keys);
 			}
 			else {
 				// 缓存key
 				String key = keyGenerator.getKey(cacheDelAnnotation.key(), cacheDelAnnotation.keyJoint());
-				cacheDel = () -> redisTemplate.delete(key);
+				cacheDel = () -> this.redisTemplate.delete(key);
 			}
 		}
 		return cacheDel;

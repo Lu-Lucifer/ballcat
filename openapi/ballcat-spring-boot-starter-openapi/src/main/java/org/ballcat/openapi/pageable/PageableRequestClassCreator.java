@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.openapi.pageable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.asm.ClassReader;
 import org.springframework.asm.ClassVisitor;
@@ -23,12 +30,6 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 /**
  * 分页请求参数对应的 class 创建器
  *
@@ -37,44 +38,6 @@ import java.util.Objects;
 public final class PageableRequestClassCreator {
 
 	private PageableRequestClassCreator() {
-	}
-
-	public static class ModifyFieldNameAdapter extends ClassVisitor {
-
-		private final Map<String, String> modifyFiledMap;
-
-		private final Map<String, String> modifyMethodMap;
-
-		protected ModifyFieldNameAdapter(int api, ClassVisitor classVisitor, Map<String, String> modifyFiledMap) {
-			super(api, classVisitor);
-			this.modifyFiledMap = modifyFiledMap;
-			this.modifyMethodMap = new HashMap<>();
-			for (Map.Entry<String, String> entry : modifyFiledMap.entrySet()) {
-				String key = entry.getKey();
-				String value = entry.getValue();
-				String s = StringUtils.capitalize(key);
-				String v = StringUtils.capitalize(value);
-				modifyMethodMap.put("get" + s, "get" + v);
-				modifyMethodMap.put("set" + s, "set" + v);
-			}
-		}
-
-		@Override
-		public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-			if (modifyFiledMap.containsKey(name)) {
-				return cv.visitField(access, modifyFiledMap.get(name), descriptor, signature, value);
-			}
-			return cv.visitField(access, name, descriptor, signature, value);
-		}
-
-		@Override
-		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-			if (modifyMethodMap.containsKey(name)) {
-				return cv.visitMethod(access, modifyMethodMap.get(name), desc, signature, exceptions);
-			}
-			return cv.visitMethod(access, name, desc, signature, exceptions);
-		}
-
 	}
 
 	public static Class<?> create(Map<String, String> modifyFiledMap) throws IOException {
@@ -93,6 +56,44 @@ public final class PageableRequestClassCreator {
 			ByteClassLoader myClassLoader = new ByteClassLoader(contextClassLoader);
 			return myClassLoader.defineClass(classWriter.toByteArray());
 		}
+	}
+
+	public static class ModifyFieldNameAdapter extends ClassVisitor {
+
+		private final Map<String, String> modifyFiledMap;
+
+		private final Map<String, String> modifyMethodMap;
+
+		protected ModifyFieldNameAdapter(int api, ClassVisitor classVisitor, Map<String, String> modifyFiledMap) {
+			super(api, classVisitor);
+			this.modifyFiledMap = modifyFiledMap;
+			this.modifyMethodMap = new HashMap<>();
+			for (Map.Entry<String, String> entry : modifyFiledMap.entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
+				String s = StringUtils.capitalize(key);
+				String v = StringUtils.capitalize(value);
+				this.modifyMethodMap.put("get" + s, "get" + v);
+				this.modifyMethodMap.put("set" + s, "set" + v);
+			}
+		}
+
+		@Override
+		public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+			if (this.modifyFiledMap.containsKey(name)) {
+				return this.cv.visitField(access, this.modifyFiledMap.get(name), descriptor, signature, value);
+			}
+			return this.cv.visitField(access, name, descriptor, signature, value);
+		}
+
+		@Override
+		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+			if (this.modifyMethodMap.containsKey(name)) {
+				return this.cv.visitMethod(access, this.modifyMethodMap.get(name), desc, signature, exceptions);
+			}
+			return this.cv.visitMethod(access, name, desc, signature, exceptions);
+		}
+
 	}
 
 }

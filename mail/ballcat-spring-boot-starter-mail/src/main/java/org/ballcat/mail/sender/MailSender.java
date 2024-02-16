@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mail.sender;
+
+import java.util.List;
 
 import org.ballcat.mail.model.MailDetails;
 import org.ballcat.mail.model.MailSendInfo;
 import org.springframework.mail.MailSendException;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 /**
  * @author Hccake 2020/2/27 17:05

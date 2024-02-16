@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.ntp;
 
-import lombok.experimental.UtilityClass;
+package org.ballcat.ntp;
 
 /**
  * 中国 ntp 类
  *
  * @author lingting 2023/2/1 14:10
  */
-@UtilityClass
-public class NtpCn {
+public final class NtpCn {
 
-	/**
-	 * time.7x24s.com 中国国家授时中心, 使用域名请求超时的话, 解析IP,然后直接请IP
-	 */
-	public static final String DEFAULT_TIME_SERVER = "time.7x24s.com";
+	private NtpCn() {
+	}
+
+	public static final String DEFAULT_TIME_SERVER = "ntp.aliyun.com";
 
 	private static final Ntp INSTANCE = new Ntp(DEFAULT_TIME_SERVER);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.datascope.test.datascope;
 
-import org.ballcat.datascope.DataScope;
-import org.ballcat.datascope.handler.DataPermissionHandler;
-import org.ballcat.datascope.handler.DefaultDataPermissionHandler;
-import org.ballcat.datascope.holder.DataScopeMatchNumHolder;
-import org.ballcat.datascope.processor.DataScopeSqlProcessor;
+import java.util.Arrays;
+import java.util.Collections;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
+import org.ballcat.datascope.DataScope;
+import org.ballcat.datascope.handler.DataPermissionHandler;
+import org.ballcat.datascope.handler.DefaultDataPermissionHandler;
+import org.ballcat.datascope.holder.DataScopeMatchNumHolder;
+import org.ballcat.datascope.processor.DataScopeSqlProcessor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * @author Hccake 2020/9/28
@@ -52,7 +53,7 @@ class DataScopeMatchTest {
 
 		@Override
 		public Expression getExpression(String tableName, Alias tableAlias) {
-			Column column = new Column(tableAlias == null ? columnId : tableAlias.getName() + "." + columnId);
+			Column column = new Column(tableAlias == null ? this.columnId : tableAlias.getName() + "." + this.columnId);
 			ExpressionList expressionList = new ExpressionList();
 			expressionList.setExpressions(Arrays.asList(new StringValue("1"), new StringValue("2")));
 			return new InExpression(column, expressionList);
@@ -60,7 +61,7 @@ class DataScopeMatchTest {
 	};
 
 	DataPermissionHandler dataPermissionHandler = new DefaultDataPermissionHandler(
-			Collections.singletonList(dataScope));
+			Collections.singletonList(this.dataScope));
 
 	DataScopeSqlProcessor dataScopeSqlProcessor = new DataScopeSqlProcessor();
 
@@ -72,7 +73,7 @@ class DataScopeMatchTest {
 
 		DataScopeMatchNumHolder.initMatchNum();
 		try {
-			String parseSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes());
+			String parseSql = this.dataScopeSqlProcessor.parserSingle(sql, this.dataPermissionHandler.dataScopes());
 			System.out.println(parseSql);
 
 			Integer matchNum = DataScopeMatchNumHolder.pollMatchNum();
@@ -92,7 +93,7 @@ class DataScopeMatchTest {
 				+ "where oi.order_price > 100";
 		DataScopeMatchNumHolder.initMatchNum();
 		try {
-			String parseSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes());
+			String parseSql = this.dataScopeSqlProcessor.parserSingle(sql, this.dataPermissionHandler.dataScopes());
 			System.out.println(parseSql);
 
 			Integer matchNum = DataScopeMatchNumHolder.pollMatchNum();
@@ -119,7 +120,7 @@ class DataScopeMatchTest {
 
 			testNoMatch();
 
-			String parseSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes());
+			String parseSql = this.dataScopeSqlProcessor.parserSingle(sql, this.dataPermissionHandler.dataScopes());
 			System.out.println(parseSql);
 
 			Integer matchNum = DataScopeMatchNumHolder.pollMatchNum();

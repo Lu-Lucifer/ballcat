@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.openapi.pageable;
 
-import org.ballcat.common.model.domain.PageParam;
-import org.ballcat.common.model.domain.PageableConstants;
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import org.ballcat.common.model.domain.PageParam;
+import org.ballcat.common.model.domain.PageableConstants;
 import org.springdoc.api.annotations.ParameterObject;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import java.util.List;
 
 /**
  * 前端交互请求入参模型，将被转换为 PageParam 对象

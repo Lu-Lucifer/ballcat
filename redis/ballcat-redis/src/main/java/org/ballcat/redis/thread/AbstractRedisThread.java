@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.thread;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.validation.constraints.NotNull;
 
 import lombok.extern.slf4j.Slf4j;
 import org.ballcat.common.core.thread.AbstractQueueThread;
@@ -23,14 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
-import javax.validation.constraints.NotNull;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
  * @see java.util.concurrent.LinkedBlockingDeque
  * @author lingting 2021/3/2 21:09
@@ -39,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 
 	@Autowired
+	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 	protected RedisHelper redisHelper;
 
 	/**
@@ -54,7 +57,7 @@ public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 	/**
 	 * 激活与休眠线程
 	 */
-	protected final Condition condition = lock.newCondition();
+	protected final Condition condition = this.lock.newCondition();
 
 	/**
 	 * 获取数据存储的key
@@ -97,15 +100,15 @@ public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 		// 不插入空值
 		if (e != null) {
 			try {
-				lock.lockInterruptibly();
+				this.lock.lockInterruptibly();
 				try {
 					// 线程被中断后无法执行Redis命令
 					RedisHelper.rPush(getKey(), convertToString(e));
 					// 激活线程
-					condition.signal();
+					this.condition.signal();
 				}
 				finally {
-					lock.unlock();
+					this.lock.unlock();
 				}
 			}
 			catch (InterruptedException ex) {
@@ -136,7 +139,7 @@ public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 			return null;
 		}
 		// 上锁
-		lock.lockInterruptibly();
+		this.lock.lockInterruptibly();
 		try {
 			// 设置等待时长
 			long nanos = TimeUnit.MILLISECONDS.toNanos(time);
@@ -149,14 +152,14 @@ public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 				}
 
 				// 休眠. 返回剩余的休眠时间
-				nanos = condition.awaitNanos(nanos);
+				nanos = this.condition.awaitNanos(nanos);
 			}
 			while (isRun() && nanos > 0);
 
 			return convertToObj(pop);
 		}
 		finally {
-			lock.unlock();
+			this.lock.unlock();
 		}
 
 	}
@@ -164,7 +167,7 @@ public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 	@Override
 	protected void shutdown(List<E> list) {
 		// 修改运行标志
-		run = false;
+		this.run = false;
 		for (E e : list) {
 			// 所有数据插入redis
 			put(e);
@@ -175,7 +178,7 @@ public abstract class AbstractRedisThread<E> extends AbstractQueueThread<E> {
 	@Override
 	public boolean isRun() {
 		// 运行中 且 未被中断
-		return run && !isInterrupted();
+		return this.run && !isInterrupted();
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.jackson2;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,10 +31,6 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import org.ballcat.springsecurity.oauth2.userdetails.DefaultOAuth2User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * 自定义的 User jackson 反序列化器

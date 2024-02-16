@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.ip2region.searcher;
 
+import java.io.IOException;
+
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.ballcat.autoconfigure.ip2region.Ip2regionProperties;
 import org.ballcat.ip2region.core.IpInfo;
 import org.ballcat.ip2region.util.IpInfoUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.lionsoul.ip2region.xdb.Searcher;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ResourceLoader;
-
-import java.io.IOException;
 
 /**
  * Ip2region 搜索服务实现
@@ -42,16 +43,16 @@ public abstract class Ip2regionSearcherTemplate implements DisposableBean, Initi
 	protected Searcher searcher;
 
 	@Override
-	@SneakyThrows(value = IOException.class)
+	@SneakyThrows({ IOException.class })
 	public IpInfo search(long ip) {
-		return IpInfoUtils.toIpInfo(Searcher.long2ip(ip), searcher.search(ip));
+		return IpInfoUtils.toIpInfo(Searcher.long2ip(ip), this.searcher.search(ip));
 
 	}
 
 	@Override
-	@SneakyThrows(value = Exception.class)
+	@SneakyThrows({ Exception.class })
 	public IpInfo search(String ip) {
-		return IpInfoUtils.toIpInfo(ip, searcher.search(ip));
+		return IpInfoUtils.toIpInfo(ip, this.searcher.search(ip));
 	}
 
 	@Override

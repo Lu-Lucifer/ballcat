@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.util;
 
-import lombok.experimental.UtilityClass;
+package org.ballcat.common.util;
 
 import java.lang.reflect.Array;
 
@@ -25,8 +24,10 @@ import java.lang.reflect.Array;
  * @author <a href="mailto:cs.liaow@gmail.com">evil0th</a> Create on 2023/3/6
  *
  */
-@UtilityClass
-public class StringUtils {
+public final class StringUtils {
+
+	private StringUtils() {
+	}
 
 	/**
 	 * 左补位操作
@@ -35,7 +36,7 @@ public class StringUtils {
 	 * @param pad 补位字符
 	 * @return string
 	 */
-	public String leftPad(String origin, int length, char pad) {
+	public static String leftPad(String origin, int length, char pad) {
 		return pad("", origin, length, pad);
 	}
 
@@ -46,7 +47,7 @@ public class StringUtils {
 	 * @param pad 补位字符
 	 * @return string
 	 */
-	public String rightPad(String origin, int length, char pad) {
+	public static String rightPad(String origin, int length, char pad) {
 		return pad("-", origin, length, pad);
 	}
 
@@ -58,7 +59,7 @@ public class StringUtils {
 	 * @param pad 补位字符
 	 * @return string
 	 */
-	public String pad(String type, String origin, int length, char pad) {
+	public static String pad(String type, String origin, int length, char pad) {
 		if (null == type) {
 			return origin;
 		}
@@ -70,7 +71,7 @@ public class StringUtils {
 	 * @param str 字符
 	 * @return 是否
 	 */
-	public boolean containsText(CharSequence str) {
+	public static boolean containsText(CharSequence str) {
 		int strLen = str.length();
 		for (int i = 0; i < strLen; ++i) {
 			if (!Character.isWhitespace(str.charAt(i))) {
@@ -85,7 +86,7 @@ public class StringUtils {
 	 * @param css 输入参数
 	 * @return string
 	 */
-	public boolean isAnyBlank(String... css) {
+	public static boolean isAnyBlank(String... css) {
 		if (null == css || Array.getLength(css) == 0) {
 			return true;
 		}
@@ -104,7 +105,7 @@ public class StringUtils {
 	 * @param css 输入参数
 	 * @return string
 	 */
-	public boolean isNoneBlank(String... css) {
+	public static boolean isNoneBlank(String... css) {
 		return !isAnyBlank(css);
 	}
 
@@ -113,7 +114,7 @@ public class StringUtils {
 	 * @param str 原始
 	 * @return 替换后的
 	 */
-	public String trimNbsp(String str) {
+	public static String trimNbsp(String str) {
 		return str == null ? null : str.replaceAll("\\u00A0+", "");
 	}
 
@@ -121,7 +122,7 @@ public class StringUtils {
 	 * @param text 原始
 	 * @return 下划线
 	 */
-	public String toUnderlineCase(String text) {
+	public static String toUnderlineCase(String text) {
 		return text == null ? null : text.replaceAll("(.)(\\p{Lu})", "$1_$2").toLowerCase();
 	}
 

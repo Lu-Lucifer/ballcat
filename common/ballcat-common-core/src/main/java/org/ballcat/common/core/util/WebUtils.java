@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.core.util;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Objects;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * WebUtils
@@ -30,14 +31,13 @@ import java.util.Objects;
  * @author Hccake
  */
 @Slf4j
-@UtilityClass
 public class WebUtils extends org.springframework.web.util.WebUtils {
 
 	/**
 	 * 获取 ServletRequestAttributes
 	 * @return {ServletRequestAttributes}
 	 */
-	public ServletRequestAttributes getServletRequestAttributes() {
+	public static ServletRequestAttributes getServletRequestAttributes() {
 		return (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
 	}
 
@@ -45,7 +45,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 	 * 获取 HttpServletRequest
 	 * @return {HttpServletRequest}
 	 */
-	public HttpServletRequest getRequest() {
+	public static HttpServletRequest getRequest() {
 		return getServletRequestAttributes().getRequest();
 	}
 
@@ -53,7 +53,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 	 * 获取 HttpServletResponse
 	 * @return {HttpServletResponse}
 	 */
-	public HttpServletResponse getResponse() {
+	public static HttpServletResponse getResponse() {
 		return getServletRequestAttributes().getResponse();
 	}
 

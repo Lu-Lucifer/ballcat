@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.resource.introspection;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 import org.ballcat.springsecurity.oauth2.userdetails.ClientPrincipal;
@@ -28,11 +34,6 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.resource.introspection.BadOpaqueTokenException;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
 
 /**
  * 共享存储的不透明令牌的处理器
@@ -60,7 +61,7 @@ public class SpringAuthorizationServerSharedStoredOpaqueTokenIntrospector implem
 	 */
 	@Override
 	public OAuth2AuthenticatedPrincipal introspect(String accessTokenValue) {
-		OAuth2Authorization authorization = authorizationService.findByToken(accessTokenValue, null);
+		OAuth2Authorization authorization = this.authorizationService.findByToken(accessTokenValue, null);
 		if (authorization == null) {
 			if (log.isTraceEnabled()) {
 				log.trace("Did not authenticate token introspection request since token was not found");

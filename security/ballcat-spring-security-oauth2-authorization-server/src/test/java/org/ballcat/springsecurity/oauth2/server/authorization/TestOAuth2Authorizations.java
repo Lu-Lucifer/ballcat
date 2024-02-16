@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization;
 
-import org.ballcat.springsecurity.oauth2.userdetails.DefaultOAuth2User;
+import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.ballcat.springsecurity.oauth2.server.authorization.client.TestRegisteredClients;
 import org.ballcat.springsecurity.oauth2.server.authorization.user.TestUsers;
+import org.ballcat.springsecurity.oauth2.userdetails.DefaultOAuth2User;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -30,18 +38,14 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.util.CollectionUtils;
 
-import java.security.Principal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Joe Grandja
  * @author Daniel Garnier-Moiroux
  */
-public class TestOAuth2Authorizations {
+public final class TestOAuth2Authorizations {
+
+	private TestOAuth2Authorizations() {
+	}
 
 	public static OAuth2Authorization.Builder authorization() {
 		return authorization(TestRegisteredClients.registeredClient().build());

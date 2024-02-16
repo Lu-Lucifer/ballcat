@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.web.filter;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
 import org.ballcat.common.core.request.wrapper.ModifyParameterRequestWrapper;
@@ -24,20 +34,10 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 前端传递过来的加密密码，需要在登录之前先解密
@@ -74,7 +74,7 @@ public class LoginPasswordDecoderFilter extends OncePerRequestFilter implements 
 		}
 
 		// 未配置密码密钥时，直接跳过
-		if (passwordSecretKey == null) {
+		if (this.passwordSecretKey == null) {
 			log.warn("passwordSecretKey not configured, skip password decoder");
 			filterChain.doFilter(request, response);
 			return;
@@ -82,16 +82,16 @@ public class LoginPasswordDecoderFilter extends OncePerRequestFilter implements 
 
 		// 解密前台加密后的密码
 		Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
-		String passwordAes = request.getParameter(passwordParameterName);
+		String passwordAes = request.getParameter(this.passwordParameterName);
 
 		try {
-			String password = PasswordUtils.decodeAES(passwordAes, passwordSecretKey);
-			parameterMap.put(passwordParameterName, new String[] { password });
+			String password = PasswordUtils.decodeAES(passwordAes, this.passwordSecretKey);
+			parameterMap.put(this.passwordParameterName, new String[] { password });
 		}
 		catch (Exception e) {
 			log.error("[doFilterInternal] password decode aes error，passwordAes: {}，passwordSecretKey: {}", passwordAes,
-					passwordSecretKey, e);
-			failureHandler.onAuthenticationFailure(request, response, new BadCredentialsException(this.messages
+					this.passwordSecretKey, e);
+			this.failureHandler.onAuthenticationFailure(request, response, new BadCredentialsException(this.messages
 				.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials")));
 			return;
 		}
@@ -102,7 +102,7 @@ public class LoginPasswordDecoderFilter extends OncePerRequestFilter implements 
 	}
 
 	public String getPasswordParameterName() {
-		return passwordParameterName;
+		return this.passwordParameterName;
 	}
 
 	public void setPasswordParameterName(String passwordParameterName) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.util.json;
 
 import java.lang.reflect.Type;
 
 /**
- * json 相关 util类需实现本类
- * 
+ * json 相关 util 类需实现本类。
+ *
  * @author lingting 2021/2/25 20:43
  */
 public interface JsonTool {

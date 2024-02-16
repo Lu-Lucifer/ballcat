@@ -1,27 +1,44 @@
-package org.ballcat.common.util;
+/*
+ * Copyright 2023-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import lombok.experimental.UtilityClass;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
-import org.aspectj.lang.reflect.MethodSignature;
+package org.ballcat.common.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
+import org.aspectj.lang.reflect.MethodSignature;
 
 /**
  * 切面工具类
  *
  * @author lingting 2022/10/28 15:03
  */
-@UtilityClass
-public class AspectUtils {
+public final class AspectUtils {
+
+	private AspectUtils() {
+	}
 
 	/**
 	 * 获取切入的方法
 	 * @param point 切面
 	 * @return java.lang.reflect.Method
 	 */
-	public Method getMethod(ProceedingJoinPoint point) {
+	public static Method getMethod(ProceedingJoinPoint point) {
 		Signature signature = point.getSignature();
 		if (signature instanceof MethodSignature) {
 			MethodSignature ms = (MethodSignature) signature;
@@ -36,7 +53,7 @@ public class AspectUtils {
 	 * @param cls 注解类型
 	 * @return T 注解类型
 	 */
-	public <T extends Annotation> T getAnnotation(ProceedingJoinPoint point, Class<T> cls) {
+	public static <T extends Annotation> T getAnnotation(ProceedingJoinPoint point, Class<T> cls) {
 		Method method = getMethod(point);
 		T t = null;
 		if (method != null) {

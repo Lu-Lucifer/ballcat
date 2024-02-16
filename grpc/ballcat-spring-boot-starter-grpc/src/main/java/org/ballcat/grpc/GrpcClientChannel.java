@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.grpc;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
@@ -24,13 +29,11 @@ import io.grpc.stub.AbstractFutureStub;
 import org.ballcat.grpc.properties.GrpcClientProperties;
 import org.springframework.beans.factory.DisposableBean;
 
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-
 /**
+ * @deprecated use ballcat-spring-boot-starter-grpc-client
  * @author lingting 2023-04-06 15:17
  */
+@Deprecated
 public class GrpcClientChannel implements DisposableBean {
 
 	private final GrpcClientProperties properties;
@@ -62,8 +65,8 @@ public class GrpcClientChannel implements DisposableBean {
 	public <S extends AbstractAsyncStub<S>, B extends AbstractBlockingStub<B>, F extends AbstractFutureStub<F>> GrpcClient<S, B, F> client(
 			Function<Channel, S> asyncFunction, Function<Channel, B> blockingFunction,
 			Function<Channel, F> futureFunction) {
-		return new GrpcClient<>(properties, channel, asyncFunction.apply(channel), blockingFunction.apply(channel),
-				futureFunction.apply(channel));
+		return new GrpcClient<>(this.properties, this.channel, asyncFunction.apply(this.channel),
+				blockingFunction.apply(this.channel), futureFunction.apply(this.channel));
 	}
 
 	@Override
@@ -72,7 +75,7 @@ public class GrpcClientChannel implements DisposableBean {
 	}
 
 	public void close() {
-		channel.shutdown();
+		this.channel.shutdown();
 	}
 
 }

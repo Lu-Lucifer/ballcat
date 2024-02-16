@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.prefix;
+
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * redis key前缀生成器
@@ -48,8 +49,7 @@ public interface IRedisPrefixConverter {
 	 * @return 原始key
 	 */
 	default byte[] unwrap(byte[] bytes) {
-		int wrapLen;
-		if (!match() || bytes == null || (wrapLen = bytes.length) == 0) {
+		if (!match() || bytes == null || bytes.length == 0) {
 			return bytes;
 		}
 		String prefix = getPrefix();
@@ -59,6 +59,7 @@ public interface IRedisPrefixConverter {
 		}
 		byte[] prefixBytes = prefix.getBytes(StandardCharsets.UTF_8);
 		int prefixLen = prefixBytes.length;
+		int wrapLen = bytes.length;
 		int originLen = wrapLen - prefixLen;
 		byte[] originBytes = new byte[originLen];
 		System.arraycopy(bytes, prefixLen, originBytes, 0, originLen);
@@ -71,8 +72,7 @@ public interface IRedisPrefixConverter {
 	 * @return 加前缀之后的key
 	 */
 	default byte[] wrap(byte[] bytes) {
-		int originLen;
-		if (!match() || bytes == null || (originLen = bytes.length) == 0) {
+		if (!match() || bytes == null || bytes.length == 0) {
 			return bytes;
 		}
 		String prefix = getPrefix();
@@ -82,6 +82,7 @@ public interface IRedisPrefixConverter {
 		}
 		byte[] prefixBytes = prefix.getBytes(StandardCharsets.UTF_8);
 		int prefixLen = prefixBytes.length;
+		int originLen = bytes.length;
 		byte[] wrapBytes = new byte[prefixLen + originLen];
 		System.arraycopy(prefixBytes, 0, wrapBytes, 0, prefixLen);
 		System.arraycopy(bytes, 0, wrapBytes, prefixLen, originLen);

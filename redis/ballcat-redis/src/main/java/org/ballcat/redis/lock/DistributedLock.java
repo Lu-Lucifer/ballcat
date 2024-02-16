@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.redis.lock;
 
-import org.ballcat.redis.lock.function.ExceptionHandler;
-import org.ballcat.redis.lock.function.ThrowingExecutor;
-import org.springframework.util.Assert;
+package org.ballcat.redis.lock;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+
+import org.ballcat.redis.lock.function.ExceptionHandler;
+import org.ballcat.redis.lock.function.ThrowingExecutor;
+import org.springframework.util.Assert;
 
 /**
  * 分布式锁操作类
@@ -102,7 +103,7 @@ public final class DistributedLock<T> implements Action<T>, StateHandler<T> {
 			boolean exResolved = false;
 			T value = null;
 			try {
-				value = executeAction.execute();
+				value = this.executeAction.execute();
 				this.result = value;
 			}
 			catch (Throwable e) {
@@ -116,8 +117,8 @@ public final class DistributedLock<T> implements Action<T>, StateHandler<T> {
 				this.result = this.successAction.apply(value);
 			}
 		}
-		else if (lockFailAction != null) {
-			this.result = lockFailAction.get();
+		else if (this.lockFailAction != null) {
+			this.result = this.lockFailAction.get();
 		}
 
 		return this.result;
@@ -161,18 +162,18 @@ public final class DistributedLock<T> implements Action<T>, StateHandler<T> {
 
 		private boolean first = true;
 
-		public Fibonacci() {
+		Fibonacci() {
 			this(1);
 		}
 
-		public Fibonacci(int initial) {
+		Fibonacci(int initial) {
 			this.current = initial;
 		}
 
 		public long next() {
 			long next = this.current + this.prev;
-			if (first) {
-				first = false;
+			if (this.first) {
+				this.first = false;
 			}
 			else {
 				this.prev = this.current;

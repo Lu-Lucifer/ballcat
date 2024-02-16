@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.util;
 
-import lombok.experimental.UtilityClass;
+package org.ballcat.common.util;
 
 import java.util.function.Supplier;
 
@@ -24,8 +23,10 @@ import java.util.function.Supplier;
  *
  * @author <a href="mailto:cs.liaow@gmail.com">evil0th</a> Create on 2023/6/7
  */
-@UtilityClass
-public class Assert {
+public final class Assert {
+
+	private Assert() {
+	}
 
 	/**
 	 * Assert a boolean expression, throwing an {@code Throwable}
@@ -34,7 +35,7 @@ public class Assert {
 	 * @param supplier supplier
 	 * @throws X if expression is {@code false}
 	 */
-	public <X extends Throwable> void isTrue(boolean expression, Supplier<? extends X> supplier) throws X {
+	public static <X extends Throwable> void isTrue(boolean expression, Supplier<? extends X> supplier) throws X {
 		if (!expression) {
 			throw supplier.get();
 		}
@@ -47,7 +48,7 @@ public class Assert {
 	 * @param errorSupplier errorSupplier
 	 * @throws X if expression is {@code false}
 	 */
-	public <T, X extends Throwable> T notNull(T object, Supplier<X> errorSupplier) throws X {
+	public static <T, X extends Throwable> T notNull(T object, Supplier<X> errorSupplier) throws X {
 		if (null == object) {
 			throw errorSupplier.get();
 		}

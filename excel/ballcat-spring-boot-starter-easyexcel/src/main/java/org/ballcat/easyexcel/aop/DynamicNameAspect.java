@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.aop;
 
-import org.ballcat.easyexcel.annotation.ResponseExcel;
-import org.ballcat.easyexcel.processor.NameProcessor;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.ballcat.easyexcel.annotation.ResponseExcel;
+import org.ballcat.easyexcel.processor.NameProcessor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.time.LocalDateTime;
-import java.util.Objects;
 
 /**
  * @author lengleng 2020/3/29
@@ -50,7 +51,7 @@ public class DynamicNameAspect {
 			name = LocalDateTime.now().toString();
 		}
 		else {
-			name = processor.doDetermineName(point.getArgs(), ms.getMethod(), excel.name());
+			name = this.processor.doDetermineName(point.getArgs(), ms.getMethod(), excel.name());
 		}
 
 		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();

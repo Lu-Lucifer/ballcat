@@ -1,4 +1,23 @@
+/*
+ * Copyright 2023-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.ballcat.sms.tencent;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.tencentcloudapi.common.AbstractModel;
 import com.tencentcloudapi.common.Credential;
@@ -16,9 +35,6 @@ import org.ballcat.sms.sender.AbstractSmsSender;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author lingting 2023-10-16 19:45
  */
@@ -29,8 +45,8 @@ public class TencentSender extends AbstractSmsSender<TencentSenderParams> {
 	private final Credential cred;
 
 	public TencentSender(SmsProperties properties) {
-		tencent = properties.getTencent();
-		cred = new Credential(properties.getId(), properties.getKey());
+		this.tencent = properties.getTencent();
+		this.cred = new Credential(properties.getId(), properties.getKey());
 	}
 
 	@Override
@@ -41,16 +57,16 @@ public class TencentSender extends AbstractSmsSender<TencentSenderParams> {
 	@Override
 	protected SmsSenderResult doSend(TencentSenderParams sp) throws Exception {
 		HttpProfile httpProfile = new HttpProfile();
-		httpProfile.setEndpoint(tencent.getEndpoint());
+		httpProfile.setEndpoint(this.tencent.getEndpoint());
 
 		ClientProfile clientProfile = new ClientProfile();
 		clientProfile.setHttpProfile(httpProfile);
 
-		SmsClient client = new SmsClient(cred, tencent.getRegion(), clientProfile);
+		SmsClient client = new SmsClient(this.cred, this.tencent.getRegion(), clientProfile);
 
 		Map<String, Object> json = new HashMap<>(5);
 		json.put("PhoneNumberSet", sp.getPhoneNumbers());
-		json.put("SmsSdkAppid", tencent.getSdkId());
+		json.put("SmsSdkAppid", this.tencent.getSdkId());
 
 		fillSign(sp, json);
 		fillTemplate(sp, json);
@@ -61,7 +77,7 @@ public class TencentSender extends AbstractSmsSender<TencentSenderParams> {
 	}
 
 	protected void fillSign(TencentSenderParams sp, Map<String, Object> json) {
-		String sign = StringUtils.hasText(sp.getSign()) ? sp.getSign() : tencent.getSign();
+		String sign = StringUtils.hasText(sp.getSign()) ? sp.getSign() : this.tencent.getSign();
 		if (!StringUtils.hasText(sign)) {
 			return;
 		}
@@ -69,7 +85,7 @@ public class TencentSender extends AbstractSmsSender<TencentSenderParams> {
 	}
 
 	protected void fillTemplate(TencentSenderParams sp, Map<String, Object> json) {
-		Integer templateId = sp.getTemplateId() != null ? sp.getTemplateId() : tencent.getTemplateId();
+		Integer templateId = sp.getTemplateId() != null ? sp.getTemplateId() : this.tencent.getTemplateId();
 		if (templateId == null) {
 			return;
 		}

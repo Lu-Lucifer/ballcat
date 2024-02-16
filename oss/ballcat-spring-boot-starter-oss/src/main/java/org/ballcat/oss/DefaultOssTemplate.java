@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.oss;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.activation.FileTypeMap;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +34,22 @@ import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
+import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -32,17 +60,6 @@ import software.amazon.awssdk.transfer.s3.model.FileUpload;
 import software.amazon.awssdk.transfer.s3.model.Upload;
 import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
 import software.amazon.awssdk.transfer.s3.model.UploadRequest;
-
-import javax.activation.FileTypeMap;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * OSS操作模板
@@ -94,7 +111,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public DeleteBucketResponse deleteBucket(DeleteBucketRequest deleteBucketRequest) {
-		return s3Client.deleteBucket(deleteBucketRequest);
+		return this.s3Client.deleteBucket(deleteBucketRequest);
 	}
 
 	/**
@@ -125,7 +142,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public List<S3Object> listObjects(String prefix) {
-		return listObjects(ossProperties.getBucket(), prefix);
+		return listObjects(this.ossProperties.getBucket(), prefix);
 	}
 
 	/**
@@ -152,7 +169,8 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public List<S3Object> listObjects(String bucket, String prefix, Integer maxKeys) {
-		return s3Client.listObjects(ListObjectsRequest.builder().maxKeys(maxKeys).prefix(prefix).bucket(bucket).build())
+		return this.s3Client
+			.listObjects(ListObjectsRequest.builder().maxKeys(maxKeys).prefix(prefix).bucket(bucket).build())
 			.contents();
 	}
 
@@ -172,7 +190,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	@Override
 	public PutObjectResponse putObject(String bucket, String key, File file)
 			throws AwsServiceException, SdkClientException, S3Exception, IOException {
-		return s3Client.putObject(PutObjectRequest.builder()
+		return this.s3Client.putObject(PutObjectRequest.builder()
 			.bucket(bucket)
 			.key(key)
 			.contentLength(file.length())
@@ -195,7 +213,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	@Override
 	public PutObjectResponse putObject(String bucket, String key, Path sourcePath)
 			throws AwsServiceException, SdkClientException, S3Exception {
-		return s3Client.putObject(PutObjectRequest.builder().bucket(bucket).key(key).build(), sourcePath);
+		return this.s3Client.putObject(PutObjectRequest.builder().bucket(bucket).key(key).build(), sourcePath);
 	}
 
 	/**
@@ -214,7 +232,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	@Override
 	public PutObjectResponse putObject(String bucket, String key, InputStream inputStream, long contentLength)
 			throws AwsServiceException, SdkClientException, S3Exception {
-		return s3Client.putObject(PutObjectRequest.builder().bucket(bucket).key(key).build(),
+		return this.s3Client.putObject(PutObjectRequest.builder().bucket(bucket).key(key).build(),
 				RequestBody.fromInputStream(inputStream, contentLength));
 	}
 
@@ -230,7 +248,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public DeleteObjectResponse deleteObject(DeleteObjectRequest deleteObjectRequest) {
-		return s3Client.deleteObject(deleteObjectRequest);
+		return this.s3Client.deleteObject(deleteObjectRequest);
 	}
 
 	/**
@@ -245,7 +263,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public DeleteObjectsResponse deleteObjects(DeleteObjectsRequest deleteObjectsRequest) {
-		return s3Client.deleteObjects(deleteObjectsRequest);
+		return this.s3Client.deleteObjects(deleteObjectsRequest);
 	}
 
 	/**
@@ -260,7 +278,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public DeleteObjectResponse deleteObject(String key) {
-		return deleteObject(ossProperties.getBucket(), key);
+		return deleteObject(this.ossProperties.getBucket(), key);
 	}
 
 	/**
@@ -275,7 +293,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public DeleteObjectsResponse deleteObjects(Set<String> keys) {
-		return deleteObjects(ossProperties.getBucket(), keys);
+		return deleteObjects(this.ossProperties.getBucket(), keys);
 	}
 
 	/**
@@ -329,7 +347,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	 */
 	@Override
 	public CopyObjectResponse copyObject(String sourceKey, String destinationKey) {
-		return copyObject(ossProperties.getBucket(), sourceKey, destinationKey);
+		return copyObject(this.ossProperties.getBucket(), sourceKey, destinationKey);
 	}
 
 	/**
@@ -362,7 +380,7 @@ public class DefaultOssTemplate implements OssTemplate {
 	@Override
 	public CopyObjectResponse copyObject(String sourceBucket, String sourceKey, String destinationBucket,
 			String destinationKey) {
-		return s3Client.copyObject(CopyObjectRequest.builder()
+		return this.s3Client.copyObject(CopyObjectRequest.builder()
 			.sourceBucket(sourceBucket)
 			.sourceKey(sourceKey)
 			.destinationBucket(destinationBucket)
@@ -399,7 +417,8 @@ public class DefaultOssTemplate implements OssTemplate {
 			.getObjectRequest(getObjectRequest)
 			.build();
 
-		PresignedGetObjectRequest presignedGetObjectRequest = s3Presigner.presignGetObject(getObjectPresignRequest);
+		PresignedGetObjectRequest presignedGetObjectRequest = this.s3Presigner
+			.presignGetObject(getObjectPresignRequest);
 		URL url = presignedGetObjectRequest.url();
 		return url.toString();
 	}
@@ -422,7 +441,8 @@ public class DefaultOssTemplate implements OssTemplate {
 			.putObjectRequest(putObjectRequest)
 			.build();
 
-		PresignedPutObjectRequest presignedGetObjectRequest = s3Presigner.presignPutObject(getObjectPresignRequest);
+		PresignedPutObjectRequest presignedGetObjectRequest = this.s3Presigner
+			.presignPutObject(getObjectPresignRequest);
 		URL url = presignedGetObjectRequest.url();
 		return url.toString();
 	}

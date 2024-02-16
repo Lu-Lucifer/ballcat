@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mybatisplus.methods;
+
+import java.util.function.Predicate;
 
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.function.Predicate;
 
 /**
  * @author lingting 2020/5/27 11:47
@@ -57,7 +58,7 @@ public class InsertOrUpdateByBatch extends BaseInsertBatch {
 			// 默认忽略逻辑删除字段
 			if (!field.isLogicDelete()) {
 				// 默认忽略字段
-				if (!predicate.test(field)) {
+				if (!this.predicate.test(field)) {
 					sql.append(field.getColumn()).append("=").append("VALUES(").append(field.getColumn()).append("),");
 				}
 				else {

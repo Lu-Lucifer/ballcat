@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.web.accesslog;
+
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +28,6 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.util.List;
 
 /**
  * @author Hccake 2019/10/15 18:20
@@ -48,15 +49,16 @@ public class AccessLogTestConfiguration {
 	@Bean
 	public AccessLogFilter accessLogFilter() {
 		// 合并 annotationRules 和 propertiesRules, 注解高于配置
-		List<AccessLogRule> annotationRules = AccessLogRuleFinder.findRulesFormAnnotation(requestMappingHandlerMapping);
-		List<AccessLogRule> propertiesRules = accessLogProperties.getAccessLogRules();
+		List<AccessLogRule> annotationRules = AccessLogRuleFinder
+			.findRulesFormAnnotation(this.requestMappingHandlerMapping);
+		List<AccessLogRule> propertiesRules = this.accessLogProperties.getAccessLogRules();
 		List<AccessLogRule> accessLogRules = AccessLogRuleFinder.mergeRules(annotationRules, propertiesRules);
 
-		AccessLogRecordOptions defaultRecordOptions = accessLogProperties.getDefaultAccessLogRecordOptions();
+		AccessLogRecordOptions defaultRecordOptions = this.accessLogProperties.getDefaultAccessLogRecordOptions();
 
 		TestAccessLogFilter accessLogFilter = new TestAccessLogFilter(defaultRecordOptions, accessLogRules);
-		accessLogFilter.setMaxBodyLength(accessLogProperties.getMaxBodyLength());
-		accessLogFilter.setOrder(accessLogProperties.getFilterOrder());
+		accessLogFilter.setMaxBodyLength(this.accessLogProperties.getMaxBodyLength());
+		accessLogFilter.setOrder(this.accessLogProperties.getFilterOrder());
 		return accessLogFilter;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.pay.wx.response;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.ballcat.common.util.JsonUtils;
 import org.ballcat.pay.wx.enums.ResponseCode;
 import org.ballcat.pay.wx.enums.TradeType;
-import lombok.Data;
-import lombok.experimental.Accessors;
-
-import java.util.Map;
 
 /**
  * @author lingting 2021/2/1 11:38

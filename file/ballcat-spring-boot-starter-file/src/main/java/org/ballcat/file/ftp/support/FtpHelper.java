@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.file.ftp.support;
 
-import org.ballcat.common.constant.Symbol;
-import org.ballcat.file.exception.FileException;
-import org.ballcat.file.ftp.FtpMode;
+package org.ballcat.file.ftp.support;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +23,10 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.ballcat.common.constant.Symbol;
+import org.ballcat.file.exception.FileException;
+import org.ballcat.file.ftp.FtpMode;
 
 /**
  * 参考 alibaba.datax.plugin.ftpreader

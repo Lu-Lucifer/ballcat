@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.serialize;
 
-import org.ballcat.redis.prefix.IRedisPrefixConverter;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
-
 import java.nio.charset.StandardCharsets;
+
+import lombok.extern.slf4j.Slf4j;
+import org.ballcat.redis.prefix.IRedisPrefixConverter;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * 自定义 String Key 序列化工具，添加全局key前缀
@@ -38,14 +39,14 @@ public class PrefixStringRedisSerializer extends StringRedisSerializer {
 
 	@Override
 	public String deserialize(byte[] bytes) {
-		byte[] unwrap = iRedisPrefixConverter.unwrap(bytes);
+		byte[] unwrap = this.iRedisPrefixConverter.unwrap(bytes);
 		return super.deserialize(unwrap);
 	}
 
 	@Override
 	public byte[] serialize(String key) {
 		byte[] originBytes = super.serialize(key);
-		return iRedisPrefixConverter.wrap(originBytes);
+		return this.iRedisPrefixConverter.wrap(originBytes);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.kafka.stream.core;
 
 import lombok.Getter;
@@ -55,7 +56,7 @@ public abstract class AbstractPunctuator implements Kafka, Punctuator {
 	 * handle 开始日志
 	 */
 	public void startLog() {
-		log.debug("任务开始执行, 类名 {} ,{}", this.getClass().getSimpleName(), ProcessorContextUtil.toLogString(context));
+		log.debug("任务开始执行, 类名 {} ,{}", this.getClass().getSimpleName(), ProcessorContextUtil.toLogString(this.context));
 	}
 
 	/**
@@ -64,7 +65,7 @@ public abstract class AbstractPunctuator implements Kafka, Punctuator {
 	 */
 	public void endLog(long time) {
 		log.debug("任务执行时长: {}, 类名 {}, {} ", time, this.getClass().getSimpleName(),
-				ProcessorContextUtil.toLogString(context));
+				ProcessorContextUtil.toLogString(this.context));
 	}
 
 	/**
@@ -72,7 +73,7 @@ public abstract class AbstractPunctuator implements Kafka, Punctuator {
 	 */
 	public void errLog(Throwable e) {
 		log.error("punctuator 操作数据出错 类名 " + this.getClass().getSimpleName() + ", "
-				+ ProcessorContextUtil.toLogString(context), e);
+				+ ProcessorContextUtil.toLogString(this.context), e);
 	}
 
 	@Override
@@ -87,7 +88,7 @@ public abstract class AbstractPunctuator implements Kafka, Punctuator {
 					endLog(watch.timeMillis());
 					// 清除数据
 					clean();
-					context.commit();
+					this.context.commit();
 				}
 				finally {
 					watch.stop();

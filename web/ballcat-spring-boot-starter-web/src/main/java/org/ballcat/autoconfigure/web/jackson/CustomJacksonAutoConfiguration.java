@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.web.jackson;
 
 import com.fasterxml.jackson.core.json.JsonReadFeature;
@@ -21,10 +22,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.ballcat.common.core.jackson.CustomJavaTimeModule;
 import org.ballcat.common.core.jackson.NullSerializerProvider;
+import org.ballcat.common.util.json.JacksonJsonToolAdapter;
 import org.ballcat.desensitize.json.DesensitizeStrategy;
 import org.ballcat.desensitize.json.JsonDesensitizeModule;
 import org.ballcat.desensitize.json.JsonDesensitizeSerializerModifier;
-import org.ballcat.common.util.json.JacksonJsonToolAdapter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

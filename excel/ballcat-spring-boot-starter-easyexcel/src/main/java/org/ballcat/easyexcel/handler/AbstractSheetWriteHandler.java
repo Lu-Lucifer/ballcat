@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.handler;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Modifier;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
@@ -22,22 +36,21 @@ import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
 import com.alibaba.excel.write.handler.WriteHandler;
 import com.alibaba.excel.write.metadata.WriteSheet;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.ballcat.easyexcel.annotation.ResponseExcel;
 import org.ballcat.easyexcel.aop.DynamicNameAspect;
 import org.ballcat.easyexcel.config.ExcelConfigProperties;
 import org.ballcat.easyexcel.converters.LocalDateStringConverter;
 import org.ballcat.easyexcel.converters.LocalDateTimeStringConverter;
-
 import org.ballcat.easyexcel.domain.SheetBuildProperties;
 import org.ballcat.easyexcel.enhance.WriterBuilderEnhancer;
 import org.ballcat.easyexcel.head.HeadGenerator;
 import org.ballcat.easyexcel.head.HeadMeta;
 import org.ballcat.easyexcel.head.I18nHeaderCellWriteHandler;
 import org.ballcat.easyexcel.kit.ExcelException;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
@@ -52,18 +65,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Modifier;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author lengleng
@@ -147,8 +148,8 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 		}
 
 		// 开启国际化头信息处理
-		if (responseExcel.i18nHeader() && i18nHeaderCellWriteHandler != null) {
-			writerBuilder.registerWriteHandler(i18nHeaderCellWriteHandler);
+		if (responseExcel.i18nHeader() && this.i18nHeaderCellWriteHandler != null) {
+			writerBuilder.registerWriteHandler(this.i18nHeaderCellWriteHandler);
 		}
 
 		// 自定义注入的转换器
@@ -158,7 +159,7 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 			writerBuilder.registerConverter(BeanUtils.instantiateClass(clazz));
 		}
 
-		String templatePath = configProperties.getTemplatePath();
+		String templatePath = this.configProperties.getTemplatePath();
 		if (StringUtils.hasText(responseExcel.template())) {
 			ClassPathResource classPathResource = new ClassPathResource(
 					templatePath + File.separator + responseExcel.template());
@@ -166,7 +167,8 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 			writerBuilder.withTemplate(inputStream);
 		}
 
-		writerBuilder = excelWriterBuilderEnhance.enhanceExcel(writerBuilder, response, responseExcel, templatePath);
+		writerBuilder = this.excelWriterBuilderEnhance.enhanceExcel(writerBuilder, response, responseExcel,
+				templatePath);
 
 		return writerBuilder.build();
 	}
@@ -176,7 +178,7 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 	 * @param builder ExcelWriterBuilder
 	 */
 	public void registerCustomConverter(ExcelWriterBuilder builder) {
-		converterProvider.ifAvailable(converters -> converters.forEach(builder::registerConverter));
+		this.converterProvider.ifAvailable(converters -> converters.forEach(builder::registerConverter));
 	}
 
 	/**
@@ -239,8 +241,8 @@ public abstract class AbstractSheetWriteHandler implements SheetWriteHandler, Ap
 		}
 
 		// sheetBuilder 增强
-		writerSheetBuilder = excelWriterBuilderEnhance.enhanceSheet(writerSheetBuilder, sheetNo, sheetName, dataClass,
-				template, headGenerateClass);
+		writerSheetBuilder = this.excelWriterBuilderEnhance.enhanceSheet(writerSheetBuilder, sheetNo, sheetName,
+				dataClass, template, headGenerateClass);
 
 		return writerSheetBuilder.build();
 	}

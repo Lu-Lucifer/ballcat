@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.mybatisplus.type;
 
-import com.baomidou.mybatisplus.annotation.IEnum;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
+package org.ballcat.mybatisplus.type;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.baomidou.mybatisplus.annotation.IEnum;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 /**
  * 普通枚举类型处理. 根据 name() 返回值判断枚举值
@@ -88,7 +89,7 @@ public class EnumNameTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 	 * @author lingting 2021-06-07 13:50
 	 */
 	E getEnumByName(String val) {
-		for (E e : type.getEnumConstants()) {
+		for (E e : this.type.getEnumConstants()) {
 			Object ev = getValByEnum(e);
 			if (ev == null) {
 				if (val == null) {

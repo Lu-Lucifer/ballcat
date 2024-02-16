@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.kafka;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import lombok.Data;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -22,10 +27,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author lingting 2020/7/28 21:15
@@ -90,29 +91,29 @@ public class KafkaProperties {
 	private Map<String, Object> extend = new HashMap<>();
 
 	public String getKeyDeserializerClassName() {
-		if (StringUtils.hasText(keyDeserializerClassName)) {
-			return keyDeserializerClassName;
+		if (StringUtils.hasText(this.keyDeserializerClassName)) {
+			return this.keyDeserializerClassName;
 		}
 		return getKeyDeserializer().getName();
 	}
 
 	public String getValueDeserializerClassName() {
-		if (StringUtils.hasText(valueDeserializerClassName)) {
-			return valueDeserializerClassName;
+		if (StringUtils.hasText(this.valueDeserializerClassName)) {
+			return this.valueDeserializerClassName;
 		}
 		return getValueDeserializer().getName();
 	}
 
 	public String getKeySerializerClassName() {
-		if (StringUtils.hasText(keySerializerClassName)) {
-			return keySerializerClassName;
+		if (StringUtils.hasText(this.keySerializerClassName)) {
+			return this.keySerializerClassName;
 		}
 		return getKeySerializer().getName();
 	}
 
 	public String getValueSerializerClassName() {
-		if (StringUtils.hasText(valueSerializerClassName)) {
-			return valueSerializerClassName;
+		if (StringUtils.hasText(this.valueSerializerClassName)) {
+			return this.valueSerializerClassName;
 		}
 		return getValueSerializer().getName();
 	}

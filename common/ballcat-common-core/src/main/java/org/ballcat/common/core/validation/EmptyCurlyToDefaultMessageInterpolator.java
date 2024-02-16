@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.core.validation;
 
-import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
-import org.hibernate.validator.spi.resourceloading.ResourceBundleLocator;
+package org.ballcat.common.core.validation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Locale;
+
+import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
+import org.hibernate.validator.spi.resourceloading.ResourceBundleLocator;
 
 /**
  * 将消息中空的花括号替换为校验注解的默认值

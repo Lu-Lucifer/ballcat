@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.xss.core;
+
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.ballcat.xss.cleaner.XssCleaner;
 import org.ballcat.xss.config.XssProperties;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author Hccake 2019/10/17 20:28
@@ -62,7 +64,7 @@ public class XssFilter extends OncePerRequestFilter {
 		// 开启 Xss 过滤状态
 		XssStateHolder.open();
 		try {
-			filterChain.doFilter(new XssRequestWrapper(request, xssCleaner), response);
+			filterChain.doFilter(new XssRequestWrapper(request, this.xssCleaner), response);
 		}
 		finally {
 			// 必须删除 ThreadLocal 存储的状态
@@ -73,26 +75,26 @@ public class XssFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		// 关闭直接跳过
-		if (!xssProperties.isEnabled()) {
+		if (!this.xssProperties.isEnabled()) {
 			return true;
 		}
 
 		// 请求方法检查
-		if (xssProperties.getIncludeHttpMethods().stream().noneMatch(request.getMethod()::equalsIgnoreCase)) {
+		if (this.xssProperties.getIncludeHttpMethods().stream().noneMatch(request.getMethod()::equalsIgnoreCase)) {
 			return true;
 		}
 
 		// 请求路径检查
 		String requestUri = request.getRequestURI();
 		// 此路径是否不需要处理
-		for (String exclude : xssProperties.getExcludePaths()) {
+		for (String exclude : this.xssProperties.getExcludePaths()) {
 			if (ANT_PATH_MATCHER.match(exclude, requestUri)) {
 				return true;
 			}
 		}
 
 		// 路径是否包含
-		for (String include : xssProperties.getIncludePaths()) {
+		for (String include : this.xssProperties.getIncludePaths()) {
 			if (ANT_PATH_MATCHER.match(include, requestUri)) {
 				return false;
 			}

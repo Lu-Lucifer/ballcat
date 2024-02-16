@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.util;
+
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.ballcat.common.util.AesUtils;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
@@ -23,11 +29,6 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
-
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 前后端交互中密码使用 AES 加密，模式: CBC，padding: PKCS5，偏移量暂不定制和密钥相同。 <br/>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.moudle.bloom;
 
-import org.ballcat.redis.moudle.AbstractRedisModuleHelper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import io.lettuce.core.output.ArrayOutput;
 import io.lettuce.core.output.BooleanListOutput;
 import io.lettuce.core.output.BooleanOutput;
 import io.lettuce.core.protocol.CommandType;
+import org.ballcat.redis.moudle.AbstractRedisModuleHelper;
 import org.springframework.data.redis.connection.lettuce.BloomCommandEnum;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-
-import java.util.*;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * redisBloom module 的操作帮助类
@@ -56,7 +62,7 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return 成功返回 true，失败返回 false
 	 */
 	public boolean createFilter(String key, double errorRate, long initCapacity) {
-		return execute(key, BloomCommandEnum.RESERVE, new BooleanOutput<>(codec), String.valueOf(errorRate),
+		return execute(key, BloomCommandEnum.RESERVE, new BooleanOutput<>(this.codec), String.valueOf(errorRate),
 				String.valueOf(initCapacity))
 			.orElse(false);
 	}
@@ -68,7 +74,7 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return 如果元素不在过滤器中，则可以添加成功，返回 true
 	 */
 	public boolean add(String key, String item) {
-		return execute(key, BloomCommandEnum.ADD, new BooleanOutput<>(codec), item).orElse(false);
+		return execute(key, BloomCommandEnum.ADD, new BooleanOutput<>(this.codec), item).orElse(false);
 	}
 
 	/**
@@ -78,7 +84,8 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return 一个长度与值的个数相同的布尔集合。 每个布尔值指示相应的元素之前是否在过滤器中。 一个真值意味着该元素以前不存在，而一个假值意味着它以前可能存在。
 	 */
 	public List<Boolean> multiAdd(String key, String... items) {
-		Optional<List<Boolean>> result = execute(key, BloomCommandEnum.MADD, new BooleanListOutput<>(codec), items);
+		Optional<List<Boolean>> result = execute(key, BloomCommandEnum.MADD, new BooleanListOutput<>(this.codec),
+				items);
 		return result.orElseGet(() -> getAllFalseBooleanList(items.length));
 	}
 
@@ -89,7 +96,7 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return 如果该项目在筛选器中存在，则为 true; 如果该项目在筛选器中不存在，则为false
 	 */
 	public boolean exists(String key, String item) {
-		return execute(key, BloomCommandEnum.EXISTS, new BooleanOutput<>(codec), item).orElse(false);
+		return execute(key, BloomCommandEnum.EXISTS, new BooleanOutput<>(this.codec), item).orElse(false);
 	}
 
 	/**
@@ -99,7 +106,8 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return 一个布尔集合。 true表示对应的值可能存在，false表示不存在
 	 */
 	public List<Boolean> multiExists(String key, String... items) {
-		Optional<List<Boolean>> result = execute(key, BloomCommandEnum.MEXISTS, new BooleanListOutput<>(codec), items);
+		Optional<List<Boolean>> result = execute(key, BloomCommandEnum.MEXISTS, new BooleanListOutput<>(this.codec),
+				items);
 		return result.orElseGet(() -> getAllFalseBooleanList(items.length));
 	}
 
@@ -127,7 +135,7 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 		args.add(BloomInsertKeywordEnum.ITEMS.name());
 		Collections.addAll(args, items);
 
-		Optional<List<Boolean>> result = execute(key, BloomCommandEnum.INSERT, new BooleanListOutput<>(codec),
+		Optional<List<Boolean>> result = execute(key, BloomCommandEnum.INSERT, new BooleanListOutput<>(this.codec),
 				args.toArray(new String[0]));
 		return result.orElseGet(() -> getAllFalseBooleanList(items.length));
 	}
@@ -138,7 +146,7 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return Return information
 	 */
 	public Map<String, Object> info(String key) {
-		Optional<List<Object>> result = execute(key, BloomCommandEnum.INFO, new ArrayOutput<>(codec));
+		Optional<List<Object>> result = execute(key, BloomCommandEnum.INFO, new ArrayOutput<>(this.codec));
 		List<Object> values = result.orElseGet(ArrayList::new);
 
 		Map<String, Object> infoMap = new HashMap<>(values.size() / 2);
@@ -160,7 +168,7 @@ public class BloomRedisModuleHelper extends AbstractRedisModuleHelper {
 	 * @return 删除成功返回 true
 	 */
 	public boolean delete(String key) {
-		return execute(key, CommandType.DEL, new BooleanOutput<>(codec)).orElse(false);
+		return execute(key, CommandType.DEL, new BooleanOutput<>(this.codec)).orElse(false);
 	}
 
 }

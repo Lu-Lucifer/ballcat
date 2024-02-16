@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.websocket.distribute;
 
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.common.util.JsonUtils;
 import org.ballcat.websocket.session.WebSocketSessionStore;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -49,14 +50,14 @@ public class RedisMessageDistributor extends AbstractMessageDistributor implemen
 	@Override
 	public void distribute(MessageDO messageDO) {
 		String str = JsonUtils.toJson(messageDO);
-		stringRedisTemplate.convertAndSend(CHANNEL, str);
+		this.stringRedisTemplate.convertAndSend(CHANNEL, str);
 	}
 
 	@Override
 	public void onMessage(Message message, byte[] bytes) {
 		log.info("redis channel Listener message send {}", message);
 		byte[] channelBytes = message.getChannel();
-		RedisSerializer<String> stringSerializer = stringRedisTemplate.getStringSerializer();
+		RedisSerializer<String> stringSerializer = this.stringRedisTemplate.getStringSerializer();
 		String channel = stringSerializer.deserialize(channelBytes);
 
 		// 这里没有使用通配符，所以一定是true

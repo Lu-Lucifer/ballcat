@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.aop;
 
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.alibaba.excel.EasyExcel;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.easyexcel.annotation.RequestExcel;
 import org.ballcat.easyexcel.converters.LocalDateStringConverter;
 import org.ballcat.easyexcel.converters.LocalDateTimeStringConverter;
 import org.ballcat.easyexcel.handler.ListAnalysisEventListener;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
@@ -42,11 +49,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartRequest;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * 上传excel 解析注解
@@ -140,7 +142,7 @@ public class RequestExcelArgumentResolver implements HandlerMethodArgumentResolv
 				evaluationContext.setVariable(name, request.getParameter(name));
 			}
 		}
-		Expression expression = expressionParser.parseExpression(sheetName);
+		Expression expression = this.expressionParser.parseExpression(sheetName);
 		String value = expression.getValue(evaluationContext, String.class);
 		return value == null || value.isEmpty() ? null : value;
 	}

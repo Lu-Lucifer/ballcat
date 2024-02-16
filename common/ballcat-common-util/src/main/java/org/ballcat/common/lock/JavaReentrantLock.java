@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.common.lock;
 
-import lombok.Getter;
+package org.ballcat.common.lock;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import lombok.Getter;
 
 /**
  * @author lingting 2023-04-22 10:55
@@ -35,7 +36,7 @@ public class JavaReentrantLock {
 	/**
 	 * 激活与休眠线程
 	 */
-	protected final Condition defaultCondition = lock.newCondition();
+	protected final Condition defaultCondition = this.lock.newCondition();
 
 	public Condition newCondition() {
 		return getLock().newCondition();

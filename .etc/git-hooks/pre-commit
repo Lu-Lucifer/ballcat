@@ -1,0 +1,9 @@
+#!/bin/sh
+# 在提交前进行校验
+mvn validate
+
+# 检查 mvn validate 的退出状态
+if [ $? -ne 0 ]; then
+ echo "Maven validate failed, aborting commit."
+ exit 1
+fi

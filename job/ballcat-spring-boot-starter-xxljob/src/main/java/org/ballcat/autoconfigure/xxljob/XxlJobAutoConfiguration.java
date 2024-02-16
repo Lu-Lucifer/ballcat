@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.xxljob;
 
-import org.ballcat.autoconfigure.xxljob.properties.XxlExecutorProperties;
-import org.ballcat.autoconfigure.xxljob.properties.XxlJobProperties;
+import java.util.Objects;
+
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.autoconfigure.xxljob.properties.XxlExecutorProperties;
+import org.ballcat.autoconfigure.xxljob.properties.XxlJobProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
-
-import java.util.Objects;
 
 /**
  * xxl 初始化
@@ -72,7 +73,7 @@ public class XxlJobAutoConfiguration {
 			return appName;
 		}
 		else {
-			return environment.getProperty("spring.application.name");
+			return this.environment.getProperty("spring.application.name");
 		}
 	}
 
@@ -101,9 +102,9 @@ public class XxlJobAutoConfiguration {
 		if (StringUtils.hasText(logPath)) {
 			return logPath;
 		}
-		return environment.getProperty("logging.file.path", "logs")
+		return this.environment.getProperty("logging.file.path", "logs")
 			.concat("/")
-			.concat(Objects.requireNonNull(environment.getProperty("spring.application.name")))
+			.concat(Objects.requireNonNull(this.environment.getProperty("spring.application.name")))
 			.concat("/jobs");
 	}
 

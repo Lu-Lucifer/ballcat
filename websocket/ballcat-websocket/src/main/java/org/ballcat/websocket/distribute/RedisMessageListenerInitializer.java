@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.websocket.distribute;
+
+import javax.annotation.PostConstruct;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-
-import javax.annotation.PostConstruct;
 
 /**
  * 初始化 redis 消息的监听器
@@ -35,7 +36,7 @@ public class RedisMessageListenerInitializer {
 
 	@PostConstruct
 	public void addMessageListener() {
-		redisMessageListenerContainer.addMessageListener(redisWebsocketMessageListener,
+		this.redisMessageListenerContainer.addMessageListener(this.redisWebsocketMessageListener,
 				new PatternTopic(RedisMessageDistributor.CHANNEL));
 	}
 

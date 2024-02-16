@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.file.core;
 
 /**
@@ -28,7 +29,7 @@ public abstract class AbstractFileClient implements FileClient {
 	 * 获取操作的根路径
 	 */
 	public String getRoot() {
-		return rootPath;
+		return this.rootPath;
 	}
 
 	/**
@@ -36,7 +37,7 @@ public abstract class AbstractFileClient implements FileClient {
 	 * @param relativePath 文件相对 getRoot() 的路径
 	 */
 	public String getWholePath(String relativePath) {
-		if (relativePath.startsWith(slash)) {
+		if (relativePath.startsWith(this.slash)) {
 			return getRoot() + relativePath.substring(1);
 		}
 		return getRoot() + relativePath;

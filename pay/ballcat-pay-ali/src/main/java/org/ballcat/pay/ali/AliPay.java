@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.pay.ali;
+
+import java.math.BigDecimal;
+import java.util.Map;
 
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
@@ -36,14 +40,9 @@ import com.alipay.api.response.AlipayTradePayResponse;
 import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.alipay.api.response.AlipayTradeWapPayResponse;
+import lombok.Data;
 import org.ballcat.pay.ali.constants.AliPayConstant;
 import org.ballcat.pay.ali.domain.AliPayQuery;
-import lombok.Data;
-
-import java.math.BigDecimal;
-import java.util.Map;
-
-import static org.ballcat.pay.ali.constants.AliPayConstant.FIELD_FUND_BILL_LIST;
 
 /**
  * <a href="https://opendocs.alipay.com/apis">api文档</a>.
@@ -99,7 +98,7 @@ public class AliPay {
 	 */
 	public AlipayTradeWapPayResponse mobileWapPay(String sn, BigDecimal amount, String subject)
 			throws AlipayApiException {
-		return mobileWapPay(sn, amount, subject, returnUrl, notifyUrl);
+		return mobileWapPay(sn, amount, subject, this.returnUrl, this.notifyUrl);
 	}
 
 	/**
@@ -123,7 +122,7 @@ public class AliPay {
 	 * 手机网站支付-复杂支付
 	 */
 	public AlipayTradeWapPayResponse mobileWapPay(AlipayTradePayModel model) throws AlipayApiException {
-		return mobileWapPay(model, returnUrl, notifyUrl);
+		return mobileWapPay(model, this.returnUrl, this.notifyUrl);
 	}
 
 	/**
@@ -136,7 +135,7 @@ public class AliPay {
 		request.setReturnUrl(returnUrl);
 		request.setNotifyUrl(notifyUrl);
 		// 网页支付方式, 将 返回值 .getBody() 内容作为 form 表单进行提交, 会跳转到一个 url, 具体参考文档
-		return client.pageExecute(request);
+		return this.client.pageExecute(request);
 	}
 
 	/**
@@ -148,7 +147,7 @@ public class AliPay {
 	 */
 	public AlipayTradePagePayResponse computerWapPay(String sn, BigDecimal amount, String subject)
 			throws AlipayApiException {
-		return computerWapPay(sn, amount, subject, returnUrl, notifyUrl);
+		return computerWapPay(sn, amount, subject, this.returnUrl, this.notifyUrl);
 	}
 
 	/**
@@ -173,7 +172,7 @@ public class AliPay {
 	 * 电脑网站支付-复杂支付
 	 */
 	public AlipayTradePagePayResponse computerWapPay(AlipayTradePayModel model) throws AlipayApiException {
-		return computerWapPay(model, returnUrl, notifyUrl);
+		return computerWapPay(model, this.returnUrl, this.notifyUrl);
 	}
 
 	/**
@@ -186,7 +185,7 @@ public class AliPay {
 		request.setReturnUrl(returnUrl);
 		request.setNotifyUrl(notifyUrl);
 		// 网页支付方式, 将 返回值 .getBody() 内容作为 form 表单进行提交, 会跳转到一个 url, 具体参考文档
-		return client.pageExecute(request);
+		return this.client.pageExecute(request);
 	}
 
 	/**
@@ -197,7 +196,7 @@ public class AliPay {
 	 * @return com.alipay.api.response.AlipayTradeWapPayResponse
 	 */
 	public AlipayTradeAppPayResponse appPay(String sn, BigDecimal amount, String subject) throws AlipayApiException {
-		return appPay(sn, amount, subject, notifyUrl);
+		return appPay(sn, amount, subject, this.notifyUrl);
 	}
 
 	/**
@@ -221,7 +220,7 @@ public class AliPay {
 	 * APP支付-复杂支付
 	 */
 	public AlipayTradeAppPayResponse appPay(AlipayTradePayModel model) throws AlipayApiException {
-		return appPay(model, notifyUrl);
+		return appPay(model, this.notifyUrl);
 	}
 
 	/**
@@ -231,7 +230,7 @@ public class AliPay {
 		AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
 		request.setBizModel(model);
 		request.setNotifyUrl(notifyUrl);
-		return client.sdkExecute(request);
+		return this.client.sdkExecute(request);
 	}
 
 	/**
@@ -244,7 +243,7 @@ public class AliPay {
 	 */
 	public AlipayTradePayResponse codePay(String sn, BigDecimal amount, String code, String subject)
 			throws AlipayApiException {
-		return codePay(sn, amount, code, subject, notifyUrl);
+		return codePay(sn, amount, code, subject, this.notifyUrl);
 	}
 
 	/**
@@ -271,7 +270,7 @@ public class AliPay {
 	 * 付款码支付-复杂支付
 	 */
 	public AlipayTradePayResponse codePay(AlipayTradePayModel model) throws AlipayApiException {
-		return codePay(model, notifyUrl);
+		return codePay(model, this.notifyUrl);
 	}
 
 	/**
@@ -283,7 +282,7 @@ public class AliPay {
 		// 付款码场景固定
 		model.setScene("bar_code");
 		request.setNotifyUrl(notifyUrl);
-		return client.execute(request);
+		return this.client.execute(request);
 	}
 
 	/**
@@ -294,7 +293,7 @@ public class AliPay {
 	 * @return com.alipay.api.response.AlipayTradePrecreateResponse
 	 */
 	public AlipayTradePrecreateResponse qrPay(String sn, BigDecimal amount, String subject) throws AlipayApiException {
-		return qrPay(sn, amount, subject, notifyUrl);
+		return qrPay(sn, amount, subject, this.notifyUrl);
 	}
 
 	/**
@@ -318,7 +317,7 @@ public class AliPay {
 	 * 二维码付款-复杂支付
 	 */
 	public AlipayTradePrecreateResponse qrPay(AlipayTradePrecreateModel model) throws AlipayApiException {
-		return qrPay(model, notifyUrl);
+		return qrPay(model, this.notifyUrl);
 	}
 
 	/**
@@ -329,7 +328,7 @@ public class AliPay {
 		AlipayTradePrecreateRequest request = new AlipayTradePrecreateRequest();
 		request.setBizModel(model);
 		request.setNotifyUrl(notifyUrl);
-		return client.execute(request);
+		return this.client.execute(request);
 	}
 
 	/**
@@ -361,7 +360,7 @@ public class AliPay {
 	public AliPayQuery query(AlipayTradeQueryModel model) throws AlipayApiException {
 		AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
 		request.setBizModel(model);
-		return AliPayQuery.of(client.execute(request));
+		return AliPayQuery.of(this.client.execute(request));
 	}
 
 	/**
@@ -396,7 +395,7 @@ public class AliPay {
 	public AlipayTradeRefundResponse refund(AlipayTradeRefundModel model) throws AlipayApiException {
 		AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
 		request.setBizModel(model);
-		return client.execute(request);
+		return this.client.execute(request);
 	}
 
 	/**
@@ -406,8 +405,9 @@ public class AliPay {
 	 */
 	public boolean checkSignV1(Map<String, String> map) throws AlipayApiException {
 		// 验签需要先移除 fund_bill_list 参数值中的 &quot; 否则会导致正确的签名验签失败
-		map.put(FIELD_FUND_BILL_LIST, map.get(FIELD_FUND_BILL_LIST).replace("&quot;", "\""));
-		return AlipaySignature.rsaCheckV1(map, alipayPublicKey, charset, signType);
+		map.put(AliPayConstant.FIELD_FUND_BILL_LIST,
+				map.get(AliPayConstant.FIELD_FUND_BILL_LIST).replace("&quot;", "\""));
+		return AlipaySignature.rsaCheckV1(map, this.alipayPublicKey, this.charset, this.signType);
 	}
 
 	/**
@@ -417,8 +417,9 @@ public class AliPay {
 	 */
 	public boolean checkSignV2(Map<String, String> map) throws AlipayApiException {
 		// 验签需要先移除 fund_bill_list 参数值中的 &quot; 否则会导致正确的签名验签失败
-		map.put(FIELD_FUND_BILL_LIST, map.get(FIELD_FUND_BILL_LIST).replace("&quot;", "\""));
-		return AlipaySignature.rsaCheckV2(map, alipayPublicKey, charset, signType);
+		map.put(AliPayConstant.FIELD_FUND_BILL_LIST,
+				map.get(AliPayConstant.FIELD_FUND_BILL_LIST).replace("&quot;", "\""));
+		return AlipaySignature.rsaCheckV2(map, this.alipayPublicKey, this.charset, this.signType);
 	}
 
 }

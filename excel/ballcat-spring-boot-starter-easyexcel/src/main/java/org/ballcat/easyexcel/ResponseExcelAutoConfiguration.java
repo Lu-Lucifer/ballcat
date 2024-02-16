@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
+import lombok.RequiredArgsConstructor;
 import org.ballcat.easyexcel.aop.DynamicNameAspect;
 import org.ballcat.easyexcel.aop.RequestExcelArgumentResolver;
 import org.ballcat.easyexcel.aop.ResponseExcelReturnValueHandler;
@@ -22,7 +29,6 @@ import org.ballcat.easyexcel.config.ExcelConfigProperties;
 import org.ballcat.easyexcel.head.EmptyHeadGenerator;
 import org.ballcat.easyexcel.processor.NameProcessor;
 import org.ballcat.easyexcel.processor.NameSpelExpressionProcessor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,10 +37,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 配置初始化
@@ -87,14 +89,14 @@ public class ResponseExcelAutoConfiguration {
 	 */
 	@PostConstruct
 	public void setReturnValueHandlers() {
-		List<HandlerMethodReturnValueHandler> returnValueHandlers = requestMappingHandlerAdapter
+		List<HandlerMethodReturnValueHandler> returnValueHandlers = this.requestMappingHandlerAdapter
 			.getReturnValueHandlers();
 
 		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<>();
-		newHandlers.add(responseExcelReturnValueHandler);
+		newHandlers.add(this.responseExcelReturnValueHandler);
 		assert returnValueHandlers != null;
 		newHandlers.addAll(returnValueHandlers);
-		requestMappingHandlerAdapter.setReturnValueHandlers(newHandlers);
+		this.requestMappingHandlerAdapter.setReturnValueHandlers(newHandlers);
 	}
 
 	/**
@@ -102,11 +104,12 @@ public class ResponseExcelAutoConfiguration {
 	 */
 	@PostConstruct
 	public void setRequestExcelArgumentResolver() {
-		List<HandlerMethodArgumentResolver> argumentResolvers = requestMappingHandlerAdapter.getArgumentResolvers();
+		List<HandlerMethodArgumentResolver> argumentResolvers = this.requestMappingHandlerAdapter
+			.getArgumentResolvers();
 		List<HandlerMethodArgumentResolver> resolverList = new ArrayList<>();
 		resolverList.add(new RequestExcelArgumentResolver());
 		resolverList.addAll(argumentResolvers);
-		requestMappingHandlerAdapter.setArgumentResolvers(resolverList);
+		this.requestMappingHandlerAdapter.setArgumentResolvers(resolverList);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.log.operation.handler;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -22,10 +32,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.ballcat.common.util.JsonUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import java.util.*;
 
 /**
  * @author hccake
@@ -47,7 +53,7 @@ public abstract class AbstractOperationLogHandler<T> implements OperationLogHand
 	 * @param clazz 参数类型
 	 */
 	public void addIgnoredParamClass(Class<?> clazz) {
-		ignoredParamClasses.add(clazz);
+		this.ignoredParamClasses.add(clazz);
 	}
 
 	/**
@@ -77,7 +83,7 @@ public abstract class AbstractOperationLogHandler<T> implements OperationLogHand
 			}
 			Class<?> argClass = arg.getClass();
 			// 忽略部分类型的参数记录
-			for (Class<?> ignoredParamClass : ignoredParamClasses) {
+			for (Class<?> ignoredParamClass : this.ignoredParamClasses) {
 				if (ignoredParamClass.isAssignableFrom(argClass)) {
 					arg = "ignored param type: " + argClass;
 					break;

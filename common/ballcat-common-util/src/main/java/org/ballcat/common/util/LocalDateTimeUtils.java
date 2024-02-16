@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,34 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.common.util;
 
-import lombok.experimental.UtilityClass;
-
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 /**
  * @author lingting 2022/11/28 10:12
  */
-@UtilityClass
-public class LocalDateTimeUtils {
+public final class LocalDateTimeUtils {
 
-	public final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.of("+8");
+	private LocalDateTimeUtils() {
+	}
 
-	public final ZoneId DEFAULT_ZONE_ID = DEFAULT_ZONE_OFFSET.normalized();
+	public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.of("+8");
 
-	public final String STRING_FORMATTER_YMD_HMS = "yyyy-MM-dd HH:mm:ss";
+	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_ZONE_OFFSET.normalized();
 
-	public final DateTimeFormatter FORMATTER_YMD_HMS = DateTimeFormatter.ofPattern(STRING_FORMATTER_YMD_HMS);
+	public static final String STRING_FORMATTER_YMD_HMS = "yyyy-MM-dd HH:mm:ss";
 
-	public final String STRING_FORMATTER_YMD = "yyyy-MM-dd";
+	public static final DateTimeFormatter FORMATTER_YMD_HMS = DateTimeFormatter.ofPattern(STRING_FORMATTER_YMD_HMS);
 
-	public final DateTimeFormatter FORMATTER_YMD = DateTimeFormatter.ofPattern(STRING_FORMATTER_YMD);
+	public static final String STRING_FORMATTER_YMD = "yyyy-MM-dd";
 
-	public final String STRING_FORMATTER_HMS = "HH:mm:ss";
+	public static final DateTimeFormatter FORMATTER_YMD = DateTimeFormatter.ofPattern(STRING_FORMATTER_YMD);
 
-	public final DateTimeFormatter FORMATTER_HMS = DateTimeFormatter.ofPattern(STRING_FORMATTER_HMS);
+	public static final String STRING_FORMATTER_HMS = "HH:mm:ss";
+
+	public static final DateTimeFormatter FORMATTER_HMS = DateTimeFormatter.ofPattern(STRING_FORMATTER_HMS);
 
 	// region LocalDateTime
 
@@ -49,7 +55,7 @@ public class LocalDateTimeUtils {
 	 * @param str yyyy-MM-dd HH:mm:ss 格式字符串
 	 * @return java.time.LocalDateTime 时间
 	 */
-	public LocalDateTime parse(String str) {
+	public static LocalDateTime parse(String str) {
 		return LocalDateTime.parse(str, FORMATTER_YMD_HMS);
 	}
 
@@ -58,7 +64,7 @@ public class LocalDateTimeUtils {
 	 * @param timestamp 时间戳 - 毫秒
 	 * @return java.time.LocalDateTime
 	 */
-	public LocalDateTime parse(Long timestamp) {
+	public static LocalDateTime parse(Long timestamp) {
 		return parse(timestamp, DEFAULT_ZONE_ID);
 	}
 
@@ -68,65 +74,65 @@ public class LocalDateTimeUtils {
 	 * @param zoneId 时区
 	 * @return java.time.LocalDateTime
 	 */
-	public LocalDateTime parse(Long timestamp, ZoneId zoneId) {
+	public static LocalDateTime parse(Long timestamp, ZoneId zoneId) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
 	}
 
-	public Long toTimestamp(LocalDateTime dateTime) {
+	public static Long toTimestamp(LocalDateTime dateTime) {
 		return toTimestamp(dateTime, DEFAULT_ZONE_OFFSET);
 	}
 
-	public Long toTimestamp(LocalDateTime dateTime, ZoneOffset offset) {
+	public static Long toTimestamp(LocalDateTime dateTime, ZoneOffset offset) {
 		return dateTime.toInstant(offset).toEpochMilli();
 	}
 
-	public String format(LocalDateTime dateTime) {
+	public static String format(LocalDateTime dateTime) {
 		return format(dateTime, FORMATTER_YMD_HMS);
 	}
 
-	public String format(LocalDateTime dateTime, String formatter) {
+	public static String format(LocalDateTime dateTime, String formatter) {
 		return format(dateTime, DateTimeFormatter.ofPattern(formatter));
 	}
 
-	public String format(LocalDateTime dateTime, DateTimeFormatter formatter) {
+	public static String format(LocalDateTime dateTime, DateTimeFormatter formatter) {
 		return formatter.format(dateTime);
 	}
 
 	// endregion
 
 	// region LocalDate
-	public LocalDate parseDate(String str) {
+	public static LocalDate parseDate(String str) {
 		return LocalDate.parse(str, FORMATTER_YMD);
 	}
 
-	public String format(LocalDate date) {
+	public static String format(LocalDate date) {
 		return format(date, FORMATTER_YMD);
 	}
 
-	public String format(LocalDate date, String formatter) {
+	public static String format(LocalDate date, String formatter) {
 		return format(date, DateTimeFormatter.ofPattern(formatter));
 	}
 
-	public String format(LocalDate date, DateTimeFormatter formatter) {
+	public static String format(LocalDate date, DateTimeFormatter formatter) {
 		return formatter.format(date);
 	}
 
 	// endregion
 
 	// region LocalTime
-	public LocalTime parseTime(String str) {
+	public static LocalTime parseTime(String str) {
 		return LocalTime.parse(str, FORMATTER_HMS);
 	}
 
-	public String format(LocalTime time) {
+	public static String format(LocalTime time) {
 		return format(time, FORMATTER_HMS);
 	}
 
-	public String format(LocalTime time, String formatter) {
+	public static String format(LocalTime time, String formatter) {
 		return format(time, DateTimeFormatter.ofPattern(formatter));
 	}
 
-	public String format(LocalTime time, DateTimeFormatter formatter) {
+	public static String format(LocalTime time, DateTimeFormatter formatter) {
 		return formatter.format(time);
 	}
 

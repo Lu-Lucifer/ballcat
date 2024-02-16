@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.dingtalk;
 
-import org.ballcat.dingtalk.DingTalkSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.dingtalk.DingTalkSender;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,7 +40,7 @@ public class DingTalkAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public DingTalkSender dingTalkSender() {
-		return new DingTalkSender(dingTalkProperties.getUrl()).setSecret(dingTalkProperties.getSecret());
+		return new DingTalkSender(this.dingTalkProperties.getUrl()).setSecret(this.dingTalkProperties.getSecret());
 	}
 
 }

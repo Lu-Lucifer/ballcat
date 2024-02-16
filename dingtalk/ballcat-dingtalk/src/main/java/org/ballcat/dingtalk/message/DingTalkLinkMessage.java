@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.dingtalk.message;
 
-import org.ballcat.dingtalk.DingTalkParams;
-import org.ballcat.dingtalk.enums.MessageTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.ballcat.dingtalk.DingTalkParams;
+import org.ballcat.dingtalk.enums.MessageTypeEnum;
 
 /**
  * @author lingting 2020/6/10 22:13
@@ -56,8 +57,10 @@ public class DingTalkLinkMessage extends AbstractDingTalkMessage {
 
 	@Override
 	public DingTalkParams put(DingTalkParams params) {
-		return params.setLink(
-				new DingTalkParams.Link().setText(text).setTitle(title).setPicUrl(picUrl).setMessageUrl(messageUrl));
+		return params.setLink(new DingTalkParams.Link().setText(this.text)
+			.setTitle(this.title)
+			.setPicUrl(this.picUrl)
+			.setMessageUrl(this.messageUrl));
 	}
 
 }

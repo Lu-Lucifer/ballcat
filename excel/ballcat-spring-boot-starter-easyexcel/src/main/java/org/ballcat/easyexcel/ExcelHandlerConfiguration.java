@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel;
 
+import java.util.List;
+
 import com.alibaba.excel.converters.Converter;
+import lombok.RequiredArgsConstructor;
 import org.ballcat.easyexcel.aop.ResponseExcelReturnValueHandler;
 import org.ballcat.easyexcel.config.ExcelConfigProperties;
 import org.ballcat.easyexcel.enhance.DefaultWriterBuilderEnhancer;
@@ -24,15 +28,12 @@ import org.ballcat.easyexcel.handler.ManySheetWriteHandler;
 import org.ballcat.easyexcel.handler.SheetWriteHandler;
 import org.ballcat.easyexcel.handler.SingleSheetWriteHandler;
 import org.ballcat.easyexcel.head.I18nHeaderCellWriteHandler;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 /**
  * @author Hccake 2020/10/28
@@ -62,7 +63,7 @@ public class ExcelHandlerConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SingleSheetWriteHandler singleSheetWriteHandler() {
-		return new SingleSheetWriteHandler(configProperties, converterProvider, writerBuilderEnhancer());
+		return new SingleSheetWriteHandler(this.configProperties, this.converterProvider, writerBuilderEnhancer());
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class ExcelHandlerConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public ManySheetWriteHandler manySheetWriteHandler() {
-		return new ManySheetWriteHandler(configProperties, converterProvider, writerBuilderEnhancer());
+		return new ManySheetWriteHandler(this.configProperties, this.converterProvider, writerBuilderEnhancer());
 	}
 
 	/**

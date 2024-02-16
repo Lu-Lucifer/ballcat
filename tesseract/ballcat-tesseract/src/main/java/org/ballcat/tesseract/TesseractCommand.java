@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.tesseract;
 
-import org.ballcat.tesseract.exception.OcrException;
-import lombok.Builder;
-import lombok.Getter;
+package org.ballcat.tesseract;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,6 +22,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.Builder;
+import lombok.Getter;
+import org.ballcat.tesseract.exception.OcrException;
 
 /**
  * <p>
@@ -59,24 +60,24 @@ public class TesseractCommand {
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getCommand() {
-		StringBuilder builder = new StringBuilder("\"").append(tesseract).append("\" \"");
+		StringBuilder builder = new StringBuilder("\"").append(this.tesseract).append("\" \"");
 
 		try {
-			builder.append(image.write()).append("\" stdout");
+			builder.append(this.image.write()).append("\" stdout");
 		}
 		catch (IOException e) {
 			throw new OcrException("图片加载异常!", e);
 		}
 
-		if (hasText(lang)) {
-			builder.append(" -l ").append(lang);
+		if (hasText(this.lang)) {
+			builder.append(" -l ").append(this.lang);
 		}
 
-		if (psm != null) {
-			builder.append(" --psm ").append(psm);
+		if (this.psm != null) {
+			builder.append(" --psm ").append(this.psm);
 		}
 
-		if (boxes) {
+		if (this.boxes) {
 			builder.append(" makebox");
 		}
 

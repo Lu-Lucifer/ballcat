@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.datascope.interceptor;
 
-import org.ballcat.datascope.DataScope;
-import org.ballcat.datascope.handler.DataPermissionHandler;
-import org.ballcat.datascope.holder.DataScopeMatchNumHolder;
-import org.ballcat.datascope.holder.MappedStatementIdsWithoutDataScope;
-import org.ballcat.datascope.processor.DataScopeSqlProcessor;
-import org.ballcat.datascope.util.PluginUtils;
+import java.sql.Connection;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -30,9 +28,12 @@ import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
-
-import java.sql.Connection;
-import java.util.List;
+import org.ballcat.datascope.DataScope;
+import org.ballcat.datascope.handler.DataPermissionHandler;
+import org.ballcat.datascope.holder.DataScopeMatchNumHolder;
+import org.ballcat.datascope.holder.MappedStatementIdsWithoutDataScope;
+import org.ballcat.datascope.processor.DataScopeSqlProcessor;
+import org.ballcat.datascope.util.PluginUtils;
 
 /**
  * 数据权限拦截器
@@ -61,13 +62,13 @@ public class DataPermissionInterceptor implements Interceptor {
 		String mappedStatementId = ms.getId();
 
 		// 获取当前需要控制的 dataScope 集合
-		List<DataScope> filterDataScopes = dataPermissionHandler.filterDataScopes(mappedStatementId);
+		List<DataScope> filterDataScopes = this.dataPermissionHandler.filterDataScopes(mappedStatementId);
 		if (filterDataScopes == null || filterDataScopes.isEmpty()) {
 			return invocation.proceed();
 		}
 
 		// 根据用户权限判断是否需要拦截，例如管理员可以查看所有，则直接放行
-		if (dataPermissionHandler.ignorePermissionControl(filterDataScopes, mappedStatementId)) {
+		if (this.dataPermissionHandler.ignorePermissionControl(filterDataScopes, mappedStatementId)) {
 			return invocation.proceed();
 		}
 
@@ -76,14 +77,14 @@ public class DataPermissionInterceptor implements Interceptor {
 		try {
 			// 根据 DataScopes 进行数据权限的 sql 处理
 			if (sct == SqlCommandType.SELECT) {
-				mpBs.sql(dataScopeSqlProcessor.parserSingle(mpBs.sql(), filterDataScopes));
+				mpBs.sql(this.dataScopeSqlProcessor.parserSingle(mpBs.sql(), filterDataScopes));
 			}
 			else if (sct == SqlCommandType.INSERT || sct == SqlCommandType.UPDATE || sct == SqlCommandType.DELETE) {
-				mpBs.sql(dataScopeSqlProcessor.parserMulti(mpBs.sql(), filterDataScopes));
+				mpBs.sql(this.dataScopeSqlProcessor.parserMulti(mpBs.sql(), filterDataScopes));
 			}
 			// 如果解析后发现当前 mappedStatementId 对应的 sql，没有任何数据权限匹配，则记录下来，后续可以直接跳过不解析
 			Integer matchNum = DataScopeMatchNumHolder.pollMatchNum();
-			List<DataScope> allDataScopes = dataPermissionHandler.dataScopes();
+			List<DataScope> allDataScopes = this.dataPermissionHandler.dataScopes();
 			if (allDataScopes.size() == filterDataScopes.size() && matchNum != null && matchNum == 0) {
 				MappedStatementIdsWithoutDataScope.addToWithoutSet(filterDataScopes, mappedStatementId);
 			}

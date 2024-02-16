@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.ip2region.searcher;
 
 import org.ballcat.autoconfigure.ip2region.Ip2regionAutoConfiguration;
@@ -34,7 +35,7 @@ public abstract class Ip2regionSearcherTest {
 	protected Ip2regionSearcher ip2regionSearcher;
 
 	protected void testIpSearch() {
-		IpInfo localIp = ip2regionSearcher.search("127.0.0.1");
+		IpInfo localIp = this.ip2regionSearcher.search("127.0.0.1");
 		Assertions.assertNull(localIp.getCountry());
 		Assertions.assertNull(localIp.getProvince());
 		Assertions.assertNull(localIp.getArea());
@@ -46,7 +47,7 @@ public abstract class Ip2regionSearcherTest {
 		Assertions.assertEquals("内网IP", localIp.getAddressAndIsp());
 		Assertions.assertEquals("内网IP", localIp.getAddressAndIsp(","));
 
-		IpInfo remoteIp = ip2regionSearcher.search("39.188.108.178");
+		IpInfo remoteIp = this.ip2regionSearcher.search("39.188.108.178");
 		Assertions.assertEquals("中国", remoteIp.getCountry());
 		Assertions.assertEquals("浙江省", remoteIp.getProvince());
 		Assertions.assertNull(localIp.getArea());
@@ -59,8 +60,8 @@ public abstract class Ip2regionSearcherTest {
 		Assertions.assertEquals("中国 浙江省 宁波市 移动", remoteIp.getAddressAndIsp(" "));
 
 		String errorIp = "BallCat.Is.N.B";
-		Assertions.assertNull(ip2regionSearcher.searchQuietly(errorIp));
-		Assertions.assertThrowsExactly(NumberFormatException.class, () -> ip2regionSearcher.search(errorIp));
+		Assertions.assertNull(this.ip2regionSearcher.searchQuietly(errorIp));
+		Assertions.assertThrowsExactly(NumberFormatException.class, () -> this.ip2regionSearcher.search(errorIp));
 
 	}
 

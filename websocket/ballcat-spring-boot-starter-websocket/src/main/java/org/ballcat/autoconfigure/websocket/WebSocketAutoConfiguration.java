@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.autoconfigure.websocket;
 
+import java.util.List;
+
+import lombok.RequiredArgsConstructor;
 import org.ballcat.autoconfigure.websocket.config.LocalMessageDistributorConfig;
-import org.ballcat.autoconfigure.websocket.config.RocketMqMessageDistributorConfig;
 import org.ballcat.autoconfigure.websocket.config.RedisMessageDistributorConfig;
+import org.ballcat.autoconfigure.websocket.config.RocketMqMessageDistributorConfig;
 import org.ballcat.autoconfigure.websocket.config.WebSocketHandlerConfig;
 import org.ballcat.websocket.handler.JsonMessageHandler;
 import org.ballcat.websocket.handler.PingJsonMessageHandler;
 import org.ballcat.websocket.holder.JsonMessageHandlerInitializer;
 import org.ballcat.websocket.message.JsonWebSocketMessage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -37,8 +40,6 @@ import org.springframework.web.socket.config.annotation.SockJsServiceRegistratio
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-
-import java.util.List;
 
 /**
  * websocket自动配置
@@ -62,20 +63,20 @@ public class WebSocketAutoConfiguration {
 			@Autowired(required = false) SockJsServiceConfigurer sockJsServiceConfigurer) {
 		return registry -> {
 			WebSocketHandlerRegistration registration = registry
-				.addHandler(webSocketHandler, webSocketProperties.getPath())
+				.addHandler(webSocketHandler, this.webSocketProperties.getPath())
 				.addInterceptors(handshakeInterceptor.toArray(new HandshakeInterceptor[0]));
 
-			String[] allowedOrigins = webSocketProperties.getAllowedOrigins();
+			String[] allowedOrigins = this.webSocketProperties.getAllowedOrigins();
 			if (allowedOrigins != null && allowedOrigins.length > 0) {
 				registration.setAllowedOrigins(allowedOrigins);
 			}
 
-			String[] allowedOriginPatterns = webSocketProperties.getAllowedOriginPatterns();
+			String[] allowedOriginPatterns = this.webSocketProperties.getAllowedOriginPatterns();
 			if (allowedOriginPatterns != null && allowedOriginPatterns.length > 0) {
 				registration.setAllowedOriginPatterns(allowedOriginPatterns);
 			}
 
-			if (webSocketProperties.isWithSockjs()) {
+			if (this.webSocketProperties.isWithSockjs()) {
 				SockJsServiceRegistration sockJsServiceRegistration = registration.withSockJS();
 				if (sockJsServiceConfigurer != null) {
 					sockJsServiceConfigurer.config(sockJsServiceRegistration);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.configuer;
 
 import lombok.RequiredArgsConstructor;
 import org.ballcat.springsecurity.properties.SpringSecurityProperties;
-import org.ballcat.springsecurity.web.DefaultLogoutSuccessHandler;
 import org.ballcat.springsecurity.web.DefaultFormLoginSuccessHandler;
+import org.ballcat.springsecurity.web.DefaultLogoutSuccessHandler;
 import org.ballcat.springsecurity.web.FormLoginSuccessHandler;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -49,12 +50,13 @@ public class SeparationLoginSpringSecurityConfigurerCustomizer implements Spring
 	@Override
 	public void customize(HttpSecurity httpSecurity) throws Exception {
 		// 表单登录
-		SpringSecurityProperties.FormLogin formLogin = springSecurityProperties.getFormLogin();
+		SpringSecurityProperties.FormLogin formLogin = this.springSecurityProperties.getFormLogin();
 		if (formLogin.isEnabled()) {
-			AuthenticationSuccessHandler successHandler = formLoginSuccessHandler == null
-					? new DefaultFormLoginSuccessHandler() : formLoginSuccessHandler;
+			AuthenticationSuccessHandler successHandler = this.formLoginSuccessHandler == null
+					? new DefaultFormLoginSuccessHandler() : this.formLoginSuccessHandler;
 			AuthenticationEntryPointFailureHandler failureHandler = new AuthenticationEntryPointFailureHandler(
-					authenticationEntryPoint == null ? new Http403ForbiddenEntryPoint() : authenticationEntryPoint);
+					this.authenticationEntryPoint == null ? new Http403ForbiddenEntryPoint()
+							: this.authenticationEntryPoint);
 			httpSecurity.setSharedObject(AuthenticationFailureHandler.class, failureHandler);
 
 			SeparationLoginConfigurer<HttpSecurity> separationLoginConfigurer = httpSecurity

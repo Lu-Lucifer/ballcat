@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.core;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.ballcat.common.util.SpelUtils;
 import org.ballcat.redis.config.CachePropertiesHolder;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 缓存key的生成工具类，主要用于解析spel, 进行拼接key的生成
@@ -54,7 +55,7 @@ public class KeyGenerator {
 			return keyPrefix;
 		}
 		// 获取所有需要拼接的元素, 组装进集合中
-		String joint = SpelUtils.parseValueToString(spelContext, keyJoint);
+		String joint = SpelUtils.parseValueToString(this.spelContext, keyJoint);
 		Assert.notNull(joint, "Key joint cannot be null!");
 
 		if (!StringUtils.hasText(keyPrefix)) {
@@ -69,7 +70,7 @@ public class KeyGenerator {
 		Assert.hasText(keyJoint, "[getKeys] keyJoint cannot be null");
 
 		// 获取所有需要拼接的元素, 组装进集合中
-		List<String> joints = SpelUtils.parseValueToStringList(spelContext, keyJoint);
+		List<String> joints = SpelUtils.parseValueToStringList(this.spelContext, keyJoint);
 		Assert.notEmpty(joints, "[getKeys] keyJoint must be resolved to a non-empty collection!");
 
 		if (!StringUtils.hasText(keyPrefix)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.operation;
 
-import org.ballcat.redis.config.CachePropertiesHolder;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.ballcat.redis.config.CachePropertiesHolder;
 
 /**
  * @author Hccake 2019/9/2 15:19
@@ -34,7 +35,7 @@ public abstract class AbstractCacheOps {
 	 * @return ProceedingJoinPoint
 	 */
 	public ProceedingJoinPoint joinPoint() {
-		return joinPoint;
+		return this.joinPoint;
 	}
 
 	/**

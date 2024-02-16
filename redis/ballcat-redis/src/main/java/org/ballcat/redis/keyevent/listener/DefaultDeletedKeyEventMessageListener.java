@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.redis.keyevent.listener;
 
-import org.ballcat.redis.keyevent.template.KeyDeletedEventMessageTemplate;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
+import org.ballcat.redis.keyevent.template.KeyDeletedEventMessageTemplate;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * default key deleted event handler
@@ -52,13 +53,13 @@ public class DefaultDeletedKeyEventMessageListener extends AbstractDeletedKeyEve
 
 	@Override
 	public void onMessage(Message message, byte[] pattern) {
-		if (CollectionUtils.isEmpty(keyDeletedEventMessageTemplates)) {
+		if (CollectionUtils.isEmpty(this.keyDeletedEventMessageTemplates)) {
 			return;
 		}
 		super.onMessage(message, pattern);
 		String setKey = message.toString();
 		// 监听key信息新增/修改事件
-		for (KeyDeletedEventMessageTemplate keyDeletedEventMessageTemplate : keyDeletedEventMessageTemplates) {
+		for (KeyDeletedEventMessageTemplate keyDeletedEventMessageTemplate : this.keyDeletedEventMessageTemplates) {
 			if (keyDeletedEventMessageTemplate.support(setKey)) {
 				if (log.isTraceEnabled()) {
 					log.trace("use template [{}] handle key deleted event,the deleted key is [{}]",

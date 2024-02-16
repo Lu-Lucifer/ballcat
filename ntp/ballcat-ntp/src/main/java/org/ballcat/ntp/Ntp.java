@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.ntp;
+
+import java.net.InetAddress;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
-
-import java.net.InetAddress;
 
 /**
  * ntp 校时服务
@@ -49,8 +50,8 @@ public class Ntp {
 
 	public Ntp(String host) {
 		try {
-			diff = diff(host);
-			log.warn("授时中心时间与系统时间差为 {} 毫秒", diff);
+			this.diff = diff(host);
+			log.warn("授时中心时间与系统时间差为 {} 毫秒", this.diff);
 		}
 		catch (Exception e) {
 			throw new NtpException("ntp初始化异常!", e);
@@ -58,7 +59,7 @@ public class Ntp {
 	}
 
 	public long currentMillis() {
-		return System.currentTimeMillis() + diff;
+		return System.currentTimeMillis() + this.diff;
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.test;
 
+import java.io.ByteArrayInputStream;
+import java.util.List;
+
 import com.alibaba.excel.EasyExcel;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.easyexcel.ResponseExcelAutoConfiguration;
 import org.ballcat.easyexcel.application.DemoData;
 import org.ballcat.easyexcel.application.ExcelFillTestController;
 import org.ballcat.easyexcel.application.ExcelTestApplication;
 import org.ballcat.easyexcel.handler.DefaultAnalysisEventListener;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +34,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.io.ByteArrayInputStream;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +53,7 @@ class ExcelFillTest {
 	 */
 	@Test
 	void simpleFill() throws Exception {
-		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/fill/simple"))
+		MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get("/fill/simple"))
 			.andExpect(status().isOk())
 			.andReturn();
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(mvcResult.getResponse().getContentAsByteArray());

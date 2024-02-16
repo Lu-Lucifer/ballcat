@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.authentication;
+
+import java.util.Map;
+import java.util.Set;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -21,9 +25,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.util.Assert;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * An {@link Authentication} implementation used for the OAuth 2.0 Resource Owner Password
@@ -54,7 +55,7 @@ public class OAuth2ResourceOwnerPasswordAuthenticationToken extends AbstractOAut
 
 	@Override
 	public String getName() {
-		return username;
+		return this.username;
 	}
 
 }

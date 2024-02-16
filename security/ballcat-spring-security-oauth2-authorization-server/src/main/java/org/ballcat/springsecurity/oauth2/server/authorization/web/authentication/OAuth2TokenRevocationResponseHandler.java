@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.web.authentication;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,9 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.event.LogoutSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * OAuth2 撤销令牌成功的处理，发布登出事件，以及响应 200
@@ -43,7 +44,7 @@ public class OAuth2TokenRevocationResponseHandler implements AuthenticationSucce
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) {
 		// 发布用户登出事件
-		publisher.publishEvent(new LogoutSuccessEvent(authentication));
+		this.publisher.publishEvent(new LogoutSuccessEvent(authentication));
 		// 返回 200 响应
 		response.setStatus(HttpStatus.OK.value());
 	}

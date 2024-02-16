@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.mail.model;
 
 import java.time.LocalDateTime;
@@ -50,11 +51,11 @@ public class MailSendInfo {
 	private String errorMsg;
 
 	public MailDetails getMailDetails() {
-		return mailDetails;
+		return this.mailDetails;
 	}
 
 	public LocalDateTime getSentDate() {
-		return sentDate;
+		return this.sentDate;
 	}
 
 	public void setSentDate(LocalDateTime sentDate) {
@@ -62,7 +63,7 @@ public class MailSendInfo {
 	}
 
 	public Boolean getSuccess() {
-		return success;
+		return this.success;
 	}
 
 	public void setSuccess(Boolean success) {
@@ -70,7 +71,7 @@ public class MailSendInfo {
 	}
 
 	public String getErrorMsg() {
-		return errorMsg;
+		return this.errorMsg;
 	}
 
 	public void setErrorMsg(String errorMsg) {

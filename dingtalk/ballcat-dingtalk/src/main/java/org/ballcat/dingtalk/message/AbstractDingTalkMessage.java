@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ballcat.dingtalk.message;
 
-import org.ballcat.dingtalk.DingTalkParams;
-import org.ballcat.dingtalk.enums.MessageTypeEnum;
+package org.ballcat.dingtalk.message;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import org.ballcat.dingtalk.DingTalkParams;
+import org.ballcat.dingtalk.enums.MessageTypeEnum;
 
 /**
  * 钉钉消息基础类
@@ -39,7 +40,7 @@ public abstract class AbstractDingTalkMessage implements DingTalkMessage {
 	private boolean atAll = false;
 
 	public AbstractDingTalkMessage atAll() {
-		atAll = true;
+		this.atAll = true;
 		return this;
 	}
 
@@ -47,7 +48,7 @@ public abstract class AbstractDingTalkMessage implements DingTalkMessage {
 	 * 添加 at 对象的手机号
 	 */
 	public AbstractDingTalkMessage addPhone(String phone) {
-		atPhones.add(phone);
+		this.atPhones.add(phone);
 		return this;
 	}
 
@@ -67,7 +68,7 @@ public abstract class AbstractDingTalkMessage implements DingTalkMessage {
 	@Override
 	public String generate() {
 		DingTalkParams params = put(new DingTalkParams().setType(getType().getVal())
-			.setAt(new DingTalkParams.At().setAtAll(atAll).setAtMobiles(atPhones)));
+			.setAt(new DingTalkParams.At().setAtAll(this.atAll).setAtMobiles(this.atPhones)));
 		return params.toString();
 	}
 

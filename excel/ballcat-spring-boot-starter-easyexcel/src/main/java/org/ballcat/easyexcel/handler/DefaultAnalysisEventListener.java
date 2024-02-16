@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.easyexcel.handler;
 
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
-import org.ballcat.easyexcel.kit.Validators;
-import org.ballcat.easyexcel.domain.ErrorMessage;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.ConstraintViolation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.ConstraintViolation;
+
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
+import lombok.extern.slf4j.Slf4j;
+import org.ballcat.easyexcel.domain.ErrorMessage;
+import org.ballcat.easyexcel.kit.Validators;
 
 /**
  * 默认的 AnalysisEventListener
@@ -50,10 +52,10 @@ public class DefaultAnalysisEventListener extends ListAnalysisEventListener<Obje
 			Set<String> messageSet = violations.stream()
 				.map(ConstraintViolation::getMessage)
 				.collect(Collectors.toSet());
-			errorMessageList.add(new ErrorMessage(lineNum, messageSet));
+			this.errorMessageList.add(new ErrorMessage(lineNum, messageSet));
 		}
 		else {
-			list.add(o);
+			this.list.add(o);
 		}
 	}
 
@@ -64,12 +66,12 @@ public class DefaultAnalysisEventListener extends ListAnalysisEventListener<Obje
 
 	@Override
 	public List<Object> getList() {
-		return list;
+		return this.list;
 	}
 
 	@Override
 	public List<ErrorMessage> getErrors() {
-		return errorMessageList;
+		return this.errorMessageList;
 	}
 
 }

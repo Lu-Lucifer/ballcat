@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.desensitize.json;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import org.ballcat.desensitize.AnnotationHandlerHolder;
-
-import java.lang.annotation.Annotation;
-
-import java.util.List;
 
 /**
  * json serial modifier
@@ -48,7 +48,7 @@ public class JsonDesensitizeSerializerModifier extends BeanSerializerModifier {
 			Annotation annotation = getDesensitizeAnnotation(beanProperty);
 
 			if (annotation != null && beanProperty.getType().isTypeOrSubTypeOf(String.class)) {
-				beanProperty.assignSerializer(new JsonDesensitizeSerializer(annotation, desensitizeStrategy));
+				beanProperty.assignSerializer(new JsonDesensitizeSerializer(annotation, this.desensitizeStrategy));
 			}
 		}
 		return beanProperties;

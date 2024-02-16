@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.springsecurity.oauth2.server.authorization.autoconfigure;
 
 import lombok.RequiredArgsConstructor;
@@ -89,7 +90,7 @@ public class OAuth2AuthorizationServerConfigurerExtensionConfiguration {
 	@ConditionalOnBean(OAuth2TokenRevocationResponseHandler.class)
 	public OAuth2TokenRevocationEndpointConfigurerExtension oAuth2TokenRevocationEndpointConfigurerCustomizer(
 			OAuth2TokenRevocationResponseHandler oAuth2TokenRevocationResponseHandler) {
-		return new OAuth2TokenRevocationEndpointConfigurerExtension(oAuth2AuthorizationService,
+		return new OAuth2TokenRevocationEndpointConfigurerExtension(this.oAuth2AuthorizationService,
 				oAuth2TokenRevocationResponseHandler);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ballcat.file.local;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.ballcat.common.util.StreamUtils;
 import org.ballcat.common.util.SystemUtils;
@@ -21,11 +27,6 @@ import org.ballcat.file.FileProperties.LocalProperties;
 import org.ballcat.file.core.AbstractFileClient;
 import org.ballcat.file.exception.FileException;
 import org.springframework.util.StringUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author lingting 2021/10/17 20:11
@@ -42,7 +43,7 @@ public class LocalFileClient extends AbstractFileClient {
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new FileException(String.format("路径: %s; 不存在且创建失败! 请检查是否拥有对该路径的操作权限!", dir.getPath()));
 		}
-		parentDir = dir;
+		this.parentDir = dir;
 		super.rootPath = dir.getPath();
 		super.slash = File.separator;
 	}
@@ -57,7 +58,7 @@ public class LocalFileClient extends AbstractFileClient {
 	@Override
 	public String upload(InputStream stream, String relativePath) throws IOException {
 		// 目标文件
-		final File file = new File(parentDir, relativePath);
+		final File file = new File(this.parentDir, relativePath);
 
 		if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
 			throw new FileException("文件上传失败! 创建父级文件夹失败! 父级路径: " + file.getParentFile().getPath());
@@ -81,7 +82,7 @@ public class LocalFileClient extends AbstractFileClient {
 	 */
 	@Override
 	public File download(String relativePath) {
-		return new File(parentDir, relativePath);
+		return new File(this.parentDir, relativePath);
 	}
 
 	/**
@@ -91,7 +92,7 @@ public class LocalFileClient extends AbstractFileClient {
 	 */
 	@Override
 	public boolean delete(String relativePath) {
-		final File file = new File(parentDir, relativePath);
+		final File file = new File(this.parentDir, relativePath);
 		return file.exists() && file.delete();
 	}
 
