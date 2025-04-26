@@ -19,15 +19,14 @@ package org.ballcat.desensite;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.ballcat.desensite.custom.CustomerDesensitize;
-import org.ballcat.desensitize.enums.RegexDesensitizationTypeEnum;
-import org.ballcat.desensitize.enums.SlideDesensitizationTypeEnum;
-import org.ballcat.desensitize.json.annotation.JsonRegexDesensitize;
-import org.ballcat.desensitize.json.annotation.JsonSimpleDesensitize;
-import org.ballcat.desensitize.json.annotation.JsonSlideDesensitize;
+import org.ballcat.desensitize.annotation.IndexDesensitize;
+import org.ballcat.desensitize.annotation.RegexDesensitize;
+import org.ballcat.desensitize.annotation.SimpleDesensitize;
+import org.ballcat.desensitize.handler.PhoneNumberDesensitizationHandler;
+import org.ballcat.desensitize.rule.regex.EmailRegexDesensitizeRule;
 
 /**
  * @author Hccake 2021/1/23
- *
  */
 @Data
 @Accessors(chain = true)
@@ -39,27 +38,27 @@ public class DesensitizationUser {
 	private String username;
 
 	/**
-	 * 密码脱敏
+	 * 密码脱敏, 前3后2明文，中间无论多少位，都显示 4 个 *，已混淆位数
 	 */
-	@JsonRegexDesensitize(type = RegexDesensitizationTypeEnum.ENCRYPTED_PASSWORD)
+	@RegexDesensitize(regex = "(.{3}).*(.{2}$)", replacement = "$1****$2")
 	private String password;
 
 	/**
 	 * 邮件
 	 */
-	@JsonRegexDesensitize(type = RegexDesensitizationTypeEnum.EMAIL)
+	@RegexDesensitize(rule = EmailRegexDesensitizeRule.class)
 	private String email;
 
 	/**
 	 * 手机号
 	 */
-	@JsonSlideDesensitize(type = SlideDesensitizationTypeEnum.PHONE_NUMBER)
+	@SimpleDesensitize(handler = PhoneNumberDesensitizationHandler.class)
 	private String phoneNumber;
 
 	/**
 	 * 测试自定义脱敏
 	 */
-	@JsonSimpleDesensitize(handler = TestDesensitizationHandler.class)
+	@SimpleDesensitize(handler = TestDesensitizationHandler.class)
 	private String testField;
 
 	/**
@@ -67,5 +66,17 @@ public class DesensitizationUser {
 	 */
 	@CustomerDesensitize(type = "自定义注解示例")
 	private String customDesensitize;
+
+	/**
+	 * 测试规则脱敏
+	 */
+	@IndexDesensitize(rule = { "1", "4-6", "9-" })
+	private String ruleDesensitize;
+
+	/**
+	 * 测试规则脱敏（反转）
+	 */
+	@IndexDesensitize(rule = { "1", "4-6", "9-" }, reverse = true)
+	private String ruleReverseDesensitize;
 
 }

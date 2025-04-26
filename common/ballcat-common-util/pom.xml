@@ -3,14 +3,18 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<groupId>org.ballcat</groupId>
-		<artifactId>ballcat</artifactId>
+		<artifactId>ballcat-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>../../pom.xml</relativePath>
+		<relativePath>../../ballcat-parent</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>ballcat-common-util</artifactId>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.ballcat</groupId>
+			<artifactId>ballcat-common-model</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>cn.hutool</groupId>
 			<artifactId>hutool-json</artifactId>
@@ -35,10 +39,6 @@
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

@@ -20,14 +20,13 @@ import org.ballcat.security.authorization.SecurityChecker;
 import org.ballcat.springsecurity.authorization.SpringSecurityChecker;
 import org.ballcat.springsecurity.component.CustomPermissionEvaluator;
 import org.ballcat.springsecurity.util.PasswordUtils;
-import org.ballcat.springsecurity.web.CustomAuthenticationEntryPoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 
 /**
  * @author Hccake
@@ -47,13 +46,21 @@ public class SpringSecurityComponentConfiguration {
 	}
 
 	/**
-	 * 自定义异常处理
-	 * @return AuthenticationEntryPoint
+	 * login 登录支持。
+	 * <p>
+	 * 注册为 spring bean 是为了解决 spring security 默认配置行为是 new 了一个 DaoAuthenticationProvider，没有被
+	 * spring 管理，导致 messageSource 没有被替换，国际化失效。
+	 * @see org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer
 	 */
 	@Bean
+	@ConditionalOnBean(UserDetailsService.class)
 	@ConditionalOnMissingBean
-	public AuthenticationEntryPoint authenticationEntryPoint() {
-		return new CustomAuthenticationEntryPoint();
+	public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
+			PasswordEncoder passwordEncoder) {
+		DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+		daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+		daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+		return daoAuthenticationProvider;
 	}
 
 	/**

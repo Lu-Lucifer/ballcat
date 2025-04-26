@@ -21,8 +21,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import org.ballcat.common.util.tree.TreeNode;
-import org.ballcat.common.util.tree.TreeUtils;
+import lombok.Getter;
+import lombok.Setter;
+import org.ballcat.common.model.domain.TreeNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -74,8 +75,8 @@ class TreeUtilsTest {
 		Assertions.assertEquals(list, abstractIdTreeNodes);
 	}
 
-	@lombok.Setter
-	@lombok.Getter
+	@Setter
+	@Getter
 	static class TestTreeNode implements TreeNode<Long> {
 
 		/**

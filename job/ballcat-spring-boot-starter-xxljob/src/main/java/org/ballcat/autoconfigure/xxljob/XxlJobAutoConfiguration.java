@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ballcat.autoconfigure.xxljob.properties.XxlExecutorProperties;
 import org.ballcat.autoconfigure.xxljob.properties.XxlJobProperties;
+import org.ballcat.autoconfigure.xxljob.trace.TraceXxlJobSpringExecutor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,7 +50,7 @@ public class XxlJobAutoConfiguration {
 		if (log.isInfoEnabled()) {
 			log.info(">>>>>>>>>>> xxl-job config init.");
 		}
-		XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();
+		XxlJobSpringExecutor xxlJobSpringExecutor = new TraceXxlJobSpringExecutor();
 		xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdmin().getAddresses());
 		XxlExecutorProperties executorProperties = xxlJobProperties.getExecutor();
 		xxlJobSpringExecutor.setAppname(getExecutorName(executorProperties));

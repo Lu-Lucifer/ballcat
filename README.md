@@ -17,7 +17,9 @@
 
 - Github 地址 ：https://github.com/ballcat-projects/ballcat
 - Gitee 地址：https://gitee.com/ballcat-projects/ballcat （如果 Github 访问速度比较慢的话，可以访问 Gitee ）
-- 1.x 文档地址：http://docs.ballcat.cn/ 
+- GitCode 地址：https://gitcode.com/ballcat-projects/ballcat
+- 1.x 文档地址：https://v1.ballcat.cn/ 
+- 2.x 文档地址：https://v2.ballcat.cn/
 
 
 ## 相关仓库
@@ -36,9 +38,11 @@
 
 ## 交流群
 
-由于微信限制群人数超 200 无法通过扫码进群，可以扫我的个人微信二维码，或者添加我的微信号 `Hccake_`，备注 `BallCat 进群`，我再邀请你入群
+可以扫下方左侧二维码进群，或者扫我的个人微信二维码，备注 `BallCat 进群`，我再邀请你入群
 
-<img src="https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/wechat-hccake.jpg" alt="微信" width="35%"/>
+<img src="https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/wechat_1113.jpg" alt="微信" width="35%"/>  <img src="https://hccake-img.oss-cn-shanghai.aliyuncs.com/ballcat/wechat-hccake_.jpg" alt="微信" width="35%"/>
+
+
 
 
 ## 贡献指南

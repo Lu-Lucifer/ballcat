@@ -22,16 +22,20 @@ import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.ballcat.web.accesslog.AbstractAccessLogFilter;
 import org.ballcat.web.accesslog.AccessLogRecordOptions;
 import org.ballcat.web.accesslog.AccessLogRule;
+import org.slf4j.event.Level;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.StringUtils;
 
 /**
  * 访问日志配置
  *
  * @author Hccake 2020/6/11 14:56
  */
+@Slf4j
 @Data
 @Setter
 @ConfigurationProperties(prefix = AccessLogProperties.PREFIX)
@@ -45,6 +49,11 @@ public class AccessLogProperties {
 	private boolean enabled = false;
 
 	/**
+	 * 默认的访问日志过滤器写日志时的级别
+	 */
+	private Level defaultFilterLogLevel = Level.DEBUG;
+
+	/**
 	 * access log filter 的优先级
 	 *
 	 * @see org.springframework.core.Ordered
@@ -55,11 +64,6 @@ public class AccessLogProperties {
 	 * 自动注册 access log filter
 	 */
 	private Boolean filterAutoRegister = true;
-
-	/**
-	 * 记录的最大的 body 长度
-	 */
-	private Integer maxBodyLength = AbstractAccessLogFilter.DEFAULT_MAX_BODY_LENGTH;
 
 	/**
 	 * 访问日志记录的默认选项，当请求路径无法在 rules 中匹配时，使用该选项
@@ -78,7 +82,22 @@ public class AccessLogProperties {
 	}
 
 	public List<AccessLogRule> getAccessLogRules() {
-		return this.rules.stream().map(AccessLogProperties::convertToAccessLogRule).collect(Collectors.toList());
+		return this.rules.stream()
+			.filter(this::isValidRule)
+			.map(AccessLogProperties::convertToAccessLogRule)
+			.collect(Collectors.toList());
+	}
+
+	private boolean isValidRule(Rule rule) {
+		if (!StringUtils.hasText(rule.getUrlPattern())) {
+			log.warn("Access log rule urlPattern is empty, ignore it.");
+			return false;
+		}
+		if (rule.getRecordOptions() == null) {
+			log.warn("Access log rule recordOptions is null, ignore it. urlPattern: {}", rule.getUrlPattern());
+			return false;
+		}
+		return true;
 	}
 
 	private static AccessLogRecordOptions convertToAccessLogRecordOptions(RecordOptions recordOptions) {
@@ -87,6 +106,8 @@ public class AccessLogProperties {
 			.includeQueryString(recordOptions.isIncludeQueryString())
 			.includeRequestBody(recordOptions.isIncludeRequestBody())
 			.includeResponseBody(recordOptions.isIncludeResponseBody())
+			.maxRequestBodyLength(recordOptions.getMaxRequestBodyLength())
+			.maxResponseBodyLength(recordOptions.getMaxResponseBodyLength())
 			.build();
 	}
 
@@ -117,6 +138,16 @@ public class AccessLogProperties {
 		 * 记录响应体
 		 */
 		private boolean includeResponseBody = false;
+
+		/**
+		 * 记录的最大的请求 body 长度
+		 */
+		private Integer maxRequestBodyLength = AbstractAccessLogFilter.DEFAULT_MAX_BODY_LENGTH;
+
+		/**
+		 * 记录的最大的响应 body 长度
+		 */
+		private Integer maxResponseBodyLength = AbstractAccessLogFilter.DEFAULT_MAX_BODY_LENGTH;
 
 	}
 

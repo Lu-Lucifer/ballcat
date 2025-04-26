@@ -3,20 +3,22 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<groupId>org.ballcat</groupId>
-		<artifactId>ballcat-dependencies</artifactId>
+		<artifactId>ballcat-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>ballcat-dependencies/pom.xml</relativePath>
+		<relativePath>./ballcat-parent/pom.xml</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>ballcat</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 	<name>ballcat</name>
 	<url>https://github.com/ballcat-projects/ballcat</url>
 	<description>一个简单好用的功能组件库</description>
 
 	<modules>
+		<module>api-signature/ballcat-spring-boot-starter-apisignature</module>
+
 		<module>ballcat-dependencies</module>
+		<module>ballcat-parent</module>
 
 		<module>common/ballcat-common-core</module>
 		<module>common/ballcat-common-model</module>
@@ -29,7 +31,7 @@
 		<module>dingtalk/ballcat-dingtalk</module>
 		<module>dingtalk/ballcat-spring-boot-starter-dingtalk</module>
 
-		<module>excel/ballcat-spring-boot-starter-easyexcel</module>
+		<module>excel/ballcat-spring-boot-starter-fastexcel</module>
 
 		<module>file/ballcat-spring-boot-starter-file</module>
 
@@ -46,17 +48,19 @@
 		<module>ip/ballcat-spring-boot-starter-ip2region</module>
 
 		<module>job/ballcat-spring-boot-starter-xxljob</module>
+		<module>job/ballcat-spring-boot-starter-quartz</module>
 
 		<module>kafka/ballcat-kafka</module>
 		<module>kafka/ballcat-kafka-stream</module>
 		<module>kafka/ballcat-spring-boot-starter-kafka</module>
 
-		<module>log/ballcat-log</module>
-		<module>log/ballcat-spring-boot-starter-log</module>
+		<module>log/ballcat-operation-log</module>
+		<module>log/ballcat-spring-boot-starter-operation-log</module>
 
 		<module>mail/ballcat-spring-boot-starter-mail</module>
 
 		<module>mybatis-plus/ballcat-mybatis-plus</module>
+		<module>mybatis-plus/ballcat-spring-boot-starter-mybatis-plus</module>
 
 		<module>ntp/ballcat-ntp</module>
 
@@ -90,7 +94,7 @@
 		<module>websocket/ballcat-spring-boot-starter-websocket</module>
 
 		<module>xss/ballcat-spring-boot-starter-xss</module>
-	</modules>
+    </modules>
 
 	<properties>
 		<!-- maven 配置 -->
@@ -99,28 +103,23 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<git-build-hook-maven-plugin.version>3.4.1</git-build-hook-maven-plugin.version>
 	</properties>
 
-	<dependencies>
-		<!-- lombok 代码简化处理器 -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 	<!--环境变量-->
 	<profiles>
 		<profile>
+			<id>ossrh</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -128,11 +127,11 @@
 						<artifactId>maven-gpg-plugin</artifactId>
 						<executions>
 							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
 								<goals>
 									<goal>sign</goal>
 								</goals>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
 							</execution>
 						</executions>
 					</plugin>
@@ -150,10 +149,10 @@
 						</configuration>
 						<executions>
 							<execution>
+								<id>attach-javadocs</id>
 								<goals>
 									<goal>jar</goal>
 								</goals>
-								<id>attach-javadocs</id>
 							</execution>
 						</executions>
 					</plugin>
@@ -172,28 +171,28 @@
 						<artifactId>maven-source-plugin</artifactId>
 						<executions>
 							<execution>
+								<id>attach-sources</id>
 								<goals>
 									<goal>jar-no-fork</goal>
 								</goals>
-								<id>attach-sources</id>
 							</execution>
 						</executions>
 					</plugin>
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<extensions>true</extensions>
 						<configuration>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 							<stagingProgressTimeoutMinutes>20</stagingProgressTimeoutMinutes>
 						</configuration>
-						<extensions>true</extensions>
 					</plugin>
 				</plugins>
 			</build>
-			<id>ossrh</id>
 		</profile>
 		<profile>
+			<id>dev</id>
 			<properties>
 				<profiles.active>dev</profiles.active>
 			</properties>
@@ -201,58 +200,22 @@
 				<!-- 默认环境 -->
 				<activeByDefault>true</activeByDefault>
 			</activation>
-			<id>dev</id>
 		</profile>
 		<profile>
+			<id>test</id>
 			<properties>
 				<profiles.active>test</profiles.active>
 			</properties>
-			<id>test</id>
 		</profile>
 		<profile>
+			<id>prod</id>
 			<properties>
 				<profiles.active>prod</profiles.active>
 			</properties>
-			<id>prod</id>
 		</profile>
 	</profiles>
 
-	<distributionManagement>
-		<repository>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-			<id>ossrh</id>
-		</repository>
-		<snapshotRepository>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<id>ossrh</id>
-		</snapshotRepository>
-	</distributionManagement>
-
 	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<configuration>
-						<excludes>
-							<exclude>
-								<groupId>org.projectlombok</groupId>
-								<artifactId>lombok</artifactId>
-							</exclude>
-						</excludes>
-					</configuration>
-					<executions>
-						<execution>
-							<goals>
-								<goal>build-info</goal>
-								<goal>repackage</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>io.spring.javaformat</groupId>
@@ -325,7 +288,6 @@
 			<plugin>
 				<groupId>com.rudikershaw.gitbuildhook</groupId>
 				<artifactId>git-build-hook-maven-plugin</artifactId>
-				<version>${git-build-hook-maven-plugin.version}</version>
 				<inherited>false</inherited>
 				<configuration>
 					<gitConfig>
@@ -346,27 +308,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<inherited>true</inherited>
-				<version>3.3.1</version>
-				<dependencies>
-					<dependency>
-						<groupId>com.puppycrawl.tools</groupId>
-						<artifactId>checkstyle</artifactId>
-						<version>9.3</version>
-					</dependency>
-					<dependency>
-						<groupId>io.spring.javaformat</groupId>
-						<artifactId>spring-javaformat-checkstyle</artifactId>
-						<version>${spring-javaformat-checkstyle.version}</version>
-					</dependency>
-				</dependencies>
 				<executions>
 					<execution>
 						<id>checkstyle-validation</id>
 						<phase>validate</phase>
 						<configuration>
-							<configLocation>.etc/checkstyle/checkstyle.xml</configLocation>
-							<suppressionsLocation>.etc/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
+							<suppressionsLocation>src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
 							<consoleOutput>true</consoleOutput>
 							<failsOnError>true</failsOnError>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
@@ -379,6 +327,7 @@
 			</plugin>
 		</plugins>
 	</build>
+
 	<developers>
 		<developer>
 			<name>hccake</name>

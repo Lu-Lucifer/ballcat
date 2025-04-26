@@ -5,9 +5,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.ballcat</groupId>
-		<artifactId>ballcat</artifactId>
+		<artifactId>ballcat-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>../../pom.xml</relativePath>
+		<relativePath>../../ballcat-parent</relativePath>
 	</parent>
 
 	<artifactId>ballcat-spring-boot-starter-grpc</artifactId>
@@ -15,28 +15,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ballcat</groupId>
-			<artifactId>ballcat-common-util</artifactId>
+			<artifactId>ballcat-spring-boot-starter-grpc-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ballcat</groupId>
-			<artifactId>ballcat-common-core</artifactId>
+			<artifactId>ballcat-spring-boot-starter-grpc-server</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-protobuf</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-stub</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-netty</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-    </dependencies>
+	</dependencies>
 
 </project>
